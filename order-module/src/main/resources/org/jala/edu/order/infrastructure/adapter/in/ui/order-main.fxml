@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- Main view of the order module, opened by the "Orders" navigation button -->
+<VBox styleClass="page"
+      xmlns="http://javafx.com/javafx/25"
+      xmlns:fx="http://javafx.com/fxml/1">
+
+    <Label styleClass="page-title" text="Orders"/>
+    <Label styleClass="subtitle" wrapText="true"
+           text="Delivery orders placed by customers: what to pick up, where to deliver it and when."/>
+    <Label styleClass="placeholder" wrapText="true"
+           text="There are no order screens yet. They will appear here as they are added."/>
+</VBox>

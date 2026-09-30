@@ -1,0 +1,25 @@
+delivery:
+  persistence:
+    # Which persistence adapters to use: jpa (MySQL, default) | memory (no database, data lost on exit).
+    # Override without editing this file: -Ddelivery.persistence.type=memory or DELIVERY_PERSISTENCE_TYPE=memory
+    type: memory
+
+spring:
+  application:
+    name: delivery-system
+
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/delivery_system}
+    username: ${DB_USERNAME:delivery}
+    password: ${DB_PASSWORD:delivery}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      # Flyway owns the schema; Hibernate never alters it.
+      ddl-auto: none
+
+  flyway:
+    # Each module ships its migrations under db/migration/<module>/ (scanned recursively).
+    # Use timestamp versions (V<yyyyMMddHHmm>__...) so versions never collide across modules.
+    locations: classpath:db/migration

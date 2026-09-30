@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- Main view of the delivery module, opened by the "Deliveries" navigation button -->
+<VBox styleClass="page"
+      xmlns="http://javafx.com/javafx/25"
+      xmlns:fx="http://javafx.com/fxml/1">
+
+    <Label styleClass="page-title" text="Deliveries"/>
+    <Label styleClass="subtitle" wrapText="true"
+           text="Follow each delivery from pickup to drop-off and the courier assigned to it."/>
+    <Label styleClass="placeholder" wrapText="true"
+           text="There are no delivery screens yet. They will appear here as they are added."/>
+</VBox>

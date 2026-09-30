@@ -1,0 +1,94 @@
+# GitLab CI for the Delivery System modular monolith.
+# Each module is an independent Maven project. They are built in dependency order
+# and the final delivery-system module is assembled at the end.
+
+image: eclipse-temurin:25-jdk
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository"
+  MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version"
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .m2/repository
+
+stages:
+  - build-core
+  - build-reference
+  - build-modules
+  - assemble
+
+# The shared kernel must be built first; every other module depends on it.
+build-core:
+  stage: build-core
+  script:
+    - cd core-module
+    - ./mvnw $MAVEN_CLI_OPTS install
+  artifacts:
+    paths:
+      - core-module/target/
+    expire_in: 1 hour
+
+# user-module is the reference implementation; build it so delivery-system can use it.
+build-user:
+  stage: build-reference
+  needs:
+    - build-core
+  script:
+    - cd user-module
+    - ./mvnw $MAVEN_CLI_OPTS install
+  artifacts:
+    paths:
+      - user-module/target/
+    expire_in: 1 hour
+
+# Each team module is built independently. They all need core-module only.
+build-catalog:
+  stage: build-modules
+  needs:
+    - build-core
+  script:
+    - cd catalog-module
+    - ./mvnw $MAVEN_CLI_OPTS install
+
+build-order:
+  stage: build-modules
+  needs:
+    - build-core
+  script:
+    - cd order-module
+    - ./mvnw $MAVEN_CLI_OPTS install
+
+build-delivery:
+  stage: build-modules
+  needs:
+    - build-core
+  script:
+    - cd delivery-module
+    - ./mvnw $MAVEN_CLI_OPTS install
+
+build-payment:
+  stage: build-modules
+  needs:
+    - build-core
+  script:
+    - cd payment-module
+    - ./mvnw $MAVEN_CLI_OPTS install
+
+# Final assembly: delivery-system depends on all business modules.
+assemble-system:
+  stage: assemble
+  needs:
+    - build-user
+    - build-catalog
+    - build-order
+    - build-delivery
+    - build-payment
+  script:
+    - cd delivery-system
+    - ./mvnw $MAVEN_CLI_OPTS package -Pmemory
+  artifacts:
+    paths:
+      - delivery-system/target/*.jar
+    expire_in: 1 week

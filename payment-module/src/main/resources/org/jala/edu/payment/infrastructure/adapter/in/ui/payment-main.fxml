@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- Main view of the payment module, opened by the "Payments" navigation button -->
+<VBox styleClass="page"
+      xmlns="http://javafx.com/javafx/25"
+      xmlns:fx="http://javafx.com/fxml/1">
+
+    <Label styleClass="page-title" text="Payments"/>
+    <Label styleClass="subtitle" wrapText="true"
+           text="Payments for delivery requests and their status."/>
+    <Label styleClass="placeholder" wrapText="true"
+           text="There are no payment screens yet. They will appear here as they are added."/>
+</VBox>
