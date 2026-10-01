@@ -29,6 +29,41 @@ cd ../delivery-system
 
 > On Windows use `mvnw.cmd` if Git Bash is not available.
 
+## Windows users
+
+If you are on Windows and the wrapper fails with:
+
+```
+'powershell' is not recognized as an internal or external command
+Cannot start maven from wrapper
+```
+
+Add PowerShell to your terminal session before running `mvnw.cmd`:
+
+```cmd
+set PATH=C:\Windows\System32\WindowsPowerShell\v1.0;%PATH%
+```
+
+Or, if you are using PowerShell:
+
+```powershell
+$env:PATH = "C:\Windows\System32\WindowsPowerShell\v1.0;" + $env:PATH
+```
+
+Then use `mvnw.cmd` instead of `./mvnw`:
+
+```cmd
+cd core-module && mvnw.cmd install -DskipTests
+cd ..\user-module && mvnw.cmd install -DskipTests
+cd ..\catalog-module && mvnw.cmd install -DskipTests
+cd ..\order-module && mvnw.cmd install -DskipTests
+cd ..\delivery-module && mvnw.cmd install -DskipTests
+cd ..\payment-module && mvnw.cmd install -DskipTests
+
+cd ..\delivery-system
+mvnw.cmd javafx:run -Pmemory
+```
+
 ## Full documentation
 
 See [`delivery-system/README.md`](delivery-system/README.md) for:

@@ -62,11 +62,50 @@ cd ../payment-module && ./mvnw install -DskipTests
 
 > On Windows use `mvnw.cmd` instead of `./mvnw` if Git Bash is not available.
 
+#### Windows command prompt
+
+If you are using `cmd.exe` or PowerShell and `mvnw.cmd` fails with:
+
+```
+'powershell' is not recognized as an internal or external command
+Cannot start maven from wrapper
+```
+
+Add PowerShell to the current terminal session first:
+
+```cmd
+set PATH=C:\Windows\System32\WindowsPowerShell\v1.0;%PATH%
+```
+
+Or, in PowerShell:
+
+```powershell
+$env:PATH = "C:\Windows\System32\WindowsPowerShell\v1.0;" + $env:PATH
+```
+
+Then run the Windows version of the commands:
+
+```cmd
+cd core-module && mvnw.cmd install -DskipTests
+cd ..\user-module && mvnw.cmd install -DskipTests
+cd ..\catalog-module && mvnw.cmd install -DskipTests
+cd ..\order-module && mvnw.cmd install -DskipTests
+cd ..\delivery-module && mvnw.cmd install -DskipTests
+cd ..\payment-module && mvnw.cmd install -DskipTests
+```
+
 ### 3. Run the desktop application
 
 ```bash
 cd ../delivery-system
 ./mvnw javafx:run -Pmemory
+```
+
+On Windows (cmd/PowerShell):
+
+```cmd
+cd ..\delivery-system
+mvnw.cmd javafx:run -Pmemory
 ```
 
 The main window opens with a navigation bar. The **Users** module is already functional; the other modules show
