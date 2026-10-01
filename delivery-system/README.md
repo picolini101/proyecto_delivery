@@ -34,6 +34,68 @@ java -version
 
 Expected output: `java version "25"` or higher.
 
+### Linux (Ubuntu) setup
+
+The project requires **JDK 25** (both `java` and `javac`). Installing only the JRE is not enough, because Maven needs `javac` to compile.
+
+#### 1. Install OpenJDK 25
+
+```bash
+sudo apt update
+sudo apt install openjdk-25-jdk
+```
+
+#### 2. Make Java 25 the default version
+
+If you have other JDKs installed (e.g. 21 or 27), select the `java-25-openjdk-amd64` entry for both tools:
+
+```bash
+sudo update-alternatives --config java
+sudo update-alternatives --config javac
+```
+
+Or set them directly without the interactive menu:
+
+```bash
+sudo update-alternatives --set java  /usr/lib/jvm/java-25-openjdk-amd64/bin/java
+sudo update-alternatives --set javac /usr/lib/jvm/java-25-openjdk-amd64/bin/javac
+```
+
+#### 3. Configure `JAVA_HOME`
+
+The Maven wrapper uses `JAVA_HOME`. Add it to `~/.bashrc` so it is loaded in every terminal (run this only once to avoid duplicate lines):
+
+```bash
+echo 'export JAVA_HOME=/usr/lib/jvm/java-25-openjdk-amd64' >> ~/.bashrc
+echo 'export PATH="$JAVA_HOME/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+#### 4. Verify the installation
+
+```bash
+java --version
+javac --version
+echo $JAVA_HOME
+```
+
+`java` and `javac` must both report version `25.x`, and `JAVA_HOME` must print `/usr/lib/jvm/java-25-openjdk-amd64`.
+
+#### 5. Give execute permission to the Maven wrapper
+
+After cloning, `mvnw` may not be executable (`Permission denied`). From the repository root, run:
+
+```bash
+chmod +x core-module/mvnw user-module/mvnw catalog-module/mvnw order-module/mvnw \
+         delivery-module/mvnw payment-module/mvnw delivery-system/mvnw
+```
+
+Or, from inside each module folder:
+
+```bash
+chmod +x mvnw
+```
+
 ## Quick start (no database needed)
 
 The application can run entirely in memory. This is the fastest way to verify the installation and start
