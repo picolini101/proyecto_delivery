@@ -173,24 +173,90 @@ mvnw.cmd javafx:run -Pmemory
 The main window opens with a navigation bar. The **Users** module is already functional; the other modules show
 placeholder views until each team implements them.
 
-## Running with MySQL
+## Running with MySQL (optional)
 
-If you want to test with a real database:
+> **MySQL is optional.** The default persistence mode is in-memory
+> (`delivery.persistence.type=memory` in [`application.yml`](src/main/resources/application.yml)),
+> so you can install, run and develop every module without any database. Use MySQL only when you
+> want to verify the JPA adapters and Flyway migrations against a real database.
+
+A ready-to-use [`docker-compose.yml`](docker-compose.yml) is included in this folder. It starts
+MySQL 8.4 with the exact database, user and password the application expects by default.
+
+### Prerequisites
+
+- **Windows / macOS:** install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+- **Linux (Ubuntu):** install Docker Engine and the Compose plugin:
+
+  ```bash
+  sudo apt update && sudo apt install -y docker.io docker-compose-plugin
+  sudo usermod -aG docker $USER   # log out and back in afterwards
+  ```
+
+The commands below work the same on Windows (PowerShell/cmd/Git Bash) and Linux.
+
+### 1. Start MySQL
 
 ```bash
 cd delivery-system
 docker compose up -d
-./mvnw javafx:run
+docker compose ps    # wait until the mysql service shows "healthy"
 ```
 
-The default database settings are in [`application.yml`](src/main/resources/application.yml). You can override
-them with environment variables:
+### 2. Run the application against MySQL
+
+Because `application.yml` defaults to memory mode, enable JPA persistence with the
+`DELIVERY_PERSISTENCE_TYPE` environment variable.
+
+Linux / Git Bash:
 
 ```bash
+DELIVERY_PERSISTENCE_TYPE=jpa ./mvnw javafx:run
+```
+
+Windows PowerShell:
+
+```powershell
+$env:DELIVERY_PERSISTENCE_TYPE="jpa"
+mvnw.cmd javafx:run
+```
+
+Windows cmd:
+
+```cmd
+set DELIVERY_PERSISTENCE_TYPE=jpa
+mvnw.cmd javafx:run
+```
+
+Flyway creates the schema automatically on first run. Each module ships its migrations under
+`src/main/resources/db/migration/<module>/`.
+
+### 3. Stop MySQL
+
+```bash
+docker compose down        # stop, keeping the data
+docker compose down -v     # stop and delete all data
+```
+
+### Custom database settings
+
+The defaults (`localhost:3306`, database `delivery_system`, user `delivery`, password `delivery`)
+can be overridden with environment variables.
+
+Linux / Git Bash:
+
+```bash
+export DB_URL="jdbc:mysql://localhost:3306/delivery_system"
+export DB_USERNAME="delivery"
+export DB_PASSWORD="delivery"
+```
+
+Windows PowerShell:
+
+```powershell
 $env:DB_URL="jdbc:mysql://localhost:3306/delivery_system"
 $env:DB_USERNAME="delivery"
 $env:DB_PASSWORD="delivery"
-./mvnw javafx:run
 ```
 
 ## Repositories
@@ -202,9 +268,9 @@ application: it depends on the other modules, assembles them and starts the Java
 |--------------------|-----------------------|--------------------------------------------------------------------------|--------|
 | `core-module`      | `org.jala.edu.core`   | Shared kernel: base model, generic persistence, exceptions, JavaFX shell | Done |
 | `user-module`      | `org.jala.edu.user`   | Users (CRUD)                                                             | Reference implementation |
-| `catalog-module`   | `org.jala.edu.catalog`| Catalog of products/services                                             | Team A |
+| `catalog-module`   | `org.jala.edu.catalog`| Catalog of products/services                                             | Team C |
 | `order-module`     | `org.jala.edu.order`  | Cart and delivery orders                                                 | Team B |
-| `delivery-module`  | `org.jala.edu.delivery`| Couriers and deliveries                                                 | Team C |
+| `delivery-module`  | `org.jala.edu.delivery`| Couriers and deliveries                                                 | Team A |
 | `payment-module`   | `org.jala.edu.payment`| Payments and promotions                                                  | Team D |
 | `delivery-system`  | `org.jala.edu`        | Desktop application: assembles every module and launches the JavaFX UI   | Done |
 
