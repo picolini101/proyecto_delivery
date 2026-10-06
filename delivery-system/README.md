@@ -13,11 +13,12 @@ student teams during the course.
 | **Team A** | `delivery-module` | `org.jala.edu.delivery` | 400 | Couriers and deliveries | 4 members |
 | **Team B** | `order-module` | `org.jala.edu.order` | 300 | Cart and orders | 4 members |
 | **Team C** | `catalog-module` | `org.jala.edu.catalog` | 200 | Commerce and catalog | 3 members |
-| **Team D** | `payment-module` | `org.jala.edu.payment` | 500 | Payments and promotions | 4 members |
+| **Team D** | `payment-module` | `org.jala.edu.payment` | 500 | Payments and promotions | 3 members (tentative) |
 
 > **Note for the professor:** `catalog-module` is the fastest module to implement because it is a straightforward
 > CRUD similar to `user-module` and has no dependencies on other business modules. That is why it is assigned to
-> the 3-member team.
+> the 3-member team. Team D's roster lists 4 students, but one is not expected to participate; plan tentatively
+> for 3 effective members until the team composition is confirmed.
 
 ## Prerequisites
 
