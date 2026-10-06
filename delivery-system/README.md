@@ -187,12 +187,16 @@ MySQL 8.4 with the exact database, user and password the application expects by 
 ### Prerequisites
 
 - **Windows / macOS:** install [Docker Desktop](https://www.docker.com/products/docker-desktop/).
-- **Linux (Ubuntu):** install Docker Engine and the Compose plugin:
+- **Linux (Ubuntu):** install Docker Engine and Compose:
 
   ```bash
-  sudo apt update && sudo apt install -y docker.io docker-compose-plugin
-  sudo usermod -aG docker $USER   # log out and back in afterwards
+  sudo apt update && sudo apt install -y docker.io docker-compose-v2
+  sudo usermod -aG docker $USER   # log out and back in afterwards (see troubleshooting below)
   ```
+
+  > In recent Ubuntu releases the Compose plugin package is `docker-compose-v2`.
+  > If you see `Unable to locate package docker-compose-plugin`, use `docker-compose-v2`.
+  > Verify both tools with `docker compose version`.
 
 The commands below work the same on Windows (PowerShell/cmd/Git Bash) and Linux.
 
@@ -238,6 +242,25 @@ Flyway creates the schema automatically on first run. Each module ships its migr
 docker compose down        # stop, keeping the data
 docker compose down -v     # stop and delete all data
 ```
+
+### Troubleshooting (Linux)
+
+**`Unable to locate package docker-compose-plugin`**
+Ubuntu ships the Compose plugin as `docker-compose-v2`. Install `docker.io docker-compose-v2`
+instead (see Prerequisites).
+
+**`permission denied while trying to connect to the Docker daemon socket`**
+Your user was just added to the `docker` group, but the current terminal session does not have
+the new group yet. Pick one:
+
+```bash
+newgrp docker                 # apply the group in the current terminal
+# or log out and back in
+# or run with sudo, e.g.: sudo docker compose up -d
+```
+
+Then retry `docker compose up -d`. Note that files created by `sudo docker compose` are owned
+by root; prefer `newgrp docker` or re-login for regular use.
 
 ### Custom database settings
 
