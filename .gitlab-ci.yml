@@ -28,6 +28,7 @@ build-core:
   artifacts:
     paths:
       - core-module/target/
+      - .m2/repository/org/jala/edu/
     expire_in: 1 hour
 
 # user-module is the reference implementation; build it so delivery-system can use it.
@@ -41,9 +42,12 @@ build-user:
   artifacts:
     paths:
       - user-module/target/
+      - .m2/repository/org/jala/edu/
     expire_in: 1 hour
 
 # Each team module is built independently. They all need core-module only.
+# Each one publishes its installed jar as an artifact: the shared cache is overwritten by
+# whichever parallel job finishes last, so assemble-system cannot rely on it.
 build-catalog:
   stage: build-modules
   needs:
@@ -51,6 +55,10 @@ build-catalog:
   script:
     - cd catalog-module
     - ./mvnw $MAVEN_CLI_OPTS install
+  artifacts:
+    paths:
+      - .m2/repository/org/jala/edu/
+    expire_in: 1 hour
 
 build-order:
   stage: build-modules
@@ -59,6 +67,10 @@ build-order:
   script:
     - cd order-module
     - ./mvnw $MAVEN_CLI_OPTS install
+  artifacts:
+    paths:
+      - .m2/repository/org/jala/edu/
+    expire_in: 1 hour
 
 build-delivery:
   stage: build-modules
@@ -67,6 +79,10 @@ build-delivery:
   script:
     - cd delivery-module
     - ./mvnw $MAVEN_CLI_OPTS install
+  artifacts:
+    paths:
+      - .m2/repository/org/jala/edu/
+    expire_in: 1 hour
 
 build-payment:
   stage: build-modules
@@ -75,6 +91,10 @@ build-payment:
   script:
     - cd payment-module
     - ./mvnw $MAVEN_CLI_OPTS install
+  artifacts:
+    paths:
+      - .m2/repository/org/jala/edu/
+    expire_in: 1 hour
 
 # Final assembly: delivery-system depends on all business modules.
 assemble-system:
