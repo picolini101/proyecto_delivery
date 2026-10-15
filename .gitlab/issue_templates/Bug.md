@@ -29,7 +29,7 @@ Story points (Weight):
 
 - [ ] Pasos para reproducir y resultado esperado claros.
 - [ ] Estimado con **Scrum Poker** en **Weight**.
-- [ ] **Epic**, **milestone**, **prioridad** y **persona asignada**.
+- [ ] **Epic**, **milestone**, **prioridad** y **persona asignada** (el **Health status** On track lo pone la plantilla).
 
 ## Definition of Done (antes de cerrar)
 
@@ -39,3 +39,4 @@ Story points (Weight):
 - [ ] Aprobación del Product Owner (practitioner).
 
 /label ~Bug ~"To Do"
+/health_status on_track
