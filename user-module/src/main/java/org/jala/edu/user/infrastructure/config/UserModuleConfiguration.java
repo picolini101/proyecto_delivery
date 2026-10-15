@@ -46,4 +46,9 @@ public class UserModuleConfiguration {
     public UserService userService(CheckUserAccessUseCase checkUserAccessUseCase) {
         return new UserServiceAdapter(checkUserAccessUseCase);
     }
+
+    @Bean
+    public SampleUsersLoader sampleUsersLoader(UserRepositoryPort userRepositoryPort) {
+        return new SampleUsersLoader(userRepositoryPort);
+    }
 }
