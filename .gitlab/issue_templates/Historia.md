@@ -33,7 +33,7 @@ Story points (Weight):
 - [ ] Estimada con **Scrum Poker** en **Weight** (story points 0–21).
 - [ ] **Pequeña**: 21 puntos o menos; si no, se divide.
 - [ ] **Dependencias** con otros módulos identificadas (contrato o fallback disponible).
-- [ ] **Epic**, **milestone**, **prioridad** y **persona asignada**; **Health status:** On track.
+- [ ] **Epic**, **milestone**, **prioridad** y **persona asignada** (el **Health status** On track lo pone la plantilla).
 
 ## Definition of Done (antes de cerrar)
 
@@ -45,3 +45,4 @@ Story points (Weight):
 - [ ] **Aprobación del Product Owner** (practitioner).
 
 /label ~Feature ~"To Do"
+/health_status on_track
