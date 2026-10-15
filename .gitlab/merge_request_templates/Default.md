@@ -41,3 +41,11 @@ Closes #
 - [ ] `./mvnw verify` pasa en local y el pipeline está en verde.
 - [ ] Asigné al menos un revisor de mi equipo.
 - [ ] Respondí todos los comentarios y los hilos quedaron resueltos.
+
+## Definition of Done
+
+- [ ] Cumple **todos los criterios de aceptación** del issue.
+- [ ] **Pruebas unitarias** escritas y `./mvnw verify` en verde (captura arriba).
+- [ ] **Pruebas funcionales**: probado en `delivery-system`.
+- [ ] **Documentación** actualizada, si aplica (README, contrato).
+- [ ] Al fusionar, el **Product Owner** (practitioner) valida la historia y se cierra con `Closes #`.
