@@ -1,0 +1,22 @@
+# Who must approve changes to each part of the repository.
+# Sections without ^ are required: a merge request that touches them needs approval from one of their owners.
+# Optional sections (^) only suggest reviewers.
+
+[Team C - catalog]
+/catalog-module/ @DaenAlex @HeynerRico @Ale_sm
+
+[Team B - order]
+/order-module/ @DevisF @FelixUrquidi101 @SentinelaLPZ @elmerq225
+
+[Team A - delivery]
+/delivery-module/ @Julian.Sanchez0126 @joseCardona.jala @maria_perez_jala @andres_vz66
+
+[Team D - payment]
+/payment-module/ @Sterbenn0126 @Estrella05 @JefersonC-Jala
+
+^[Practitioner]
+/core-module/ @Dev-jcgi
+/user-module/ @Dev-jcgi
+/delivery-system/ @Dev-jcgi
+/.gitlab-ci.yml @Dev-jcgi
+/.gitlab/ @Dev-jcgi
