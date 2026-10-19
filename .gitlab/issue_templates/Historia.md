@@ -33,6 +33,7 @@ Story points (Weight):
 - [ ] Estimada con **Scrum Poker** en **Weight** (story points 0–21).
 - [ ] **Pequeña**: 21 puntos o menos; si no, se divide.
 - [ ] **Dependencias** con otros módulos identificadas (contrato o fallback disponible).
+- [ ] **Coherente con el addendum de requerimientos** (decisiones acordadas en clase, wiki: reporte de la semana 2, sección 12).
 - [ ] **Epic**, **milestone**, **prioridad** y **persona asignada** (el **Health status** On track lo pone la plantilla).
 
 ## Definition of Done (antes de cerrar)
