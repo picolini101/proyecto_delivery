@@ -29,6 +29,7 @@ Story points (Weight):
 
 - [ ] Pasos para reproducir y resultado esperado claros.
 - [ ] Estimado con **Scrum Poker** en **Weight**.
+- [ ] El resultado esperado es **coherente con el addendum de requerimientos** (wiki: reporte de la semana 2, sección 12).
 - [ ] **Epic**, **milestone**, **prioridad** y **persona asignada** (el **Health status** On track lo pone la plantilla).
 
 ## Definition of Done (antes de cerrar)
