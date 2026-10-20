@@ -333,6 +333,49 @@ Every team must follow these rules so the modules integrate cleanly at the end o
 - Reference other modules only by `UUID`. For example, an order stores `catalogItemId` and `customerId`, not a
   `CatalogItem` or `User` object.
 
+### Integration contracts
+
+Modules call each other through the interfaces in `core-module` (`org.jala.edu.core.contract`). Teams do not
+modify `core-module`; a contract change is requested to the practitioner with the other team present.
+
+| Contract | Implemented by | Used by |
+|---|---|---|
+| `UserService.isActiveWithRole(userId, roles...)` | `user-module` | every module |
+| `CatalogService` (`findProduct`, `isAvailable`, `reserveStock`, `releaseStock`, `findCommerceIdsByMerchant`) | `catalog-module` | `order-module` |
+| `PaymentService.pay(orderId, userId, amount)` | `payment-module` | `order-module` |
+| `OrderService` (`findReadyForDelivery`, `assign`, `markOnTheWay`, `markDelivered`) | `order-module` | `delivery-module` |
+
+- **Calling a contract:** the use case receives the interface through its constructor, like a repository port:
+
+  ```java
+  public CreateCommerceUseCase(CommerceRepositoryPort commerceRepository, UserService userService) { ... }
+  ```
+
+  If `isActiveWithRole` returns `false`, reject the operation with "User not authorized for this operation".
+  Use the enum names (`ADMIN`, `MERCHANT`, `CUSTOMER`, `COURIER`), not their Spanish labels.
+- **Implementing a contract:** the owning module adds a class in `infrastructure` that implements the interface by
+  calling its own use cases, and registers it as a `@Bean` in its configuration class.
+- **Until the owner delivers:** `core-module` registers a fallback for every contract nobody implements yet
+  (`ContractFallbackAutoConfiguration`), so `delivery-system` always starts; a warning in the log says which one.
+  The fallbacks use fixed sample data and can also be used in unit tests (`new FallbackOrderService()`):
+
+  | Fallback | Sample data |
+  |---|---|
+  | `FallbackUserService` | the `SampleUsers` below |
+  | `FallbackCatalogService` | `AVAILABLE_PRODUCT` (Pizza, 50.00, stock 10) and `SOLD_OUT_PRODUCT` (Empanada, 8.50), both from `SAMPLE_COMMERCE`, owned by the sample merchant |
+  | `FallbackPaymentService` | approves amounts above 0 up to 1000.00 |
+  | `FallbackOrderService` | three orders ready for delivery, shipping cost 10.00 |
+
+- **Sample users** (`SampleUsers`): `user-module` stores them at startup, so the same ids work with the real service.
+
+  | Constant | Id | Role | Status |
+  |---|---|---|---|
+  | `ADMIN` | `00000000-0000-0000-0000-000000000001` | `ADMIN` | active |
+  | `MERCHANT` | `00000000-0000-0000-0000-000000000002` | `MERCHANT` | active |
+  | `CUSTOMER` | `00000000-0000-0000-0000-000000000003` | `CUSTOMER` | active |
+  | `COURIER` | `00000000-0000-0000-0000-000000000004` | `COURIER` | active |
+  | `INACTIVE_CUSTOMER` | `00000000-0000-0000-0000-000000000005` | `CUSTOMER` | inactive |
+
 ### Domain-driven files
 
 - Every aggregate root extends `BaseModel<ID>`.
