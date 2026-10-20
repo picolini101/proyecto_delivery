@@ -1,30 +1,49 @@
+<!--
+Título del issue: [MÓDULO] + verbo en infinitivo + qué. El número lo pone GitLab (#n).
+  [CAT] catálogo · [ORD] pedidos · [DEL] entregas · [PAY] pagos · [USR] usuarios (practitioner)
+  Ejemplo: [CAT] Registrar comercio con estado Deshabilitado
+Modelo completo: issues #17 y #18 del proyecto.
+-->
+
 ## Historia de usuario
 
 Como **<rol>**, quiero **<acción>**, para **<beneficio>**.
 
+<!-- Si es una historia técnica (sin pantalla para el usuario final), explícalo en una línea. -->
+
 ## Requerimiento origen
 
-<!-- ID y texto del requerimiento de la épica del módulo (FUN-xxx o INT-xxx). -->
+- **<FUN-xxx / INT-xxx>** (<EPIC-XXX-001>): <texto corto del requerimiento>.
+- **Decisiones / addendum:** <D-xx o AD-xx que aplican, o "ninguna">.
+- **Dependencias:** <issues o contratos que necesita (#n, CatalogService…), o "ninguna">.
 
 ## Caso de uso
 
-<!-- Caso de uso que implementa esta historia (CU-xx) y la clase prevista en application/usecase. -->
+<!-- CU-xxx-nn · Nombre → clase en application/usecase (ej. CU-USR-05 · Verificar acceso de usuario → CheckUserAccessUseCase).
+     Si no implementa un caso de uso de negocio, escribe "No aplica" y explica por qué. -->
+
+**<CU-xxx-nn> · <nombre>** → `<NombreUseCase>`
 
 ## Criterios de aceptación
 
-- [ ] Dado <contexto>, cuando <acción>, entonces <resultado esperado>.
-- [ ] 
+<!-- Uno por regla del Example Mapping: el caso exitoso y al menos un caso alterno que falla. -->
+
+- [ ] **Dado** <contexto>, **cuando** <acción>, **entonces** <resultado esperado>.
+- [ ] **Dado** <contexto alterno>, **cuando** <acción>, **entonces** <rechazo o mensaje esperado>.
 
 ## Tareas
 
+<!-- Por capa: domain, application (caso de uso), infrastructure (adaptadores, persistencia), pantalla, pruebas. -->
+
 - [ ] 
+- [ ] Abrir el MR con la plantilla y `Closes #<n>`.
 
 ## Estimación
 
 <!-- Story points acordados con Scrum Poker, en el campo Weight: 0, 1, 2, 3, 5, 8, 13 o 21.
      Más de 21 no se usa: divide la historia. Se estima complejidad y esfuerzo relativos, no horas. -->
 
-Story points (Weight): 
+Story points (Weight): **<n>**. <Con qué historia se comparó y por qué.>
 
 ## Definition of Ready (antes de pasar a "In Progress")
 
