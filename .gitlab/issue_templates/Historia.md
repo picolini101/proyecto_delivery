@@ -3,6 +3,8 @@ Título del issue: [MÓDULO] + verbo en infinitivo + qué. El número lo pone Gi
   [CAT] catálogo · [ORD] pedidos · [DEL] entregas · [PAY] pagos · [USR] usuarios (practitioner)
   Ejemplo: [CAT] Registrar comercio con estado Deshabilitado
 Modelo completo: issues #17 y #18 del proyecto.
+Al crearla queda en la columna Open del board (Product Backlog). Pasa a To Do cuando
+el equipo la elige para el sprint: Milestone = Sprint n y se arrastra de Open a To Do.
 -->
 
 ## Historia de usuario
@@ -64,5 +66,5 @@ Story points (Weight): **<n>**. <Con qué historia se comparó y por qué.>
 - [ ] **Documentación** actualizada, si aplica.
 - [ ] **Aprobación del Product Owner** (practitioner).
 
-/label ~Feature ~"To Do"
+/label ~Feature
 /health_status on_track
