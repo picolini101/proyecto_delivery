@@ -1,7 +1,8 @@
 delivery:
   persistence:
-    # Which persistence adapters to use: jpa (MySQL, default) | memory (no database, data lost on exit).
-    # Override without editing this file: -Ddelivery.persistence.type=memory or DELIVERY_PERSISTENCE_TYPE=memory
+    # Which persistence adapters to use: memory (no database, data lost on exit; the default here) | jpa (MySQL).
+    # Switch to jpa once the module's tests pass, without editing this file:
+    # -Ddelivery.persistence.type=jpa or DELIVERY_PERSISTENCE_TYPE=jpa
     type: memory
 
 spring:

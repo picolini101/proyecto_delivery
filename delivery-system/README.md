@@ -544,12 +544,12 @@ cd catalog-module && ./mvnw install
 From this repository, with Maven:
 
 ```bash
-# In-memory persistence (-Pmemory sets -Ddelivery.persistence.type=memory): no database needed
+# In-memory persistence (the default in application.yml): no database needed
 ./mvnw javafx:run -Pmemory
 
-# MySQL persistence (docker-compose.yml is in this folder)
+# MySQL persistence, once your module's tests pass (docker-compose.yml is in this folder)
 docker compose up -d
-./mvnw javafx:run
+DELIVERY_PERSISTENCE_TYPE=jpa ./mvnw javafx:run
 ```
 
 Database settings can be overridden with `DB_URL`, `DB_USERNAME` and `DB_PASSWORD`.
@@ -559,8 +559,8 @@ As a packaged jar:
 
 ```bash
 ./mvnw clean package
-java --enable-native-access=ALL-UNNAMED -jar target/delivery-system.jar
-java --enable-native-access=ALL-UNNAMED -Ddelivery.persistence.type=memory -jar target/delivery-system.jar
+java --enable-native-access=ALL-UNNAMED -jar target/delivery-system.jar                               # in memory
+java --enable-native-access=ALL-UNNAMED -Ddelivery.persistence.type=jpa -jar target/delivery-system.jar  # MySQL
 ```
 
 ### Persistence adapters
@@ -570,12 +570,15 @@ which one is used; it can be set as a system property, an environment variable o
 
 | `delivery.persistence.type` | Adapter                                           | Storage   |
 |-----------------------------|---------------------------------------------------|-----------|
-| `jpa` _(default)_           | `adapter/out/persistence/jpa` (JPA + Flyway)      | MySQL     |
-| `memory`                    | `adapter/out/persistence/memory` (in-memory map)  | In memory |
+| `memory` _(default)_        | `adapter/out/persistence/memory` (in-memory map)  | In memory |
+| `jpa`                       | `adapter/out/persistence/jpa` (JPA + Flyway)      | MySQL     |
+
+`delivery-system` starts in memory so every team can work without a database. Switch to `jpa` once your
+module's tests pass and you want to try its JPA adapter and Flyway migrations against MySQL:
 
 ```bash
-java -Ddelivery.persistence.type=memory -jar target/delivery-system.jar   # system property
-DELIVERY_PERSISTENCE_TYPE=memory java -jar target/delivery-system.jar     # environment variable
+java -Ddelivery.persistence.type=jpa -jar target/delivery-system.jar   # system property
+DELIVERY_PERSISTENCE_TYPE=jpa java -jar target/delivery-system.jar     # environment variable
 ```
 
 Values are case-insensitive; an unknown value stops the application at startup with the list of accepted values.
