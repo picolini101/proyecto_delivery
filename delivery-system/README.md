@@ -262,6 +262,13 @@ newgrp docker                 # apply the group in the current terminal
 Then retry `docker compose up -d`. Note that files created by `sudo docker compose` are owned
 by root; prefer `newgrp docker` or re-login for regular use.
 
+**`docker compose ps` never shows "healthy"**
+This folder used to ship a second file, `compose.yaml`, which Compose picks before
+`docker-compose.yml` and which has no healthcheck. Pull the latest `main` and recreate the container
+with `docker compose up -d`. Data from that older setup stays in the unused volume
+`delivery-system_mysql-data`; remove it with `docker volume rm delivery-system_mysql-data` when you
+no longer need it.
+
 ### Custom database settings
 
 The defaults (`localhost:3306`, database `delivery_system`, user `delivery`, password `delivery`)
@@ -540,7 +547,7 @@ From this repository, with Maven:
 # In-memory persistence (-Pmemory sets -Ddelivery.persistence.type=memory): no database needed
 ./mvnw javafx:run -Pmemory
 
-# MySQL persistence (compose.yaml is in this repository)
+# MySQL persistence (docker-compose.yml is in this folder)
 docker compose up -d
 ./mvnw javafx:run
 ```
