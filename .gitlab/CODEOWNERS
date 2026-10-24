@@ -1,18 +1,26 @@
 # Who must approve changes to each part of the repository.
 # Sections without ^ are required: a merge request that touches them needs approval from one of their owners.
 # Optional sections (^) only suggest reviewers.
+#
+# Each team section lists the team's Scrum Master for the current sprint, plus the practitioner,
+# who approves when the Scrum Master is the author of the merge request.
+# When the Scrum Master changes at the start of a sprint, replace only that user in the section.
 
+# Members: @DaenAlex @HeynerRico @Ale_sm
 [Team C - catalog]
-/catalog-module/ @DaenAlex @HeynerRico @Ale_sm
+/catalog-module/ @HeynerRico @Dev-jcgi
 
+# Members: @DevisF @FelixUrquidi101 @SentinelaLPZ @elmerq225
 [Team B - order]
-/order-module/ @DevisF @FelixUrquidi101 @SentinelaLPZ @elmerq225
+/order-module/ @elmerq225 @Dev-jcgi
 
+# Members: @Julian.Sanchez0126 @joseCardona.jala @maria_perez_jala @andres_vz66
 [Team A - delivery]
-/delivery-module/ @Julian.Sanchez0126 @joseCardona.jala @maria_perez_jala @andres_vz66
+/delivery-module/ @andres_vz66 @Dev-jcgi
 
+# Members: @Sterbenn0126 @Estrella05 @JefersonC-Jala
 [Team D - payment]
-/payment-module/ @Sterbenn0126 @Estrella05 @JefersonC-Jala
+/payment-module/ @JefersonC-Jala @Dev-jcgi
 
 ^[Practitioner]
 /core-module/ @Dev-jcgi
