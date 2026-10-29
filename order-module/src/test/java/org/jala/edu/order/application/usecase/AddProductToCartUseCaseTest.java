@@ -1,10 +1,7 @@
 package org.jala.edu.order.application.usecase;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import org.jala.edu.core.contract.SampleUsers;
@@ -12,51 +9,87 @@ import org.jala.edu.core.domain.exception.ConflictException;
 import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.core.infrastructure.contract.FallbackCatalogService;
 import org.jala.edu.core.infrastructure.contract.FallbackUserService;
-import org.jala.edu.order.application.port.out.CartRepositoryPort;
 import org.jala.edu.order.domain.model.Cart;
+import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryCartRepositoryAdapter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Pruebas de {@link AddProductToCartUseCase}.
+ * Usa el catalogo y los usuarios de prueba del core (Fallback...) y el repositorio en memoria.
+ * Con el catalogo de prueba: el producto AVAILABLE tiene stock 10 y el producto SOLD_OUT no tiene stock.
+ * <p>
+ * En las pruebas de error, el codigo dentro de {@code try} debe lanzar el error esperado.
+ * Si no lo lanza, {@code fail(...)} hace fallar la prueba; si lo lanza, entra al {@code catch} y la prueba pasa.
+ */
 class AddProductToCartUseCaseTest {
 
-    private CartRepositoryPort carts;
+    /** Caso de uso que se esta probando. */
     private AddProductToCartUseCase useCase;
 
+    /** Se ejecuta antes de cada prueba: crea un repositorio vacio y arma el caso de uso. */
     @BeforeEach
     void setUp() {
-        carts = mock(CartRepositoryPort.class);
-        when(carts.findByCustomerId(any())).thenReturn(Optional.empty());
-        when(carts.save(any(Cart.class))).thenAnswer(i -> i.getArgument(0));
+        InMemoryCartRepositoryAdapter carts = new InMemoryCartRepositoryAdapter();
         useCase = new AddProductToCartUseCase(carts, new FallbackCatalogService(), new FallbackUserService());
     }
 
+    /** Un cliente activo agrega 2 unidades de un producto con stock: el carrito queda con 2. */
     @Test
     void addsAvailableProduct() {
         Cart cart = useCase.execute(SampleUsers.CUSTOMER, FallbackCatalogService.AVAILABLE_PRODUCT, 2);
         assertEquals(2, cart.quantityOf(FallbackCatalogService.AVAILABLE_PRODUCT));
     }
 
+    /** Agregar dos veces el mismo producto suma las cantidades (3 + 4 = 7, que todavia cabe en el stock de 10). */
+    @Test
+    void sumsQuantityOnSecondAdd() {
+        useCase.execute(SampleUsers.CUSTOMER, FallbackCatalogService.AVAILABLE_PRODUCT, 3);
+        Cart cart = useCase.execute(SampleUsers.CUSTOMER, FallbackCatalogService.AVAILABLE_PRODUCT, 4);
+        assertEquals(7, cart.quantityOf(FallbackCatalogService.AVAILABLE_PRODUCT));
+    }
+
+    /** Pedir 11 unidades cuando el stock es 10 lanza ConflictException. */
     @Test
     void rejectsQuantityAboveStock() {
-        assertThrows(ConflictException.class,
-                () -> useCase.execute(SampleUsers.CUSTOMER, FallbackCatalogService.AVAILABLE_PRODUCT, 11));
+        try {
+            useCase.execute(SampleUsers.CUSTOMER, FallbackCatalogService.AVAILABLE_PRODUCT, 11);
+            fail("Debia lanzar ConflictException");
+        } catch (ConflictException e) {
+            // Era lo esperado
+        }
     }
 
+    /** Un producto agotado no se puede agregar: lanza ConflictException. */
     @Test
     void rejectsSoldOutProduct() {
-        assertThrows(ConflictException.class,
-                () -> useCase.execute(SampleUsers.CUSTOMER, FallbackCatalogService.SOLD_OUT_PRODUCT, 1));
+        try {
+            useCase.execute(SampleUsers.CUSTOMER, FallbackCatalogService.SOLD_OUT_PRODUCT, 1);
+            fail("Debia lanzar ConflictException");
+        } catch (ConflictException e) {
+            // Era lo esperado
+        }
     }
 
+    /** Un cliente inactivo no esta autorizado: lanza DomainException. */
     @Test
     void rejectsInactiveCustomer() {
-        assertThrows(DomainException.class,
-                () -> useCase.execute(SampleUsers.INACTIVE_CUSTOMER, FallbackCatalogService.AVAILABLE_PRODUCT, 1));
+        try {
+            useCase.execute(SampleUsers.INACTIVE_CUSTOMER, FallbackCatalogService.AVAILABLE_PRODUCT, 1);
+            fail("Debia lanzar DomainException");
+        } catch (DomainException e) {
+            // Era lo esperado
+        }
     }
 
+    /** Un producto que no existe en el catalogo lanza error (NotFoundException es un tipo de DomainException). */
     @Test
     void rejectsUnknownProduct() {
-        assertThrows(DomainException.class,
-                () -> useCase.execute(SampleUsers.CUSTOMER, UUID.randomUUID(), 1));
+        try {
+            useCase.execute(SampleUsers.CUSTOMER, UUID.randomUUID(), 1);
+            fail("Debia lanzar DomainException");
+        } catch (DomainException e) {
+            // Era lo esperado
+        }
     }
 }
