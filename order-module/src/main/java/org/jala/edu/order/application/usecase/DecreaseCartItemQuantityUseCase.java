@@ -50,7 +50,7 @@ public class DecreaseCartItemQuantityUseCase {
 
     public Cart execute(UUID customerId, UUID productId, int quantity){
         if(!users.isActiveWithRole(customerId, UserRole.CUSTOMER)){
-            throw new DomainException("User not autorized for this oepration");
+            throw new DomainException("User not authorized for this operation");
         }
 
         Cart cart = carts.findOrCreate(customerId);

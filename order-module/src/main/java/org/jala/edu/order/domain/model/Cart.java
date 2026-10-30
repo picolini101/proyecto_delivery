@@ -104,7 +104,7 @@ public class Cart {
      */
     public void decreaseProduct(UUID productId, int quantity){
         if(quantity <= 0){
-            throw new DomainException("Quantity must be greater than zero.");
+            throw new DomainException("Quantity must be greater than zero");
         }
 
         CartItem item = findItem(productId);
