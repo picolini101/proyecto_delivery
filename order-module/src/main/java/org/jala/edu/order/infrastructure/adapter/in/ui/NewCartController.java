@@ -18,10 +18,7 @@ import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
 import org.jala.edu.core.infrastructure.ui.ErrorMessages;
 import org.jala.edu.core.infrastructure.ui.Navigator;
-import org.jala.edu.order.application.usecase.AddProductToCartUseCase;
-import org.jala.edu.order.application.usecase.CartSummary;
-import org.jala.edu.order.application.usecase.GetCartSummaryUseCase;
-import org.jala.edu.order.application.usecase.ListCatalogProductsUseCase;
+import org.jala.edu.order.application.usecase.*;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -78,6 +75,10 @@ public class NewCartController {
 
     /** Para volver a la pantalla anterior. */
     private final Navigator navigator;
+
+    private final IncreaseCartItemQuantityUseCase increaseQuantity;
+
+    private final DecreaseCartItemQuantityUseCase decreaseQuantity;
 
     // Los campos con @FXML son elementos de new-cart.fxml; JavaFX los conecta solos por el nombre (fx:id).
 
@@ -291,6 +292,11 @@ public class NewCartController {
      * Dibuja el carrito: por cada comercio un titulo, y por cada linea "cantidad x nombre" con su subtotal.
      * Al final actualiza el subtotal, el envio y el total.
      *
+     * Dibuja el carrito: por cada comercio un titulo, y por cada linea el nombre, el subtotal y los botones
+     * "-" y "+" para cambiar la cantidad (ver {@link #buildCartLine(CartSummary.Line)}).
+     * Al final actualiza el subtotal, el envio y el total.
+     *
+     *
      * @param summary resumen calculado por {@link GetCartSummaryUseCase}
      */
     private void showCart(CartSummary summary) {
@@ -301,12 +307,7 @@ public class NewCartController {
             header.setStyle("-fx-font-weight: bold; -fx-text-fill: #555555;");
             cartBox.getChildren().add(header);
             for (CartSummary.Line line : group.lines()) {
-                Label item = new Label(line.quantity() + " x " + line.productName());
-                // spacer: una caja vacia que se estira y empuja el precio hacia la derecha
-                Region spacer = new Region();
-                HBox.setHgrow(spacer, Priority.ALWAYS);
-                Label amount = new Label(line.lineSubtotal().toString());
-                cartBox.getChildren().add(new HBox(item, spacer, amount));
+                cartBox.getChildren().add(buildCartLine(line));
             }
         }
 
@@ -354,4 +355,101 @@ public class NewCartController {
         messageLabel.getStyleClass().add(styleClass);
         messageLabel.setText(text);
     }
+
+    /** Borra el mensaje de arriba: quita el texto y el color */
+    public void clearMessage(){
+        messageLabel.getStyleClass().removeAll("info", "success", "error");
+        messageLabel.setText("");
+    }
+
+    /**
+     * Construye una linea del carrito en dos filas: arriba el nombre y el subtotal; abajo los botones
+     * "-" y "+" con la cantidad y el precio de una unidad.
+     * El "-" se desactiva cuando la cantidad es 1 (la cantidad nunca baja de 1).
+     *
+     * @param line linea del resumen del carrito
+     * @return la linea lista para agregarla al carrito de la pantalla
+     */
+
+    private VBox buildCartLine(CartSummary.Line line) {
+        Label name = new Label(line.productName());
+        name.setWrapText(true);
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+        Label amount = new Label(line.lineSubtotal().toString());
+        amount.setStyle("-fx-font-weight: bold;");
+        HBox top = new HBox(8, name, spacer, amount);
+
+        Button minus = new Button("-");
+        minus.setStyle(ROUND_BUTTON_STYLE);
+        minus.setDisable(line.quantity() <= 1);
+        Label count = new Label(String.valueOf(line.quantity()));
+        count.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-min-width: 28; -fx-alignment: center;");
+
+        Button plus = new Button("+");
+        plus.setStyle(ROUND_BUTTON_STYLE);
+        HBox stepper = new HBox(8, minus, count, plus);
+        stepper.setAlignment(Pos.CENTER_LEFT);
+        minus.setOnAction(event -> decreaseLine(line, stepper));
+        plus.setOnAction(event -> increaseLine(line, stepper));
+
+        Label unitPrice = new Label("c/u " + line.unitPrice());
+        unitPrice.setStyle("-fx-text-fill: #888888;");
+        HBox bottom = new HBox(10, stepper, unitPrice);
+        bottom.setAlignment(Pos.CENTER_LEFT);
+
+        VBox box = new VBox(4, top, bottom);
+        box.setStyle("-fx-padding: 6 0 6 0;");
+        return box;
+    }
+
+    /**
+     * Se ejecuta al presionar "+" en una linea del carrito: suma 1 unidad usando el caso de uso de HU4
+     * (en segundo plano). Si el stock no alcanza, el caso de uso lanza un error y la cantidad no cambia.
+     * Mientras trabaja, los botones de esa linea quedan desactivados para que no se presionen dos veces.
+     *
+     * @param line    linea del carrito
+     * @param stepper caja con los botones "-" y "+" de la linea
+     */
+    private void increaseLine(CartSummary.Line line, HBox stepper) {
+        stepper.setDisable(true);
+        BackgroundTasks.run(
+                () -> increaseQuantity.execute(CURRENT_CUSTOMER, line.productId(), 1),
+                cart -> lineChanged(),
+                error -> lineChangeFailed(error, stepper, "agregar unidades al carrito"));
+    }
+
+    /**
+     * Se ejecuta al presionar "-" en una linea del carrito: quita 1 unidad (en segundo plano).
+     *
+     * @param line    linea del carrito
+     * @param stepper caja con los botones "-" y "+" de la linea
+     */
+    private void decreaseLine(CartSummary.Line line, HBox stepper) {
+        stepper.setDisable(true);
+        BackgroundTasks.run(
+                () -> decreaseQuantity.execute(CURRENT_CUSTOMER, line.productId(), 1),
+                cart -> lineChanged(),
+                error -> lineChangeFailed(error, stepper, "quitar unidades del carrito"));
+    }
+
+    /** Se llama cuando el cambio de cantidad salio bien: limpia el mensaje anterior y vuelve a dibujar el carrito. */
+    private void lineChanged() {
+        clearMessage();
+        refreshCart();
+    }
+
+    /**
+     * Se llama cuando no se pudo cambiar la cantidad (por ejemplo sin stock): muestra el error y activa otra vez
+     * los botones de la linea. La cantidad del carrito no cambio.
+     *
+     * @param error   el error que ocurrio
+     * @param stepper caja con los botones "-" y "+" de la linea
+     * @param action  lo que se estaba intentando hacer
+     */
+    private void lineChangeFailed(Throwable error, HBox stepper, String action) {
+        showError(error, action);
+        stepper.setDisable(false);
+    }
+
 }
