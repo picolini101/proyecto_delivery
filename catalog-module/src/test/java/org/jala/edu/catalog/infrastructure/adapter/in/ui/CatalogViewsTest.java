@@ -8,7 +8,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 class CatalogViewsTest {
 
     @ParameterizedTest
-    @ValueSource(strings = {CatalogViews.MAIN, CatalogViews.CREATE_PRODUCT})
+    @ValueSource(strings = {CatalogViews.MAIN, CatalogViews.CREATE_PRODUCT,
+            CatalogViews.MANAGE_PRODUCTS, CatalogViews.EDIT_PRODUCT})
     void everyViewExistsOnTheClasspath(String path) {
         assertThat(getClass().getResource(path)).as("FXML on the classpath: %s", path).isNotNull();
     }

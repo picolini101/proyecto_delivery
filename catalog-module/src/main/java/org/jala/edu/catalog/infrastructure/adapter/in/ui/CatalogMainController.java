@@ -21,4 +21,9 @@ public class CatalogMainController {
     void onCreateProduct() {
         navigator.show(CatalogViews.CREATE_PRODUCT);
     }
+
+    @FXML
+    void onManageProducts() {
+        navigator.show(CatalogViews.MANAGE_PRODUCTS);
+    }
 }
