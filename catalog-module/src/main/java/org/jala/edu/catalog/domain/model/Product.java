@@ -10,17 +10,17 @@ import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.core.domain.model.BaseModel;
 
 /**
- * todas las reglas de negocio relativas a un producto válido residen aquí
- * Hace referencia a su comercio únicamente mediante un id, tal como exigen los límites del módulo
+ * Todas las reglas de negocio relativas a un producto válido residen aquí.
+ * Hace referencia a su comercio únicamente mediante un id, tal como exigen los límites del módulo.
  */
 @Getter
 @ToString(callSuper = true)
 public class Product extends BaseModel<ProductId> {
 
     private final UUID commerceId;
-    private final String name;
-    private final String category;
-    private final BigDecimal price;
+    private String name;
+    private String category;
+    private BigDecimal price;
 
     private Product(ProductId id, UUID commerceId, String name, String category, BigDecimal price,
                     Instant createdAt, Instant updatedAt) {
@@ -32,11 +32,26 @@ public class Product extends BaseModel<ProductId> {
     }
 
     /**
-     * Crea un producto nuevo perteneciente al comercio indicado
+     * Crea un producto nuevo perteneciente al comercio indicado.
      */
     public static Product register(UUID commerceId, String name, String category, BigDecimal price) {
         Instant now = now();
         return new Product(ProductId.newId(), commerceId, name, category, price, now, now);
+    }
+
+    /**
+     * Modifica los datos editables del producto. Valida todo ANTES de asignar, para que un dato
+     * inválido no deje el producto a medio modificar (el repositorio en memoria guarda la misma instancia).
+     */
+    public void update(String name, String category, BigDecimal price) {
+        String validName = requireText(name, "Name");
+        String validCategory = requireText(category, "Category");
+        BigDecimal validPrice = requirePositive(price);
+
+        this.name = validName;
+        this.category = validCategory;
+        this.price = validPrice;
+        touch();
     }
 
     private static String requireText(String value, String field) {

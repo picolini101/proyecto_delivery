@@ -71,4 +71,35 @@ class ProductTest {
         // Assert
         assertThat(thrown).isInstanceOf(DomainException.class).hasMessage("Category cannot be blank");
     }
+
+    @Test
+    void updatesTheEditableDataWithTrimmedText() {
+        // Arrange
+        Product product = Product.register(COMMERCE_ID, "Pizza", "Food", new BigDecimal("50.00"));
+
+        // Act
+        product.update("  Pasta ", " Italian ", new BigDecimal("30.00"));
+
+        // Assert
+        assertThat(product.getName()).isEqualTo("Pasta");
+        assertThat(product.getCategory()).isEqualTo("Italian");
+        assertThat(product.getPrice()).isEqualByComparingTo("30.00");
+        assertThat(product.getCommerceId()).isEqualTo(COMMERCE_ID);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"0", "-1"})
+    void keepsTheOriginalDataWhenAnUpdateIsInvalid(String price) {
+        // Arrange
+        Product product = Product.register(COMMERCE_ID, "Pizza", "Food", new BigDecimal("50.00"));
+
+        // Act
+        Throwable thrown = catchThrowable(() -> product.update("Pasta", "Italian", new BigDecimal(price)));
+
+        // Assert: el producto no quedó a medio modificar
+        assertThat(thrown).isInstanceOf(DomainException.class).hasMessage("Price must be greater than zero");
+        assertThat(product.getName()).isEqualTo("Pizza");
+        assertThat(product.getCategory()).isEqualTo("Food");
+        assertThat(product.getPrice()).isEqualByComparingTo("50.00");
+    }
 }
