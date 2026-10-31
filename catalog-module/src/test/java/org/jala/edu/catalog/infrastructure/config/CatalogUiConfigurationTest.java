@@ -3,6 +3,7 @@ package org.jala.edu.catalog.infrastructure.config;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URL;
+import org.jala.edu.catalog.infrastructure.adapter.in.ui.CatalogViews;
 import org.jala.edu.core.infrastructure.ui.NavigationItem;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +32,7 @@ class CatalogUiConfigurationTest {
         URL view = getClass().getResource(item.fxmlPath());
 
         // Assert
-        assertThat(item.fxmlPath()).isEqualTo(CatalogUiConfiguration.MAIN_VIEW);
+        assertThat(item.fxmlPath()).isEqualTo(CatalogViews.MAIN);
         assertThat(view).as("FXML on the classpath: %s", item.fxmlPath()).isNotNull();
     }
 }
