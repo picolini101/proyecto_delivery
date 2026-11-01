@@ -3,17 +3,39 @@ package org.jala.edu.delivery.infrastructure.config;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
+
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.contract.UserService;
+import org.jala.edu.delivery.application.port.out.CourierRepositoryPort;
 import org.jala.edu.delivery.application.port.out.DeliveryHistoryPort;
 import org.jala.edu.delivery.application.usecase.GetDeliveryHistoryUseCase;
+import org.jala.edu.delivery.application.usecase.ListCouriersUseCase;
+import org.jala.edu.delivery.application.usecase.RegisterCourierUseCase;
 import org.jala.edu.delivery.domain.model.CompletedDelivery;
 import org.jala.edu.delivery.infrastructure.adapter.out.persistence.memory.InMemoryDeliveryHistoryAdapter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Register the use cases and adapters for the Delivery module.
+ */
 @Configuration
 public class DeliveryModuleConfiguration {
+
+    @Bean
+    public RegisterCourierUseCase registerCourierUseCase(
+            CourierRepositoryPort couriers,
+            UserService users) {
+
+        return new RegisterCourierUseCase(couriers, users);
+    }
+
+    @Bean
+    public ListCouriersUseCase listCouriersUseCase(
+            CourierRepositoryPort couriers) {
+
+        return new ListCouriersUseCase(couriers);
+    }
 
     /**
      * The history only has an in-memory adapter, so there is nothing to switch between. It starts with a few sample
@@ -31,7 +53,7 @@ public class DeliveryModuleConfiguration {
 
     @Bean
     public GetDeliveryHistoryUseCase getDeliveryHistoryUseCase(DeliveryHistoryPort deliveryHistoryPort,
-                                                                UserService userService) {
+                                                               UserService userService) {
         return new GetDeliveryHistoryUseCase(deliveryHistoryPort, userService);
     }
 
