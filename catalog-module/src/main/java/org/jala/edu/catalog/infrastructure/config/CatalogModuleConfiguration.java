@@ -9,6 +9,7 @@ import org.jala.edu.catalog.application.usecase.ListManagedProductsUseCase;
 import org.jala.edu.catalog.application.usecase.RegisterCommerceUseCase;
 import org.jala.edu.catalog.application.usecase.UpdateProductUseCase;
 import org.jala.edu.catalog.application.usecase.UpdateProductStatusUseCase;
+import org.jala.edu.catalog.application.usecase.ListAvailableProductsUseCase;
 import org.jala.edu.core.contract.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -61,5 +62,12 @@ public class CatalogModuleConfiguration {
             ProductRepositoryPort productRepositoryPort,
             UserService userService) {
         return new UpdateProductStatusUseCase(productRepositoryPort, userService);
+    }
+
+    @Bean
+    public ListAvailableProductsUseCase listAvailableProductsUseCase(
+            ProductRepositoryPort productRepositoryPort,
+            CommerceRepositoryPort commerceRepositoryPort) {
+        return new ListAvailableProductsUseCase(productRepositoryPort, commerceRepositoryPort);
     }
 }
