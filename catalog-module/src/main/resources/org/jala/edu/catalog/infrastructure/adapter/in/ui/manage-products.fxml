@@ -33,6 +33,8 @@
             <TableColumn fx:id="nameColumn" text="Name" prefWidth="220"/>
             <TableColumn fx:id="categoryColumn" text="Category" prefWidth="160"/>
             <TableColumn fx:id="priceColumn" text="Price" prefWidth="100"/>
+            <TableColumn fx:id="stockColumn" text="Stock" prefWidth="80"/>
+            <TableColumn fx:id="availabilityColumn" text="Availability" prefWidth="120"/>
             <TableColumn fx:id="createdAtColumn" text="Created at" prefWidth="130"/>
         </columns>
     </TableView>

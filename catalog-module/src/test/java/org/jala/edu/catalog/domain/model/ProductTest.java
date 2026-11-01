@@ -102,4 +102,141 @@ class ProductTest {
         assertThat(product.getCategory()).isEqualTo("Food");
         assertThat(product.getPrice()).isEqualByComparingTo("50.00");
     }
+
+    @Test
+    void registersAProductWithZeroStock() {
+        // Act
+        Product product = Product.register(COMMERCE_ID, "Pizza", "Food", new BigDecimal("50.00"));
+
+        // Assert
+        assertThat(product.getStock()).isZero();
+    }
+
+    @Test
+    void adjustsStockToAValidQuantity() {
+        // Arrange
+        Product product = Product.register(COMMERCE_ID, "Pizza", "Food", new BigDecimal("50.00"));
+
+        // Act
+        product.adjustStock(20);
+
+        // Assert
+        assertThat(product.getStock()).isEqualTo(20);
+    }
+
+    @Test
+    void rejectsNegativeStock() {
+        // Arrange
+        Product product = Product.register(COMMERCE_ID, "Pizza", "Food", new BigDecimal("50.00"));
+
+        // Act
+        Throwable thrown = catchThrowable(() -> product.adjustStock(-1));
+
+        // Assert
+        assertThat(thrown)
+                .isInstanceOf(DomainException.class)
+                .hasMessage("Stock cannot be negative");
+        assertThat(product.getStock()).isZero();
+    }
+
+    @Test
+    void reservesStockAndUpdatesTheAvailableQuantity() {
+        // Arrange
+        Product product = Product.register(COMMERCE_ID, "Pizza", "Food", new BigDecimal("50.00"));
+        product.adjustStock(20);
+
+        // Act
+        product.reserveStock(5);
+
+        // Assert
+        assertThat(product.getStock()).isEqualTo(15);
+    }
+
+    @Test
+    void rejectsReservationWhenStockIsInsufficient() {
+        // Arrange
+        Product product = Product.register(COMMERCE_ID, "Pizza", "Food", new BigDecimal("50.00"));
+        product.adjustStock(5);
+
+        // Act
+        Throwable thrown = catchThrowable(() -> product.reserveStock(10));
+
+        // Assert
+        assertThat(thrown)
+                .isInstanceOf(DomainException.class)
+                .hasMessage("Insufficient stock");
+        assertThat(product.getStock()).isEqualTo(5);
+    }
+
+    @Test
+    void releasesStockAndUpdatesTheAvailableQuantity() {
+        // Arrange
+        Product product = Product.register(COMMERCE_ID, "Pizza", "Food", new BigDecimal("50.00"));
+        product.adjustStock(10);
+        product.reserveStock(4);
+
+        // Act
+        product.releaseStock(4);
+
+        // Assert
+        assertThat(product.getStock()).isEqualTo(10);
+    }
+
+    @Test
+    void allowsAdjustingStockToZero() {
+        Product product = Product.register(
+                COMMERCE_ID, "Pizza", "Food", new BigDecimal("50.00"));
+        product.adjustStock(10);
+
+        product.adjustStock(0);
+
+        assertThat(product.getStock()).isZero();
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1})
+    void rejectsReservationWithNonPositiveQuantity(int quantity) {
+        Product product = Product.register(
+                COMMERCE_ID, "Pizza", "Food", new BigDecimal("50.00"));
+        product.adjustStock(10);
+
+        Throwable thrown = catchThrowable(() -> product.reserveStock(quantity));
+
+        assertThat(thrown)
+                .isInstanceOf(DomainException.class)
+                .hasMessage("Quantity must be greater than zero");
+
+        assertThat(product.getStock()).isEqualTo(10);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1})
+    void rejectsReleaseWithNonPositiveQuantity(int quantity) {
+        Product product = Product.register(
+                COMMERCE_ID, "Pizza", "Food", new BigDecimal("50.00"));
+        product.adjustStock(10);
+
+        Throwable thrown = catchThrowable(() -> product.releaseStock(quantity));
+
+        assertThat(thrown)
+                .isInstanceOf(DomainException.class)
+                .hasMessage("Quantity must be greater than zero");
+
+        assertThat(product.getStock()).isEqualTo(10);
+    }
+
+    @Test
+    void rejectsReleaseWhenStockExceedsMaximumIntegerValue() {
+        Product product = Product.register(
+                COMMERCE_ID, "Pizza", "Food", new BigDecimal("50.00"));
+        product.adjustStock(Integer.MAX_VALUE);
+
+        Throwable thrown = catchThrowable(() -> product.releaseStock(1));
+
+        assertThat(thrown)
+                .isInstanceOf(DomainException.class)
+                .hasMessage("Stock exceeds the maximum allowed value");
+
+        assertThat(product.getStock()).isEqualTo(Integer.MAX_VALUE);
+    }
 }

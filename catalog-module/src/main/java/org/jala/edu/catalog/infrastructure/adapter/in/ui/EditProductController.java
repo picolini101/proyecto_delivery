@@ -10,7 +10,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import lombok.RequiredArgsConstructor;
 import org.jala.edu.catalog.application.port.in.UpdateProductCommand;
+import org.jala.edu.catalog.application.port.in.AdjustProductStockCommand;
 import org.jala.edu.catalog.application.usecase.UpdateProductUseCase;
+import org.jala.edu.catalog.application.usecase.AdjustProductStockUseCase;
 import org.jala.edu.catalog.domain.model.Product;
 import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
@@ -32,6 +34,7 @@ import org.springframework.stereotype.Component;
 public class EditProductController {
 
     private final UpdateProductUseCase updateProductUseCase;
+    private final AdjustProductStockUseCase adjustProductStockUseCase;
 
     private UUID productId;
     private Runnable onSaved;
@@ -47,6 +50,9 @@ public class EditProductController {
 
     @FXML
     private TextField priceField;
+
+    @FXML
+    private TextField stockField;
 
     @FXML
     private Button saveButton;
@@ -69,11 +75,14 @@ public class EditProductController {
         nameField.setText(product.getName());
         categoryField.setText(product.getCategory());
         priceField.setText(product.getPrice().toPlainString());
+        stockField.setText(String.valueOf(product.getStock()));
     }
 
     @FXML
     void onSave() {
         UpdateProductCommand command;
+        int stock;
+
         try {
             command = new UpdateProductCommand(
                     CatalogSession.CURRENT_USER,
@@ -81,6 +90,16 @@ public class EditProductController {
                     nameField.getText(),
                     categoryField.getText(),
                     PriceInput.read(priceField));
+
+            stock = Integer.parseInt(stockField.getText().trim());
+
+            if (stock < 0) {
+                messageLabel.setText("Stock cannot be negative");
+                return;
+            }
+        } catch (NumberFormatException e) {
+            messageLabel.setText("Stock must be a whole number greater than or equal to zero");
+            return;
         } catch (DomainException e) {
             messageLabel.setText(e.getMessage());
             return;
@@ -89,7 +108,13 @@ public class EditProductController {
         form.setDisable(true);
         messageLabel.setText("");
         BackgroundTasks.run(
-                () -> updateProductUseCase.execute(command),
+                () -> {
+                    updateProductUseCase.execute(command);
+                    adjustProductStockUseCase.execute(
+                            new AdjustProductStockCommand(
+                                    CatalogSession.CURRENT_USER, productId, stock));
+                    return null;
+                },
                 done -> {
                     Dialogs.close(form);
                     onSaved.run();

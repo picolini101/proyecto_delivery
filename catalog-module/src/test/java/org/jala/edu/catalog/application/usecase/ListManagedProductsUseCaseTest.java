@@ -3,30 +3,102 @@ package org.jala.edu.catalog.application.usecase;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import org.jala.edu.catalog.application.dto.ManagedProduct;
 import org.jala.edu.catalog.application.port.in.ListManagedProductsQuery;
+import org.jala.edu.catalog.domain.model.Commerce;
 import org.jala.edu.catalog.domain.model.Product;
+import org.jala.edu.catalog.infrastructure.adapter.out.persistence.memory.InMemoryCommerceRepositoryAdapter;
 import org.jala.edu.catalog.infrastructure.adapter.out.persistence.memory.InMemoryProductRepositoryAdapter;
-import org.jala.edu.core.infrastructure.contract.FallbackCatalogService;
 import org.junit.jupiter.api.Test;
 
 class ListManagedProductsUseCaseTest {
 
-    private final InMemoryProductRepositoryAdapter repository = new InMemoryProductRepositoryAdapter();
-    private final ListManagedProductsUseCase listProducts = new ListManagedProductsUseCase(repository);
+    private final InMemoryProductRepositoryAdapter productRepository =
+            new InMemoryProductRepositoryAdapter();
+    private final InMemoryCommerceRepositoryAdapter commerceRepository =
+            new InMemoryCommerceRepositoryAdapter();
+
+    private final ListManagedProductsUseCase listProducts =
+            new ListManagedProductsUseCase(productRepository, commerceRepository);
 
     @Test
     void returnsEveryProductOldestFirst() {
-        // Arrange
-        Product first = repository.save(Product.register(
-                FallbackCatalogService.SAMPLE_COMMERCE, "Pizza", "Food", new BigDecimal("50.00")));
-        Product second = repository.save(Product.register(
-                FallbackCatalogService.SAMPLE_COMMERCE, "Soda", "Drinks", new BigDecimal("5.00")));
+        Commerce commerce = commerceRepository.save(Commerce.register("Test Commerce"));
 
-        // Act
+        Product first = productRepository.save(Product.register(
+                commerce.getId().value(), "Pizza", "Food", new BigDecimal("50.00")));
+        Product second = productRepository.save(Product.register(
+                commerce.getId().value(), "Soda", "Drinks", new BigDecimal("5.00")));
+
+        first.adjustStock(10);
+        second.adjustStock(5);
+        productRepository.save(first);
+        productRepository.save(second);
+
         var products = listProducts.execute(new ListManagedProductsQuery());
 
-        // Assert
-        assertThat(products).containsExactly(first, second);
+        assertThat(products)
+                .extracting(managed -> managed.product().getName())
+                .containsExactly("Pizza", "Soda");
+    }
+
+    @Test
+    void marksProductAsAvailableWhenCommerceAndProductAreActiveAndStockIsPositive() {
+        Commerce commerce = commerceRepository.save(Commerce.register("Active Commerce"));
+        Product product = Product.register(
+                commerce.getId().value(), "Pizza", "Food", new BigDecimal("50.00"));
+        product.adjustStock(10);
+        productRepository.save(product);
+
+        var products = listProducts.execute(new ListManagedProductsQuery());
+
+        assertThat(products).extracting(ManagedProduct::availability)
+                .containsExactly("Disponible");
+    }
+
+    @Test
+    void marksProductAsUnavailableWhenCommerceIsDisabled() {
+        Commerce commerce = Commerce.register("Disabled Commerce");
+        commerce.disable();
+        commerceRepository.save(commerce);
+
+        Product product = Product.register(
+                commerce.getId().value(), "Pizza", "Food", new BigDecimal("50.00"));
+        product.adjustStock(10);
+        productRepository.save(product);
+
+        var products = listProducts.execute(new ListManagedProductsQuery());
+
+        assertThat(products).extracting(ManagedProduct::availability)
+                .containsExactly("No disponible");
+    }
+
+    @Test
+    void marksDisabledProductAsUnavailable() {
+        Commerce commerce = commerceRepository.save(Commerce.register("Active Commerce"));
+        Product product = Product.register(
+                commerce.getId().value(), "Pizza", "Food", new BigDecimal("50.00"));
+        product.adjustStock(10);
+        product.disable();
+        productRepository.save(product);
+
+        var products = listProducts.execute(new ListManagedProductsQuery());
+
+        assertThat(products).extracting(ManagedProduct::availability)
+                .containsExactly("No disponible");
+    }
+
+    @Test
+    void marksProductWithZeroStockAsOutOfStock() {
+        Commerce commerce = commerceRepository.save(Commerce.register("Active Commerce"));
+        Product product = Product.register(
+                commerce.getId().value(), "Pizza", "Food", new BigDecimal("50.00"));
+        productRepository.save(product);
+
+        var products = listProducts.execute(new ListManagedProductsQuery());
+
+        assertThat(products).extracting(ManagedProduct::availability)
+                .containsExactly("Agotado");
     }
 
     @Test

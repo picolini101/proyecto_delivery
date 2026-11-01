@@ -31,7 +31,10 @@
         <Label text="Price *" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
         <TextField fx:id="priceField" promptText="0.00" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
-        <HBox styleClass="actions" GridPane.rowIndex="3" GridPane.columnIndex="1">
+        <Label text="Stock *" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <TextField fx:id="stockField" promptText="0" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+        <HBox styleClass="actions" GridPane.rowIndex="4" GridPane.columnIndex="1">
             <Button fx:id="saveButton" styleClass="primary" text="Save" defaultButton="true" onAction="#onSave"/>
             <Button text="Cancel" cancelButton="true" onAction="#onCancel"/>
         </HBox>
