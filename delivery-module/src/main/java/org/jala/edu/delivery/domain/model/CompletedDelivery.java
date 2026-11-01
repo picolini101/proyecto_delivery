@@ -6,15 +6,23 @@ import java.util.Objects;
 import java.util.UUID;
 import org.jala.edu.core.domain.exception.DomainException;
 
-public record CompletedDelivery(UUID orderId, BigDecimal amount, String locality, LocalDate deliveredOn) {
+/**
+ * A delivery the courier has already finished: the order, the courier who delivered it, the amount earned,
+ * the locality it was delivered to and the day it was delivered.
+ */
+public record CompletedDelivery(UUID orderId, UUID courierId, BigDecimal amount, String locality, LocalDate deliveredOn) {
 
     public CompletedDelivery {
-        Objects.requireNonNull(orderId, "El id del pedido es obligatorio");
-        Objects.requireNonNull(amount, "El monto es obligatorio");
-        Objects.requireNonNull(locality, "La localidad es obligatoria");
-        Objects.requireNonNull(deliveredOn, "La fecha de entrega es obligatoria");
-        if (amount.signum() < 0) {
-            throw new DomainException("El monto no puede ser negativo");
+        Objects.requireNonNull(orderId, "Order id is required");
+        Objects.requireNonNull(courierId, "Courier id is required");
+        Objects.requireNonNull(amount, "Amount is required");
+        Objects.requireNonNull(deliveredOn, "Delivery date is required");
+        if (locality == null || locality.isBlank()) {
+            throw new DomainException("Locality cannot be blank");
         }
+        if (amount.signum() < 0) {
+            throw new DomainException("Amount cannot be negative");
+        }
+        locality = locality.strip();
     }
 }
