@@ -4,7 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URL;
 import org.jala.edu.core.infrastructure.ui.NavigationItem;
+import org.jala.edu.delivery.infrastructure.adapter.in.ui.DeliveryViews;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class DeliveryUiConfigurationTest {
 
@@ -23,15 +26,27 @@ class DeliveryUiConfigurationTest {
     }
 
     @Test
-    void navigationButtonOpensAnExistingMainView() {
+    void navigationButtonOpensTheMainView() {
         // Arrange
         NavigationItem item = configuration.deliveryNavigationItem();
 
         // Act
-        URL view = getClass().getResource(item.fxmlPath());
+        String path = item.fxmlPath();
 
         // Assert
-        assertThat(item.fxmlPath()).isEqualTo(DeliveryUiConfiguration.MAIN_VIEW);
-        assertThat(view).as("FXML on the classpath: %s", item.fxmlPath()).isNotNull();
+        assertThat(path).isEqualTo(DeliveryViews.MAIN);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {DeliveryViews.MAIN, DeliveryViews.HISTORY})
+    void everyDeliveryViewExistsOnTheClasspath(String fxmlPath) {
+        // Arrange
+        Class<?> anyModuleClass = DeliveryViews.class;
+
+        // Act
+        URL view = anyModuleClass.getResource(fxmlPath);
+
+        // Assert
+        assertThat(view).as("FXML on the classpath: %s", fxmlPath).isNotNull();
     }
 }
