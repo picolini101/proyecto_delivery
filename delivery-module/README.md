@@ -1,7 +1,22 @@
 # delivery-module
 
-Deliveries of the Delivery System (`org.jala.edu.delivery`). For now it only contributes the "Deliveries" navigation button
-and the module's main view; delivery screens will be added to that view.
+Deliveries of the Delivery System (`org.jala.edu.delivery`). It contributes the "Deliveries" navigation button, the module's
+main view and the **Delivery history** screen.
+
+## Delivery history
+
+Lets a courier review every delivery they have finished, with its order, locality, delivery date and amount, plus the total
+amount of all of them (most recent first). It is opened from the "Delivery history" button of the Deliveries main view.
+
+- Only an active user with the `COURIER` role can see a history (checked through `UserService` from `core-module`); anyone
+  else gets "User not authorized for this operation" and nothing is shown.
+- A courier without finished deliveries sees "Your completed deliveries will appear in this panel."
+- There is no login yet, so the screen asks for the courier id; it starts with the sample courier
+  (`00000000-0000-0000-0000-000000000004`).
+- The deliveries are kept in memory and the application starts with four sample deliveries of the sample courier. Finished
+  deliveries will be added to the same store when deliveries can be completed from the application.
+
+Use case: `GetDeliveryHistoryUseCase` (`CU-04`).
 
 ## Build
 
