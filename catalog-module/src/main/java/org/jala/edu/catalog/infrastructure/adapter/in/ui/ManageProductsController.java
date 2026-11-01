@@ -1,18 +1,26 @@
 package org.jala.edu.catalog.infrastructure.adapter.in.ui;
 
 import java.util.function.Function;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.input.MouseButton;
+import javafx.util.StringConverter;
 import lombok.RequiredArgsConstructor;
 import org.jala.edu.catalog.application.dto.ManagedProduct;
 import org.jala.edu.catalog.application.port.in.ListManagedProductsQuery;
+import org.jala.edu.catalog.application.port.in.UpdateProductStatusCommand;
 import org.jala.edu.catalog.application.usecase.ListManagedProductsUseCase;
+import org.jala.edu.catalog.application.usecase.UpdateProductStatusUseCase;
+import org.jala.edu.catalog.domain.model.ProductStatus;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
 import org.jala.edu.core.infrastructure.ui.Dialogs;
 import org.jala.edu.core.infrastructure.ui.DisplayFormat;
@@ -32,7 +40,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ManageProductsController {
 
+    private final BooleanProperty updatingAvailability = new SimpleBooleanProperty(false);
+
     private final ListManagedProductsUseCase listManagedProductsUseCase;
+    private final UpdateProductStatusUseCase updateProductStatusUseCase;
     private final SpringFxmlLoader fxmlLoader;
 
     @FXML
@@ -63,6 +74,12 @@ public class ManageProductsController {
     private Button editButton;
 
     @FXML
+    private ComboBox<ProductStatus> availabilitySelector;
+
+    @FXML
+    private Button updateAvailabilityButton;
+
+    @FXML
     private Label messageLabel;
 
     @FXML
@@ -76,6 +93,47 @@ public class ManageProductsController {
 
         // El botón Editar solo se habilita cuando hay un producto seleccionado
         editButton.disableProperty().bind(productsTable.getSelectionModel().selectedItemProperty().isNull());
+
+        // El selector solo permite los estados Disponible y Agotado
+        availabilitySelector.setItems(FXCollections.observableArrayList(
+                ProductStatus.AVAILABLE,
+                ProductStatus.OUT_OF_STOCK));
+
+        availabilitySelector.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(ProductStatus status) {
+                if (status == null) {
+                    return "";
+                }
+                return status == ProductStatus.AVAILABLE ? "Disponible" : "Agotado";
+            }
+
+            @Override
+            public ProductStatus fromString(String value) {
+                return null;
+            }
+        });
+
+        // El botón de disponibilidad requiere un producto y un estado seleccionado
+        updateAvailabilityButton.disableProperty().bind(
+                productsTable.getSelectionModel().selectedItemProperty().isNull()
+                        .or(availabilitySelector.valueProperty().isNull())
+                        .or(updatingAvailability));
+
+        // Al seleccionar un producto, muestra su estado actual
+        productsTable.getSelectionModel().selectedItemProperty().addListener(
+                (observable, oldValue, selected) -> {
+                    if (selected == null) {
+                        availabilitySelector.setValue(null);
+                    } else {
+                        ProductStatus status = selected.product().getStatus();
+                        availabilitySelector.setValue(
+                                status == ProductStatus.AVAILABLE
+                                        || status == ProductStatus.OUT_OF_STOCK
+                                        ? status
+                                        : null);
+                    }
+                });
 
         // Doble clic sobre una fila equivale a pulsar Editar
         productsTable.setRowFactory(table -> {
@@ -99,9 +157,48 @@ public class ManageProductsController {
     @FXML
     void onEdit() {
         ManagedProduct selected = productsTable.getSelectionModel().getSelectedItem();
+
+        if (selected == null) {
+            return;
+        }
+
         SpringFxmlLoader.View<EditProductController> view = fxmlLoader.loadView(CatalogViews.EDIT_PRODUCT);
         view.controller().edit(selected.product(), () -> reload("Product " + selected.product().getName() + " updated."));
         Dialogs.showModal(productsTable, "Edit product", view.root());
+    }
+
+    /**
+     * Actualiza el estado de disponibilidad del producto seleccionado sin modificar su stock.
+     */
+    @FXML
+    void onUpdateAvailability() {
+        ManagedProduct selected = productsTable.getSelectionModel().getSelectedItem();
+        ProductStatus newStatus = availabilitySelector.getValue();
+
+        if (selected == null || newStatus == null) {
+            return;
+        }
+
+        UpdateProductStatusCommand command = new UpdateProductStatusCommand(
+                CatalogSession.CURRENT_USER,
+                selected.product().getId().value(),
+                newStatus);
+
+        updatingAvailability.set(true);
+        availabilitySelector.setDisable(true);
+
+        BackgroundTasks.run(
+                () -> updateProductStatusUseCase.execute(command),
+                done -> {
+                    updatingAvailability.set(false);
+                    availabilitySelector.setDisable(false);
+                    reload("Availability updated successfully.");
+                },
+                error -> {
+                    updatingAvailability.set(false);
+                    availabilitySelector.setDisable(false);
+                    showMessage(ErrorMessages.of(error, "update availability"), "error");
+                });
     }
 
     /**
