@@ -11,6 +11,7 @@ public final class CatalogViews {
     public static final String MAIN = BASE + "catalog-main.fxml";
     public static final String CREATE_PRODUCT = BASE + "create-product.fxml";
     public static final String MANAGE_PRODUCTS = BASE + "manage-products.fxml";
+    public static final String CUSTOMER_CATALOG = BASE + "customer-catalog.fxml";
     public static final String EDIT_PRODUCT = BASE + "edit-product.fxml";
 
     private CatalogViews() {
