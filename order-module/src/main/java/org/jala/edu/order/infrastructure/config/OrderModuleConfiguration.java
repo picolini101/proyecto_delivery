@@ -3,7 +3,10 @@ package org.jala.edu.order.infrastructure.config;
 import org.jala.edu.core.contract.CatalogService;
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.order.application.port.out.CartRepositoryPort;
-import org.jala.edu.order.application.usecase.*;
+import org.jala.edu.order.application.usecase.AddProductToCartUseCase;
+import org.jala.edu.order.application.usecase.GetCartSummaryUseCase;
+import org.jala.edu.order.application.usecase.ListCatalogProductsUseCase;
+import org.jala.edu.order.application.usecase.RemoveProductFromCartUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -29,17 +32,8 @@ public class OrderModuleConfiguration {
     public ListCatalogProductsUseCase listCatalogProductsUseCase(CatalogService catalog) {
         return new ListCatalogProductsUseCase(catalog);
     }
-
-    /** agregar mas unidades de un producto que ya esta en el carrito (boton "+"). */
     @Bean
-    public IncreaseCartItemQuantityUseCase increaseCartItemQuantityUseCase(CartRepositoryPort carts, CatalogService catalog, UserService users) {
-        return new IncreaseCartItemQuantityUseCase(carts, catalog, users);
+    public RemoveProductFromCartUseCase removeProductFromCartUseCase(CartRepositoryPort carts){
+        return new RemoveProductFromCartUseCase(carts);
     }
-
-    /** Quitar unidades de un producto que ya esta en el carrito (boton "-"). */
-    @Bean
-    public DecreaseCartItemQuantityUseCase decreaseCartItemQuantityUseCase(CartRepositoryPort carts, UserService users) {
-        return new DecreaseCartItemQuantityUseCase(carts, users);
-    }
-
 }
