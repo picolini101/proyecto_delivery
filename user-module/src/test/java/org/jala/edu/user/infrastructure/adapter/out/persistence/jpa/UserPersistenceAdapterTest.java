@@ -133,6 +133,21 @@ class UserPersistenceAdapterTest {
     }
 
     @Test
+    void findByEmailContainingReturnsMatchingUsersOldestFirst() {
+        // Arrange
+        User newer = adapter.save(userCreatedAt("ana.lopez@mail.com", "2026-02-01T10:00:00Z"));
+        User older = adapter.save(userCreatedAt("ana@mail.com", "2026-01-01T10:00:00Z"));
+        adapter.save(user("luis@example.com"));
+        detach();
+
+        // Act
+        List<User> found = adapter.findByEmailContaining("ana");
+
+        // Assert
+        assertThat(found).extracting(User::getId).containsExactly(older.getId(), newer.getId());
+    }
+
+    @Test
     void deleteByIdRemovesTheRow() {
         // Arrange
         User user = adapter.save(user("ana@example.com"));

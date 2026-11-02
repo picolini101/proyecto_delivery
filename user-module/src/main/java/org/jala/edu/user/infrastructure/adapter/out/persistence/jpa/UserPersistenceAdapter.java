@@ -1,5 +1,6 @@
 package org.jala.edu.user.infrastructure.adapter.out.persistence.jpa;
 
+import java.util.List;
 import org.jala.edu.core.infrastructure.config.ConditionalOnJpaPersistence;
 import org.jala.edu.core.infrastructure.persistence.jpa.JpaCrudRepositoryAdapter;
 import org.jala.edu.user.application.port.out.UserRepositoryPort;
@@ -16,6 +17,7 @@ class UserPersistenceAdapter extends JpaCrudRepositoryAdapter<User, UserId, User
         implements UserRepositoryPort {
 
     private final UserJpaRepository repository;
+    private final UserPersistenceMapper mapper = new UserPersistenceMapper();
 
     UserPersistenceAdapter(UserJpaRepository repository) {
         super(repository, new UserPersistenceMapper());
@@ -30,5 +32,10 @@ class UserPersistenceAdapter extends JpaCrudRepositoryAdapter<User, UserId, User
     @Override
     public long countActiveByRole(UserRole role) {
         return repository.countByRoleAndStatus(role.name(), UserStatus.ACTIVE.name());
+    }
+
+    @Override
+    public List<User> findByEmailContaining(String fragment) {
+        return repository.findByEmailContainingOrderByCreatedAtAsc(fragment).stream().map(mapper::toDomain).toList();
     }
 }
