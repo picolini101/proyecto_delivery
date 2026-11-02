@@ -1,0 +1,96 @@
+package org.jala.edu.user.application.usecase;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.jala.edu.user.UserFixtures.user;
+
+import java.util.Set;
+import java.util.UUID;
+import org.jala.edu.user.application.port.in.ChangeUserStatusCommand;
+import org.jala.edu.user.application.port.in.CheckUserAccessQuery;
+import org.jala.edu.user.domain.exception.LastActiveAdminException;
+import org.jala.edu.user.domain.exception.UserNotFoundException;
+import org.jala.edu.user.domain.model.User;
+import org.jala.edu.user.domain.model.UserRole;
+import org.jala.edu.user.domain.model.UserStatus;
+import org.jala.edu.user.infrastructure.adapter.out.persistence.memory.InMemoryUserRepositoryAdapter;
+import org.junit.jupiter.api.Test;
+
+class ChangeUserStatusUseCaseTest {
+
+    private final InMemoryUserRepositoryAdapter repository = new InMemoryUserRepositoryAdapter();
+    private final ChangeUserStatusUseCase changeStatus = new ChangeUserStatusUseCase(repository);
+    private final CheckUserAccessUseCase checkAccess = new CheckUserAccessUseCase(repository);
+
+    @Test
+    void deactivatedUserLosesAccess() {
+        // Arrange
+        User customer = repository.save(user("ana@example.com"));
+
+        // Act
+        changeStatus.execute(new ChangeUserStatusCommand(customer.getId().value(), UserStatus.INACTIVE));
+
+        // Assert
+        assertThat(repository.findById(customer.getId()).orElseThrow().getStatus()).isEqualTo(UserStatus.INACTIVE);
+        assertThat(checkAccess.execute(new CheckUserAccessQuery(customer.getId().value(), Set.of(UserRole.CUSTOMER))))
+                .isFalse();
+    }
+
+    @Test
+    void activatesAnInactiveUser() {
+        // Arrange
+        User customer = repository.save(user("ana@example.com"));
+        customer.deactivate();
+        repository.save(customer);
+
+        // Act
+        changeStatus.execute(new ChangeUserStatusCommand(customer.getId().value(), UserStatus.ACTIVE));
+
+        // Assert
+        assertThat(repository.findById(customer.getId()).orElseThrow().isActive()).isTrue();
+    }
+
+    @Test
+    void rejectsDeactivatingTheOnlyActiveAdmin() {
+        // Arrange
+        User admin = repository.save(user("admin@example.com", UserRole.ADMIN));
+        User inactiveAdmin = repository.save(user("old-admin@example.com", UserRole.ADMIN));
+        inactiveAdmin.deactivate();
+        repository.save(inactiveAdmin);
+
+        // Act
+        Throwable thrown = catchThrowable(() ->
+                changeStatus.execute(new ChangeUserStatusCommand(admin.getId().value(), UserStatus.INACTIVE)));
+
+        // Assert
+        assertThat(thrown).isInstanceOf(LastActiveAdminException.class)
+                .hasMessage("There must be at least one active administrator");
+        assertThat(repository.findById(admin.getId()).orElseThrow().isActive()).isTrue();
+    }
+
+    @Test
+    void deactivatesAnAdminWhenAnotherAdminIsActive() {
+        // Arrange
+        User admin = repository.save(user("admin@example.com", UserRole.ADMIN));
+        repository.save(user("second-admin@example.com", UserRole.ADMIN));
+
+        // Act
+        changeStatus.execute(new ChangeUserStatusCommand(admin.getId().value(), UserStatus.INACTIVE));
+
+        // Assert
+        assertThat(repository.findById(admin.getId()).orElseThrow().isActive()).isFalse();
+        assertThat(repository.countActiveByRole(UserRole.ADMIN)).isEqualTo(1);
+    }
+
+    @Test
+    void throwsWhenTheUserDoesNotExist() {
+        // Arrange
+        ChangeUserStatusCommand command = new ChangeUserStatusCommand(UUID.randomUUID(), UserStatus.INACTIVE);
+
+        // Act
+        Throwable thrown = catchThrowable(() -> changeStatus.execute(command));
+
+        // Assert
+        assertThat(thrown).isInstanceOf(UserNotFoundException.class);
+    }
+}

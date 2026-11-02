@@ -3,6 +3,7 @@ package org.jala.edu.user.application.usecase;
 import org.jala.edu.core.application.usecase.UseCase;
 import org.jala.edu.user.application.port.in.UpdateUserCommand;
 import org.jala.edu.user.application.port.out.UserRepositoryPort;
+import org.jala.edu.user.domain.exception.LastActiveAdminException;
 import org.jala.edu.user.domain.exception.UserNotFoundException;
 import org.jala.edu.user.domain.model.User;
 import org.jala.edu.user.domain.model.UserId;
@@ -17,12 +18,14 @@ public class UpdateUserUseCase implements UseCase<UpdateUserCommand, Void> {
     }
 
     /**
-     * @throws UserNotFoundException if no user has the command's id
+     * @throws UserNotFoundException    if no user has the command's id
+     * @throws LastActiveAdminException if it would demote or deactivate the only active ADMIN
      */
     @Override
     public Void execute(UpdateUserCommand command) {
         UserId id = new UserId(command.id());
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+        ActiveAdminRule.check(user, command.role(), command.status(), userRepository);
         applyChanges(user, command);
         userRepository.save(user);
         return null;

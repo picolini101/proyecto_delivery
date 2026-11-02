@@ -7,6 +7,7 @@ import static org.jala.edu.user.UserFixtures.user;
 import java.util.UUID;
 import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.user.application.port.in.UpdateUserCommand;
+import org.jala.edu.user.domain.exception.LastActiveAdminException;
 import org.jala.edu.user.domain.exception.UserNotFoundException;
 import org.jala.edu.user.domain.model.User;
 import org.jala.edu.user.domain.model.UserRole;
@@ -67,6 +68,37 @@ class UpdateUserUseCaseTest {
         User stored = repository.findById(existing.getId()).orElseThrow();
         assertThat(stored.fullName()).isEqualTo("Ana Perez");
         assertThat(stored.getRole()).isEqualTo(UserRole.CUSTOMER);
+    }
+
+    @Test
+    void rejectsDemotingTheOnlyActiveAdminAndLeavesItUnchanged() {
+        // Arrange
+        User admin = repository.save(user("admin@example.com", UserRole.ADMIN));
+        UpdateUserCommand demote = new UpdateUserCommand(admin.getId().value(), "Ana", "Perez", null,
+                UserRole.CUSTOMER, UserStatus.ACTIVE);
+
+        // Act
+        Throwable thrown = catchThrowable(() -> updateUser.execute(demote));
+
+        // Assert
+        assertThat(thrown).isInstanceOf(LastActiveAdminException.class)
+                .hasMessage("There must be at least one active administrator");
+        assertThat(repository.findById(admin.getId()).orElseThrow().getRole()).isEqualTo(UserRole.ADMIN);
+    }
+
+    @Test
+    void demotesAnAdminWhenAnotherAdminIsActive() {
+        // Arrange
+        User admin = repository.save(user("admin@example.com", UserRole.ADMIN));
+        repository.save(user("second-admin@example.com", UserRole.ADMIN));
+        UpdateUserCommand demote = new UpdateUserCommand(admin.getId().value(), "Ana", "Perez", null,
+                UserRole.CUSTOMER, UserStatus.ACTIVE);
+
+        // Act
+        updateUser.execute(demote);
+
+        // Assert
+        assertThat(repository.findById(admin.getId()).orElseThrow().getRole()).isEqualTo(UserRole.CUSTOMER);
     }
 
     @Test
