@@ -14,6 +14,8 @@ User management for the Delivery System (`org.jala.edu.user`), built with the po
 - **Password (D-10):** required when registering, at least 8 characters, stored only as a BCrypt hash
   (`PasswordHasher`, `BCryptPasswordHasher`). Sample users share the test password `Sample123`
   (`SampleUsersLoader.SAMPLE_PASSWORD`); never use it for a real account.
+- **Login (CU-USR-06):** `LoginUseCase` checks email, password and status; `SessionCurrentUserService` serves core's
+  `CurrentUserService` to the other modules. The login screen opens before the main window.
 - **UI:** "Users" navigation button → Users main view → Create user, List users (search by email, edit dialog,
   Activate/Deactivate).
 
