@@ -6,6 +6,8 @@ import org.jala.edu.user.application.port.out.UserRepositoryPort;
 import org.jala.edu.user.domain.model.Email;
 import org.jala.edu.user.domain.model.User;
 import org.jala.edu.user.domain.model.UserId;
+import org.jala.edu.user.domain.model.UserRole;
+import org.jala.edu.user.domain.model.UserStatus;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,5 +25,10 @@ class UserPersistenceAdapter extends JpaCrudRepositoryAdapter<User, UserId, User
     @Override
     public boolean existsByEmail(Email email) {
         return repository.existsByEmail(email.value());
+    }
+
+    @Override
+    public long countActiveByRole(UserRole role) {
+        return repository.countByRoleAndStatus(role.name(), UserStatus.ACTIVE.name());
     }
 }
