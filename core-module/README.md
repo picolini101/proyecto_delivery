@@ -10,7 +10,9 @@ Shared kernel of the Delivery System (`org.jala.edu.core`). Every other reposito
   implements it (`ContractFallbackAutoConfiguration`).
 - **Persistence:** in-memory and JPA base adapters, plus the `delivery.persistence.type` switch
   (`PersistenceType`, `@ConditionalOnJpaPersistence`, `@ConditionalOnInMemoryPersistence`).
-- **JavaFX shell:** main window with one navigation button per module (`NavigationItem`, `Navigator`) and UI helpers
+- **JavaFX shell:** optional login screen before the main window (`LoginScreen`, `AppShell`, `SignOutEvent`), main
+  window with one navigation button per module filtered by role (`NavigationItem`, `NavigationFilter`, `Navigator`)
+  and UI helpers
   (`BackgroundTasks`, `Dialogs`, `ErrorMessages`, `FormBindings`, `EnumLabelConverter`, `DisplayFormat`).
 
 ## Current user
