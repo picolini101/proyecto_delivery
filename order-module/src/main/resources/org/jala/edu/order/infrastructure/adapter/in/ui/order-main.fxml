@@ -16,6 +16,8 @@
         <Label styleClass="page-title" text="Orders"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Button text="Nuevo carrito" onAction="#onNewCart"/>
+        <Button text="Gestionar Carrito (Eliminar)" onAction="#onManageCart"
+                style="-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;"/>
     </HBox>
 
     <TableView VBox.vgrow="ALWAYS">

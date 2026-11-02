@@ -18,4 +18,8 @@ public class OrderMainController {
     void onNewCart() {
         navigator.show(OrderViews.NEW_CART);
     }
+    @FXML
+    void onManageCart() {
+        navigator.show(OrderViews.REMOVE_ITEM);
+    }
 }
