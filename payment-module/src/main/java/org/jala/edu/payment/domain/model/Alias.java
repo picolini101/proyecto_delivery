@@ -1,18 +1,19 @@
 package org.jala.edu.payment.domain.model;
 
+import org.jala.edu.payment.domain.exception.DomainException;
 import java.util.Objects;
 
-public final class Alias{
+public final class Alias {
 
     private final String value;
 
     public Alias(String value) {
         if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException("El alias no puede estar vacío");
+            throw new DomainException("El alias no puede estar vacío");
         }
         String trimmed = value.trim();
         if (trimmed.length() < 3 || trimmed.length() > 30) {
-            throw new IllegalArgumentException("El alias debe tener entre 3 y 30 caracteres");
+            throw new DomainException("El alias debe tener entre 3 y 30 caracteres");
         }
         this.value = trimmed;
     }
