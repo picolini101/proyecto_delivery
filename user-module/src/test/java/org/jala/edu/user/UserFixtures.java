@@ -16,7 +16,7 @@ public final class UserFixtures {
 
     public static final String FIRST_NAME = "Ana";
     public static final String LAST_NAME = "Perez";
-    public static final String PHONE = "70000000";
+    public static final String PHONE = "+59170000000";
 
     private UserFixtures() {
     }

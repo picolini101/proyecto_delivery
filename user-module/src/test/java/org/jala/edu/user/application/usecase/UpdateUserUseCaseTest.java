@@ -24,7 +24,7 @@ class UpdateUserUseCaseTest {
     void updatesProfileRoleAndStatus() {
         // Arrange
         User existing = repository.save(user("ana@example.com"));
-        UpdateUserCommand command = new UpdateUserCommand(existing.getId().value(), "Ana Maria", "Lopez", "71111111",
+        UpdateUserCommand command = new UpdateUserCommand(existing.getId().value(), "Ana Maria", "Lopez", "+59171111111",
                 UserRole.COURIER, UserStatus.INACTIVE);
 
         // Act
@@ -33,7 +33,7 @@ class UpdateUserUseCaseTest {
         // Assert
         User stored = repository.findById(existing.getId()).orElseThrow();
         assertThat(stored.fullName()).isEqualTo("Ana Maria Lopez");
-        assertThat(stored.getPhoneNumber()).isEqualTo("71111111");
+        assertThat(stored.getPhoneNumber()).isEqualTo("+59171111111");
         assertThat(stored.getRole()).isEqualTo(UserRole.COURIER);
         assertThat(stored.getStatus()).isEqualTo(UserStatus.INACTIVE);
     }

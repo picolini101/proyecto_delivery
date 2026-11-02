@@ -4,11 +4,12 @@ import java.util.regex.Pattern;
 import org.jala.edu.core.domain.exception.DomainException;
 
 /**
- * Optional contact phone: 7 to 15 digits, with an optional leading {@code +}. Surrounding spaces are ignored.
+ * Optional contact phone in international E.164 format: {@code +}, country code and number, at most 15 digits and
+ * never starting with 0 (e.g. {@code +59170000000}). Surrounding spaces are ignored.
  */
 public record PhoneNumber(String value) {
 
-    private static final Pattern PATTERN = Pattern.compile("^\\+?\\d{7,15}$");
+    private static final Pattern PATTERN = Pattern.compile("^\\+[1-9]\\d{1,14}$");
 
     public PhoneNumber {
         if (value == null || !PATTERN.matcher(value.strip()).matches()) {

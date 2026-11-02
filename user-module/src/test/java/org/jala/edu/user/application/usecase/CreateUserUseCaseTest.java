@@ -23,7 +23,7 @@ class CreateUserUseCaseTest {
     @Test
     void storesAnActiveUserAndReturnsItsId() {
         // Arrange
-        CreateUserCommand command = new CreateUserCommand("Ana", "Perez", "Ana@Example.com", "70000000",
+        CreateUserCommand command = new CreateUserCommand("Ana", "Perez", "Ana@Example.com", "+59170000000",
                 UserRole.COURIER);
 
         // Act
@@ -33,7 +33,7 @@ class CreateUserUseCaseTest {
         User stored = repository.findById(new UserId(id)).orElseThrow();
         assertThat(stored.fullName()).isEqualTo("Ana Perez");
         assertThat(stored.getEmail().value()).isEqualTo("ana@example.com");
-        assertThat(stored.getPhoneNumber()).isEqualTo("70000000");
+        assertThat(stored.getPhoneNumber()).isEqualTo("+59170000000");
         assertThat(stored.getRole()).isEqualTo(UserRole.COURIER);
         assertThat(stored.getStatus()).isEqualTo(UserStatus.ACTIVE);
     }

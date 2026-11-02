@@ -31,7 +31,7 @@
         <TextField fx:id="emailField" promptText="name@example.com" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
         <Label text="Phone" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-        <TextField fx:id="phoneField" promptText="Optional" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+        <TextField fx:id="phoneField" promptText="Optional, e.g. +59170000000" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
         <Label text="Role *" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
         <ComboBox fx:id="roleComboBox" promptText="Select a role" maxWidth="Infinity"

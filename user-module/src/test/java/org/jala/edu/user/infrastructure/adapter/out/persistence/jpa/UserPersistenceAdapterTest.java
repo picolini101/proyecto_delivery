@@ -46,7 +46,7 @@ class UserPersistenceAdapterTest {
             assertThat(loaded.getId()).isEqualTo(saved.getId());
             assertThat(loaded.fullName()).isEqualTo("Ana Perez");
             assertThat(loaded.getEmail().value()).isEqualTo("ana@example.com");
-            assertThat(loaded.getPhoneNumber()).isEqualTo("70000000");
+            assertThat(loaded.getPhoneNumber()).isEqualTo("+59170000000");
             assertThat(loaded.getRole()).isEqualTo(UserRole.CUSTOMER);
             assertThat(loaded.getStatus()).isEqualTo(UserStatus.ACTIVE);
             assertThat(loaded.getCreatedAt()).isEqualTo(saved.getCreatedAt());

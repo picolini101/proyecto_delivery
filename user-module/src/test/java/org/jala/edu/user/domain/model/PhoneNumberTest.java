@@ -11,8 +11,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 class PhoneNumberTest {
 
     @ParameterizedTest
-    @ValueSource(strings = {"7000000", "70000000", "+59170000000", "123456789012345", " 70000000 "})
-    void acceptsSevenToFifteenDigitsWithAnOptionalPlus(String value) {
+    @ValueSource(strings = {"+59170000000", "+12", "+123456789012345", " +573001234567 "})
+    void acceptsE164Numbers(String value) {
         // Arrange (value)
 
         // Act
@@ -23,8 +23,9 @@ class PhoneNumberTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"55-12", "700000a0", "123456", "1234567890123456", "591+70000000", "+"})
-    void rejectsLettersSymbolsAndWrongLengths(String value) {
+    @ValueSource(strings = {"70000000", "+059170000000", "+1", "+1234567890123456", "+591-70000000", "+591 7000000",
+            "+5917000000a", "+"})
+    void rejectsNumbersOutsideE164(String value) {
         // Arrange (value)
 
         // Act
