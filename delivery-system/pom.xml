@@ -118,5 +118,22 @@
                 </plugins>
             </build>
         </profile>
+        <!-- ./mvnw javafx:run -Pjpa : run with MySQL (docker compose up first) -->
+        <profile>
+            <id>jpa</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.openjfx</groupId>
+                        <artifactId>javafx-maven-plugin</artifactId>
+                        <configuration>
+                            <options combine.children="append">
+                                <option>-Ddelivery.persistence.type=jpa</option>
+                            </options>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
