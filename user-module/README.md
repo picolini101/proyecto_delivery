@@ -11,6 +11,9 @@ User management for the Delivery System (`org.jala.edu.user`), built with the po
   selected with `delivery.persistence.type`.
 - **Validation:** valid email (`Email`) and optional phone in E.164 format, `^\+[1-9]\d{1,14}$`
   (`PhoneNumber`, e.g. `+59170000000`).
+- **Password (D-10):** required when registering, at least 8 characters, stored only as a BCrypt hash
+  (`PasswordHasher`, `BCryptPasswordHasher`). Sample users share the test password `Sample123`
+  (`SampleUsersLoader.SAMPLE_PASSWORD`); never use it for a real account.
 - **UI:** "Users" navigation button → Users main view → Create user, List users (search by email, edit dialog,
   Activate/Deactivate).
 
