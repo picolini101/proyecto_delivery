@@ -1,6 +1,7 @@
 package org.jala.edu.user.infrastructure.adapter.out.persistence.jpa;
 
 import java.util.List;
+import java.util.Optional;
 import org.jala.edu.core.infrastructure.config.ConditionalOnJpaPersistence;
 import org.jala.edu.core.infrastructure.persistence.jpa.JpaCrudRepositoryAdapter;
 import org.jala.edu.user.application.port.out.UserRepositoryPort;
@@ -37,5 +38,10 @@ class UserPersistenceAdapter extends JpaCrudRepositoryAdapter<User, UserId, User
     @Override
     public List<User> findByEmailContaining(String fragment) {
         return repository.findByEmailContainingOrderByCreatedAtAsc(fragment).stream().map(mapper::toDomain).toList();
+    }
+
+    @Override
+    public Optional<User> findByEmail(Email email) {
+        return repository.findByEmail(email.value()).map(mapper::toDomain);
     }
 }
