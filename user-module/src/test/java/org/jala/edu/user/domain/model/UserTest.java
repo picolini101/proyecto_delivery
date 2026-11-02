@@ -54,6 +54,44 @@ class UserTest {
     }
 
     @Test
+    void rejectsAnInvalidPhoneOnRegistration() {
+        // Arrange
+        Email email = new Email("ana@example.com");
+
+        // Act
+        Throwable thrown = catchThrowable(() -> User.register("Ana", "Perez", email, "55-12", UserRole.CUSTOMER));
+
+        // Assert
+        assertThat(thrown).isInstanceOf(DomainException.class).hasMessageContaining("Invalid phone number");
+    }
+
+    @Test
+    void anInvalidPhoneLeavesTheProfileUnchanged() {
+        // Arrange
+        User user = userCreatedAt("ana@example.com", PAST);
+
+        // Act
+        Throwable thrown = catchThrowable(() -> user.updateProfile("Maria", "Lopez", "abc"));
+
+        // Assert
+        assertThat(thrown).isInstanceOf(DomainException.class).hasMessageContaining("Invalid phone number");
+        assertThat(user.fullName()).isEqualTo("Ana Perez");
+        assertThat(user.getPhoneNumber()).isEqualTo("70000000");
+    }
+
+    @Test
+    void aBlankPhoneIsStoredAsNoPhone() {
+        // Arrange
+        User user = userCreatedAt("ana@example.com", PAST);
+
+        // Act
+        user.updateProfile("Ana", "Perez", "  ");
+
+        // Assert
+        assertThat(user.getPhoneNumber()).isNull();
+    }
+
+    @Test
     void deactivateMakesTheUserInactive() {
         // Arrange
         User user = user("ana@example.com");

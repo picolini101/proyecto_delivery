@@ -19,7 +19,7 @@ public class User extends BaseModel<UserId> {
     private String firstName;
     private String lastName;
     private final Email email;
-    private String phoneNumber;
+    private PhoneNumber phoneNumber;
     private UserRole role;
     private UserStatus status;
 
@@ -29,7 +29,7 @@ public class User extends BaseModel<UserId> {
         this.firstName = requireText(firstName, "First name");
         this.lastName = requireText(lastName, "Last name");
         this.email = Objects.requireNonNull(email, "Email is required");
-        this.phoneNumber = phoneNumber;
+        this.phoneNumber = PhoneNumber.ofNullable(phoneNumber);
         this.role = Objects.requireNonNull(role, "Role is required");
         this.status = Objects.requireNonNull(status, "Status is required");
     }
@@ -57,9 +57,10 @@ public class User extends BaseModel<UserId> {
     public void updateProfile(String firstName, String lastName, String phoneNumber) {
         String validFirstName = requireText(firstName, "First name");
         String validLastName = requireText(lastName, "Last name");
+        PhoneNumber validPhoneNumber = PhoneNumber.ofNullable(phoneNumber);
         this.firstName = validFirstName;
         this.lastName = validLastName;
-        this.phoneNumber = phoneNumber;
+        this.phoneNumber = validPhoneNumber;
         touch();
     }
 
@@ -76,6 +77,13 @@ public class User extends BaseModel<UserId> {
     public void deactivate() {
         this.status = UserStatus.INACTIVE;
         touch();
+    }
+
+    /**
+     * @return the phone number, or {@code null} when the user has none
+     */
+    public String getPhoneNumber() {
+        return phoneNumber == null ? null : phoneNumber.value();
     }
 
     public boolean isActive() {
