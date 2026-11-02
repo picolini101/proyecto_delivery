@@ -210,10 +210,14 @@ docker compose ps    # wait until the mysql service shows "healthy"
 
 ### 2. Run the application against MySQL
 
-Because `application.yml` defaults to memory mode, enable JPA persistence with the
-`DELIVERY_PERSISTENCE_TYPE` environment variable.
+Because `application.yml` defaults to memory mode, enable JPA persistence with the `jpa` Maven profile (the same
+command on every system):
 
-Linux / Git Bash:
+```bash
+./mvnw javafx:run -Pjpa
+```
+
+Or with the `DELIVERY_PERSISTENCE_TYPE` environment variable. Linux / Git Bash:
 
 ```bash
 DELIVERY_PERSISTENCE_TYPE=jpa ./mvnw javafx:run
@@ -235,6 +239,10 @@ mvnw.cmd javafx:run
 
 Flyway creates the schema automatically on first run. Each module ships its migrations under
 `src/main/resources/db/migration/<module>/`.
+
+Data survives restarts and the sample users are not duplicated. A module that has no JPA adapter yet keeps its data
+in memory and logs `No JPA adapter for <Port>` at startup (`MissingJpaAdaptersAutoConfiguration`); each team adds
+its own JPA adapter and migrations, and the practitioner then removes that entry.
 
 ### 3. Stop MySQL
 
