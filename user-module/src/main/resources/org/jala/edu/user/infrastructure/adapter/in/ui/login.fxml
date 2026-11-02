@@ -6,30 +6,33 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox styleClass="page" maxWidth="420"
-      xmlns="http://javafx.com/javafx/25"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="org.jala.edu.user.infrastructure.adapter.in.ui.LoginController">
+<!-- The StackPane centers the form in the window; the form keeps a fixed width. -->
+<StackPane xmlns="http://javafx.com/javafx/25"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="org.jala.edu.user.infrastructure.adapter.in.ui.LoginController">
+    <VBox styleClass="page" maxWidth="420" maxHeight="-Infinity">
 
-    <Label styleClass="page-title" text="Delivery System · Sign in"/>
+        <Label styleClass="page-title" text="Delivery System · Sign in"/>
 
-    <GridPane fx:id="form" styleClass="form">
-        <columnConstraints>
-            <ColumnConstraints minWidth="100"/>
-            <ColumnConstraints hgrow="ALWAYS"/>
-        </columnConstraints>
+        <GridPane fx:id="form" styleClass="form">
+            <columnConstraints>
+                <ColumnConstraints minWidth="100"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+            </columnConstraints>
 
-        <Label text="Email" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-        <TextField fx:id="emailField" promptText="name@example.com" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+            <Label text="Email" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <TextField fx:id="emailField" promptText="name@example.com" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-        <Label text="Password" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-        <PasswordField fx:id="passwordField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+            <Label text="Password" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <PasswordField fx:id="passwordField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-        <Button fx:id="signInButton" styleClass="primary" text="Sign in" defaultButton="true"
-                onAction="#onSignIn" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-    </GridPane>
+            <Button fx:id="signInButton" styleClass="primary" text="Sign in" defaultButton="true"
+                    onAction="#onSignIn" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+        </GridPane>
 
-    <Label fx:id="messageLabel" styleClass="message" wrapText="true"/>
-</VBox>
+        <Label fx:id="messageLabel" styleClass="message" wrapText="true"/>
+    </VBox>
+</StackPane>
