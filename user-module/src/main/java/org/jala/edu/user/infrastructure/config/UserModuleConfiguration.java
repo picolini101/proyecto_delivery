@@ -2,9 +2,9 @@ package org.jala.edu.user.infrastructure.config;
 
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.user.application.port.out.UserRepositoryPort;
+import org.jala.edu.user.application.usecase.ChangeUserStatusUseCase;
 import org.jala.edu.user.application.usecase.CheckUserAccessUseCase;
 import org.jala.edu.user.application.usecase.CreateUserUseCase;
-import org.jala.edu.user.application.usecase.DeleteUserUseCase;
 import org.jala.edu.user.application.usecase.ListUsersUseCase;
 import org.jala.edu.user.application.usecase.UpdateUserUseCase;
 import org.jala.edu.user.infrastructure.adapter.in.contract.UserServiceAdapter;
@@ -30,8 +30,8 @@ public class UserModuleConfiguration {
     }
 
     @Bean
-    public DeleteUserUseCase deleteUserUseCase(UserRepositoryPort userRepositoryPort) {
-        return new DeleteUserUseCase(userRepositoryPort);
+    public ChangeUserStatusUseCase changeUserStatusUseCase(UserRepositoryPort userRepositoryPort) {
+        return new ChangeUserStatusUseCase(userRepositoryPort);
     }
 
     @Bean
