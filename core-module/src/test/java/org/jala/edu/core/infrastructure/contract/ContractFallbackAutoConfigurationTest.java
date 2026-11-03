@@ -4,8 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.UUID;
 import org.jala.edu.core.contract.CatalogService;
+import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.core.contract.OrderService;
 import org.jala.edu.core.contract.PaymentService;
+import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.contract.UserRole;
 import org.jala.edu.core.contract.UserService;
 import org.junit.jupiter.api.Test;
@@ -29,7 +31,27 @@ class ContractFallbackAutoConfigurationTest {
             assertThat(context).getBean(CatalogService.class).isInstanceOf(FallbackCatalogService.class);
             assertThat(context).getBean(PaymentService.class).isInstanceOf(FallbackPaymentService.class);
             assertThat(context).getBean(OrderService.class).isInstanceOf(FallbackOrderService.class);
+            assertThat(context).getBean(CurrentUserService.class).isInstanceOf(FallbackCurrentUserService.class);
         });
+    }
+
+    @Test
+    void theFallbackCurrentUserFollowsTheSampleUserProperty() {
+        // Arrange
+        ApplicationContextRunner asMerchant = runner.withPropertyValues("delivery.sample-user=merchant");
+
+        // Act (start the context) + Assert (inside the callback, while the context is running)
+        asMerchant.run(context -> assertThat(context.getBean(CurrentUserService.class).currentUser().id())
+                .isEqualTo(SampleUsers.MERCHANT));
+    }
+
+    @Test
+    void anInvalidSampleUserPropertyStopsTheStartup() {
+        // Arrange
+        ApplicationContextRunner withTypo = runner.withPropertyValues("delivery.sample-user=driver");
+
+        // Act (start the context) + Assert (inside the callback, while the context is running)
+        withTypo.run(context -> assertThat(context).hasFailed());
     }
 
     @Test

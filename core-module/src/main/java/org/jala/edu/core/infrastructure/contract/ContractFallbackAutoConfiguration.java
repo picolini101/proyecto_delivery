@@ -2,12 +2,14 @@ package org.jala.edu.core.infrastructure.contract;
 
 import lombok.extern.slf4j.Slf4j;
 import org.jala.edu.core.contract.CatalogService;
+import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.core.contract.OrderService;
 import org.jala.edu.core.contract.PaymentService;
 import org.jala.edu.core.contract.UserService;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
 
 /**
  * Registers a stand-in for each integration contract that no module has implemented yet, so the application
@@ -23,6 +25,16 @@ public class ContractFallbackAutoConfiguration {
     public UserService fallbackUserService() {
         warnFallback(UserService.class);
         return new FallbackUserService();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public CurrentUserService fallbackCurrentUserService(Environment environment) {
+        FallbackCurrentUserService service =
+                FallbackCurrentUserService.forProperty(environment.getProperty(FallbackCurrentUserService.PROPERTY));
+        log.warn("No module provides CurrentUserService; every operation runs as {} (set {} to change it)",
+                service.currentUser().displayName(), FallbackCurrentUserService.PROPERTY);
+        return service;
     }
 
     @Bean

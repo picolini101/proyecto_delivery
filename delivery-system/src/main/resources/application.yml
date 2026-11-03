@@ -4,6 +4,9 @@ delivery:
     # Switch to jpa once the module's tests pass, without editing this file:
     # -Ddelivery.persistence.type=jpa or DELIVERY_PERSISTENCE_TYPE=jpa
     type: memory
+  # Until the login exists, the fallback CurrentUserService answers with this sample user:
+  # ADMIN | MERCHANT | CUSTOMER | COURIER (or DELIVERY_SAMPLE_USER=COURIER)
+  sample-user: CUSTOMER
 
 spring:
   application:
