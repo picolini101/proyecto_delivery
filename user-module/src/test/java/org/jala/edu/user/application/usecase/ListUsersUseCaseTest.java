@@ -1,6 +1,7 @@
 package org.jala.edu.user.application.usecase;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.jala.edu.user.UserFixtures.user;
 import static org.jala.edu.user.UserFixtures.userCreatedAt;
 
 import java.util.List;
@@ -17,7 +18,7 @@ class ListUsersUseCaseTest {
     @Test
     void returnsAnEmptyListWhenThereAreNoUsers() {
         // Arrange
-        ListUsersQuery query = new ListUsersQuery();
+        ListUsersQuery query = ListUsersQuery.all();
 
         // Act
         List<User> users = listUsers.execute(query);
@@ -33,9 +34,47 @@ class ListUsersUseCaseTest {
         User older = repository.save(userCreatedAt("ana@example.com", "2026-01-01T10:00:00Z"));
 
         // Act
-        List<User> users = listUsers.execute(new ListUsersQuery());
+        List<User> users = listUsers.execute(ListUsersQuery.all());
 
         // Assert
         assertThat(users).containsExactly(older, newer);
+    }
+
+    @Test
+    void filtersByPartOfTheEmailIgnoringCase() {
+        // Arrange
+        User ana = repository.save(user("ana@mail.com"));
+        repository.save(user("luis@example.com"));
+
+        // Act
+        List<User> users = listUsers.execute(new ListUsersQuery("  ANA@Mail "));
+
+        // Assert
+        assertThat(users).containsExactly(ana);
+    }
+
+    @Test
+    void returnsAnEmptyListWhenNoEmailMatches() {
+        // Arrange
+        repository.save(user("ana@mail.com"));
+
+        // Act
+        List<User> users = listUsers.execute(new ListUsersQuery("pedro"));
+
+        // Assert
+        assertThat(users).isEmpty();
+    }
+
+    @Test
+    void aBlankFilterListsEveryUser() {
+        // Arrange
+        repository.save(user("ana@mail.com"));
+        repository.save(user("luis@example.com"));
+
+        // Act
+        List<User> users = listUsers.execute(new ListUsersQuery("   "));
+
+        // Assert
+        assertThat(users).hasSize(2);
     }
 }

@@ -9,7 +9,10 @@ User management for the Delivery System (`org.jala.edu.user`), built with the po
   `SampleUsers` at startup (`SampleUsersLoader`).
 - **Persistence:** JPA adapter (MySQL, Flyway migration in `db/migration/user`) and in-memory adapter,
   selected with `delivery.persistence.type`.
-- **UI:** "Users" navigation button → Users main view → Create user, List users (edit dialog, Activate/Deactivate).
+- **Validation:** valid email (`Email`) and optional phone in E.164 format, `^\+[1-9]\d{1,14}$`
+  (`PhoneNumber`, e.g. `+59170000000`).
+- **UI:** "Users" navigation button → Users main view → Create user, List users (search by email, edit dialog,
+  Activate/Deactivate).
 
 ## Build
 

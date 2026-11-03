@@ -1,5 +1,6 @@
 package org.jala.edu.user.infrastructure.adapter.out.persistence.memory;
 
+import java.util.List;
 import org.jala.edu.core.infrastructure.config.ConditionalOnInMemoryPersistence;
 import org.jala.edu.core.infrastructure.persistence.memory.InMemoryCrudRepository;
 import org.jala.edu.user.application.port.out.UserRepositoryPort;
@@ -25,5 +26,10 @@ public class InMemoryUserRepositoryAdapter extends InMemoryCrudRepository<User, 
     @Override
     public long countActiveByRole(UserRole role) {
         return stream().filter(user -> user.isActive() && user.getRole() == role).count();
+    }
+
+    @Override
+    public List<User> findByEmailContaining(String fragment) {
+        return findAll().stream().filter(user -> user.getEmail().value().contains(fragment)).toList();
     }
 }

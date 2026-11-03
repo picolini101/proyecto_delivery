@@ -10,6 +10,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.input.MouseButton;
 import lombok.RequiredArgsConstructor;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
@@ -41,6 +42,9 @@ public class ListUsersController {
     private final ListUsersUseCase listUsersUseCase;
     private final ChangeUserStatusUseCase changeUserStatusUseCase;
     private final SpringFxmlLoader fxmlLoader;
+
+    @FXML
+    private TextField searchField;
 
     @FXML
     private TableView<User> usersTable;
@@ -108,6 +112,17 @@ public class ListUsersController {
     }
 
     @FXML
+    void onSearch() {
+        reload(null);
+    }
+
+    @FXML
+    void onClearSearch() {
+        searchField.clear();
+        reload(null);
+    }
+
+    @FXML
     void onEdit() {
         User selected = usersTable.getSelectionModel().getSelectedItem();
         SpringFxmlLoader.View<EditUserController> view = fxmlLoader.loadView(UserViews.EDIT);
@@ -136,10 +151,13 @@ public class ListUsersController {
     private void reload(String successMessage) {
         refreshButton.setDisable(true);
         BackgroundTasks.run(
-                () -> listUsersUseCase.execute(new ListUsersQuery()),
+                () -> listUsersUseCase.execute(new ListUsersQuery(searchField.getText())),
                 users -> {
                     usersTable.getItems().setAll(users);
-                    if (successMessage == null) {
+                    boolean searching = !searchField.getText().isBlank();
+                    if (searching && users.isEmpty()) {
+                        showMessage("No users match the search", "info");
+                    } else if (successMessage == null) {
                         showMessage(count(users), "info");
                     } else {
                         showMessage(successMessage, "success");

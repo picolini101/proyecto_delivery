@@ -46,7 +46,7 @@ class UserPersistenceAdapterTest {
             assertThat(loaded.getId()).isEqualTo(saved.getId());
             assertThat(loaded.fullName()).isEqualTo("Ana Perez");
             assertThat(loaded.getEmail().value()).isEqualTo("ana@example.com");
-            assertThat(loaded.getPhoneNumber()).isEqualTo("70000000");
+            assertThat(loaded.getPhoneNumber()).isEqualTo("+59170000000");
             assertThat(loaded.getRole()).isEqualTo(UserRole.CUSTOMER);
             assertThat(loaded.getStatus()).isEqualTo(UserStatus.ACTIVE);
             assertThat(loaded.getCreatedAt()).isEqualTo(saved.getCreatedAt());
@@ -130,6 +130,21 @@ class UserPersistenceAdapterTest {
 
         // Assert
         assertThat(activeAdmins).isEqualTo(1);
+    }
+
+    @Test
+    void findByEmailContainingReturnsMatchingUsersOldestFirst() {
+        // Arrange
+        User newer = adapter.save(userCreatedAt("ana.lopez@mail.com", "2026-02-01T10:00:00Z"));
+        User older = adapter.save(userCreatedAt("ana@mail.com", "2026-01-01T10:00:00Z"));
+        adapter.save(user("luis@example.com"));
+        detach();
+
+        // Act
+        List<User> found = adapter.findByEmailContaining("ana");
+
+        // Assert
+        assertThat(found).extracting(User::getId).containsExactly(older.getId(), newer.getId());
     }
 
     @Test
