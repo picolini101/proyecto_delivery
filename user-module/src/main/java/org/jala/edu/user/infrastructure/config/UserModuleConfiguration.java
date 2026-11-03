@@ -7,7 +7,9 @@ import org.jala.edu.user.application.usecase.ChangeUserStatusUseCase;
 import org.jala.edu.user.application.usecase.CheckUserAccessUseCase;
 import org.jala.edu.user.application.usecase.CreateUserUseCase;
 import org.jala.edu.user.application.usecase.ListUsersUseCase;
+import org.jala.edu.user.application.usecase.LoginUseCase;
 import org.jala.edu.user.application.usecase.UpdateUserUseCase;
+import org.jala.edu.user.infrastructure.adapter.in.contract.SessionCurrentUserService;
 import org.jala.edu.user.infrastructure.adapter.in.contract.UserServiceAdapter;
 import org.jala.edu.user.infrastructure.adapter.out.security.BCryptPasswordHasher;
 import org.springframework.context.annotation.Bean;
@@ -39,6 +41,20 @@ public class UserModuleConfiguration {
     @Bean
     public ChangeUserStatusUseCase changeUserStatusUseCase(UserRepositoryPort userRepositoryPort) {
         return new ChangeUserStatusUseCase(userRepositoryPort);
+    }
+
+    @Bean
+    public LoginUseCase loginUseCase(UserRepositoryPort userRepositoryPort, PasswordHasher passwordHasher) {
+        return new LoginUseCase(userRepositoryPort, passwordHasher);
+    }
+
+    /**
+     * The {@link org.jala.edu.core.contract.CurrentUserService} contract other modules receive; it replaces core's
+     * fallback.
+     */
+    @Bean
+    public SessionCurrentUserService currentUserService() {
+        return new SessionCurrentUserService();
     }
 
     @Bean

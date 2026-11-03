@@ -1,6 +1,7 @@
 package org.jala.edu.user.application.port.out;
 
 import java.util.List;
+import java.util.Optional;
 import org.jala.edu.core.application.port.out.CrudRepositoryPort;
 import org.jala.edu.user.domain.model.Email;
 import org.jala.edu.user.domain.model.User;
@@ -18,4 +19,6 @@ public interface UserRepositoryPort extends CrudRepositoryPort<User, UserId> {
      * @return the users whose email contains {@code fragment}, oldest first
      */
     List<User> findByEmailContaining(String fragment);
+
+    Optional<User> findByEmail(Email email);
 }

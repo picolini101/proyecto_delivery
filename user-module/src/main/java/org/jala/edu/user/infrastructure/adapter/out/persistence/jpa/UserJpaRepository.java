@@ -1,6 +1,7 @@
 package org.jala.edu.user.infrastructure.adapter.out.persistence.jpa;
 
 import java.util.List;
+import java.util.Optional;
 import org.jala.edu.core.infrastructure.persistence.jpa.BaseEntityRepository;
 
 interface UserJpaRepository extends BaseEntityRepository<UserJpaEntity, String> {
@@ -10,4 +11,6 @@ interface UserJpaRepository extends BaseEntityRepository<UserJpaEntity, String> 
     long countByRoleAndStatus(String role, String status);
 
     List<UserJpaEntity> findByEmailContainingOrderByCreatedAtAsc(String fragment);
+
+    Optional<UserJpaEntity> findByEmail(String email);
 }

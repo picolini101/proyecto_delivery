@@ -18,6 +18,11 @@
     -fx-padding: 0 20 0 0;
 }
 
+.nav-user {
+    -fx-text-fill: #d1d5db;
+    -fx-padding: 0 8 0 0;
+}
+
 .button.nav-button {
     -fx-background-color: transparent;
     -fx-text-fill: #d1d5db;
