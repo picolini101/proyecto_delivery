@@ -1,6 +1,7 @@
 package org.jala.edu.delivery.infrastructure.config;
 
 import org.jala.edu.core.infrastructure.ui.NavigationItem;
+import org.jala.edu.delivery.infrastructure.adapter.in.ui.DeliveryViews;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -11,7 +12,7 @@ import org.springframework.core.annotation.Order;
 @Configuration
 public class DeliveryUiConfiguration {
 
-    public static final String MAIN_VIEW = "/org/jala/edu/delivery/infrastructure/adapter/in/ui/delivery-main.fxml";
+    public static final String MAIN_VIEW = DeliveryViews.MAIN;
 
     @Bean
     @Order(400)
