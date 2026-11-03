@@ -22,9 +22,11 @@ public class User extends BaseModel<UserId> {
     private PhoneNumber phoneNumber;
     private UserRole role;
     private UserStatus status;
+    @ToString.Exclude
+    private String passwordHash;
 
     private User(UserId id, String firstName, String lastName, Email email, String phoneNumber,
-                 UserRole role, UserStatus status, Instant createdAt, Instant updatedAt) {
+                 UserRole role, UserStatus status, String passwordHash, Instant createdAt, Instant updatedAt) {
         super(id, createdAt, updatedAt);
         this.firstName = requireText(firstName, "First name");
         this.lastName = requireText(lastName, "Last name");
@@ -32,22 +34,27 @@ public class User extends BaseModel<UserId> {
         this.phoneNumber = PhoneNumber.ofNullable(phoneNumber);
         this.role = Objects.requireNonNull(role, "Role is required");
         this.status = Objects.requireNonNull(status, "Status is required");
+        this.passwordHash = passwordHash;
     }
 
     /**
-     * Creates a brand-new user. New users start as {@link UserStatus#ACTIVE}.
+     * Creates a brand-new user. New users start as {@link UserStatus#ACTIVE} and without a password until
+     * {@link #changePasswordHash} is called.
      */
     public static User register(String firstName, String lastName, Email email, String phoneNumber, UserRole role) {
         Instant now = now();
-        return new User(UserId.newId(), firstName, lastName, email, phoneNumber, role, UserStatus.ACTIVE, now, now);
+        return new User(UserId.newId(), firstName, lastName, email, phoneNumber, role, UserStatus.ACTIVE, null,
+                now, now);
     }
 
     /**
      * Rebuilds an existing user from storage. Only persistence adapters should call this.
      */
     public static User restore(UserId id, String firstName, String lastName, Email email, String phoneNumber,
-                               UserRole role, UserStatus status, Instant createdAt, Instant updatedAt) {
-        return new User(id, firstName, lastName, email, phoneNumber, role, status, createdAt, updatedAt);
+                               UserRole role, UserStatus status, String passwordHash, Instant createdAt,
+                               Instant updatedAt) {
+        return new User(id, firstName, lastName, email, phoneNumber, role, status, passwordHash, createdAt,
+                updatedAt);
     }
 
     /**
@@ -62,6 +69,18 @@ public class User extends BaseModel<UserId> {
         this.lastName = validLastName;
         this.phoneNumber = validPhoneNumber;
         touch();
+    }
+
+    /**
+     * Stores the hash of a new password (D-10); the password itself never reaches the domain model.
+     */
+    public void changePasswordHash(String passwordHash) {
+        this.passwordHash = requireText(passwordHash, "Password hash");
+        touch();
+    }
+
+    public boolean hasPassword() {
+        return passwordHash != null;
     }
 
     public void changeRole(UserRole role) {

@@ -38,8 +38,11 @@ public class UserJpaEntity extends BaseJpaEntity {
     @Column(length = 20, nullable = false)
     private String status;
 
+    @Column(name = "password_hash", length = 100)
+    private String passwordHash;
+
     public UserJpaEntity(String id, String firstName, String lastName, String email, String phoneNumber,
-                         String role, String status, Instant createdAt, Instant updatedAt) {
+                         String role, String status, String passwordHash, Instant createdAt, Instant updatedAt) {
         super(createdAt, updatedAt);
         this.id = id;
         this.firstName = firstName;
@@ -48,5 +51,6 @@ public class UserJpaEntity extends BaseJpaEntity {
         this.phoneNumber = phoneNumber;
         this.role = role;
         this.status = status;
+        this.passwordHash = passwordHash;
     }
 }

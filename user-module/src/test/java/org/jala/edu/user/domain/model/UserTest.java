@@ -149,7 +149,7 @@ class UserTest {
         // Arrange
         User original = user("ana@example.com");
         User sameIdOtherData = User.restore(original.getId(), "Maria", "Lopez", new Email("maria@example.com"), null,
-                UserRole.ADMIN, UserStatus.INACTIVE, original.getCreatedAt(), original.getUpdatedAt());
+                UserRole.ADMIN, UserStatus.INACTIVE, null, original.getCreatedAt(), original.getUpdatedAt());
 
         // Act
         boolean equal = original.equals(sameIdOtherData);

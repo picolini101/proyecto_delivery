@@ -19,6 +19,7 @@ final class UserPersistenceMapper implements PersistenceMapper<User, UserId, Use
                 user.getPhoneNumber(),
                 user.getRole().name(),
                 user.getStatus().name(),
+                user.getPasswordHash(),
                 user.getCreatedAt(),
                 user.getUpdatedAt());
     }
@@ -33,6 +34,7 @@ final class UserPersistenceMapper implements PersistenceMapper<User, UserId, Use
                 entity.getPhoneNumber(),
                 UserRole.valueOf(entity.getRole()),
                 UserStatus.valueOf(entity.getStatus()),
+                entity.getPasswordHash(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt());
     }

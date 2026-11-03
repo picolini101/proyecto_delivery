@@ -8,12 +8,13 @@ import org.jala.edu.user.domain.model.User;
 import org.jala.edu.user.domain.model.UserId;
 import org.jala.edu.user.domain.model.UserRole;
 import org.jala.edu.user.infrastructure.adapter.out.persistence.memory.InMemoryUserRepositoryAdapter;
+import org.jala.edu.user.infrastructure.adapter.out.security.BCryptPasswordHasher;
 import org.junit.jupiter.api.Test;
 
 class SampleUsersLoaderTest {
 
     private final InMemoryUserRepositoryAdapter repository = new InMemoryUserRepositoryAdapter();
-    private final SampleUsersLoader loader = new SampleUsersLoader(repository);
+    private final SampleUsersLoader loader = new SampleUsersLoader(repository, new BCryptPasswordHasher());
 
     @Test
     void storesOneActiveUserPerRoleAndAnInactiveCustomer() {

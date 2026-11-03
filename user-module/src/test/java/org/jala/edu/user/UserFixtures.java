@@ -16,6 +16,7 @@ public final class UserFixtures {
 
     public static final String FIRST_NAME = "Ana";
     public static final String LAST_NAME = "Perez";
+    public static final String PASSWORD = "Secret123";
     public static final String PHONE = "+59170000000";
 
     private UserFixtures() {
@@ -41,10 +42,10 @@ public final class UserFixtures {
     public static User userCreatedAt(String email, String createdAt) {
         Instant instant = Instant.parse(createdAt);
         return User.restore(UserId.newId(), FIRST_NAME, LAST_NAME, new Email(email), PHONE,
-                UserRole.CUSTOMER, UserStatus.ACTIVE, instant, instant);
+                UserRole.CUSTOMER, UserStatus.ACTIVE, null, instant, instant);
     }
 
     public static CreateUserCommand createCommand(String email) {
-        return new CreateUserCommand(FIRST_NAME, LAST_NAME, email, PHONE, UserRole.CUSTOMER);
+        return new CreateUserCommand(FIRST_NAME, LAST_NAME, email, PHONE, UserRole.CUSTOMER, PASSWORD);
     }
 }

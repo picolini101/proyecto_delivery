@@ -7,6 +7,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +50,9 @@ public class CreateUserController {
     private ComboBox<UserRole> roleComboBox;
 
     @FXML
+    private PasswordField passwordField;
+
+    @FXML
     private Button createButton;
 
     @FXML
@@ -61,7 +65,8 @@ public class CreateUserController {
         createButton.disableProperty().bind(isBlank(firstNameField)
                 .or(isBlank(lastNameField))
                 .or(isBlank(emailField))
-                .or(roleComboBox.valueProperty().isNull()));
+                .or(roleComboBox.valueProperty().isNull())
+                .or(isBlank(passwordField)));
     }
 
     @FXML
@@ -71,7 +76,8 @@ public class CreateUserController {
                 lastNameField.getText(),
                 emailField.getText(),
                 optionalText(phoneField),
-                roleComboBox.getValue());
+                roleComboBox.getValue(),
+                passwordField.getText());
 
         form.setDisable(true);
         messageLabel.setText("");
@@ -99,6 +105,7 @@ public class CreateUserController {
         lastNameField.clear();
         emailField.clear();
         phoneField.clear();
+        passwordField.clear();
         roleComboBox.getSelectionModel().clearSelection();
         firstNameField.requestFocus();
     }
