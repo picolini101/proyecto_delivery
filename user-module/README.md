@@ -2,13 +2,14 @@
 
 User management for the Delivery System (`org.jala.edu.user`), built with the port/adapter layout.
 
-- **Use cases:** `CreateUserUseCase`, `ListUsersUseCase`, `UpdateUserUseCase`, `DeleteUserUseCase`,
-  `CheckUserAccessUseCase`.
+- **Use cases:** `CreateUserUseCase`, `ListUsersUseCase`, `UpdateUserUseCase`, `ChangeUserStatusUseCase`,
+  `CheckUserAccessUseCase`. Users are deactivated, never deleted, and the last active ADMIN cannot be deactivated or
+  demoted (FUN-003).
 - **Contract:** serves core's `UserService` to the other modules (`UserServiceAdapter`) and stores the core
   `SampleUsers` at startup (`SampleUsersLoader`).
 - **Persistence:** JPA adapter (MySQL, Flyway migration in `db/migration/user`) and in-memory adapter,
   selected with `delivery.persistence.type`.
-- **UI:** "Users" navigation button → Users main view → Create user, List users (edit dialog, delete confirmation).
+- **UI:** "Users" navigation button → Users main view → Create user, List users (edit dialog, Activate/Deactivate).
 
 ## Build
 

@@ -5,4 +5,6 @@ import org.jala.edu.core.infrastructure.persistence.jpa.BaseEntityRepository;
 interface UserJpaRepository extends BaseEntityRepository<UserJpaEntity, String> {
 
     boolean existsByEmail(String email);
+
+    long countByRoleAndStatus(String role, String status);
 }

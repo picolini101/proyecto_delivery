@@ -6,6 +6,7 @@ import org.jala.edu.user.application.port.out.UserRepositoryPort;
 import org.jala.edu.user.domain.model.Email;
 import org.jala.edu.user.domain.model.User;
 import org.jala.edu.user.domain.model.UserId;
+import org.jala.edu.user.domain.model.UserRole;
 import org.springframework.stereotype.Component;
 
 /**
@@ -19,5 +20,10 @@ public class InMemoryUserRepositoryAdapter extends InMemoryCrudRepository<User, 
     @Override
     public boolean existsByEmail(Email email) {
         return stream().anyMatch(user -> user.getEmail().equals(email));
+    }
+
+    @Override
+    public long countActiveByRole(UserRole role) {
+        return stream().filter(user -> user.isActive() && user.getRole() == role).count();
     }
 }

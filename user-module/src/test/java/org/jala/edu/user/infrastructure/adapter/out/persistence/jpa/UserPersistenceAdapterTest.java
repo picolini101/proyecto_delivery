@@ -116,6 +116,23 @@ class UserPersistenceAdapterTest {
     }
 
     @Test
+    void countActiveByRoleCountsOnlyActiveUsersWithThatRole() {
+        // Arrange
+        adapter.save(user("admin@example.com", UserRole.ADMIN));
+        User inactiveAdmin = user("old-admin@example.com", UserRole.ADMIN);
+        inactiveAdmin.deactivate();
+        adapter.save(inactiveAdmin);
+        adapter.save(user("ana@example.com"));
+        detach();
+
+        // Act
+        long activeAdmins = adapter.countActiveByRole(UserRole.ADMIN);
+
+        // Assert
+        assertThat(activeAdmins).isEqualTo(1);
+    }
+
+    @Test
     void deleteByIdRemovesTheRow() {
         // Arrange
         User user = adapter.save(user("ana@example.com"));

@@ -25,7 +25,14 @@ public final class UserFixtures {
      * A new active customer, created now.
      */
     public static User user(String email) {
-        return User.register(FIRST_NAME, LAST_NAME, new Email(email), PHONE, UserRole.CUSTOMER);
+        return user(email, UserRole.CUSTOMER);
+    }
+
+    /**
+     * A new active user with the given role, created now.
+     */
+    public static User user(String email, UserRole role) {
+        return User.register(FIRST_NAME, LAST_NAME, new Email(email), PHONE, role);
     }
 
     /**

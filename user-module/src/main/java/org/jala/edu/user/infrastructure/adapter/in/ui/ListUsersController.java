@@ -17,17 +17,20 @@ import org.jala.edu.core.infrastructure.ui.Dialogs;
 import org.jala.edu.core.infrastructure.ui.DisplayFormat;
 import org.jala.edu.core.infrastructure.ui.ErrorMessages;
 import org.jala.edu.core.infrastructure.ui.SpringFxmlLoader;
+import org.jala.edu.user.application.port.in.ChangeUserStatusCommand;
 import org.jala.edu.user.application.port.in.ListUsersQuery;
-import org.jala.edu.user.application.usecase.DeleteUserUseCase;
+import org.jala.edu.user.application.usecase.ChangeUserStatusUseCase;
 import org.jala.edu.user.application.usecase.ListUsersUseCase;
 import org.jala.edu.user.domain.model.User;
+import org.jala.edu.user.domain.model.UserStatus;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
  * JavaFX inbound adapter for the "list users" use case (view: {@code list-users.fxml}).
- * Also entry point for editing (dialog) and deleting the selected user.
+ * Also entry point for editing (dialog) and activating or deactivating the selected user. Users are never deleted:
+ * other modules keep their id (FUN-003).
  */
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -36,7 +39,7 @@ public class ListUsersController {
 
 
     private final ListUsersUseCase listUsersUseCase;
-    private final DeleteUserUseCase deleteUserUseCase;
+    private final ChangeUserStatusUseCase changeUserStatusUseCase;
     private final SpringFxmlLoader fxmlLoader;
 
     @FXML
@@ -67,7 +70,7 @@ public class ListUsersController {
     private Button editButton;
 
     @FXML
-    private Button deleteButton;
+    private Button statusButton;
 
     @FXML
     private Label messageLabel;
@@ -83,7 +86,9 @@ public class ListUsersController {
 
         BooleanBinding noSelection = usersTable.getSelectionModel().selectedItemProperty().isNull();
         editButton.disableProperty().bind(noSelection);
-        deleteButton.disableProperty().bind(noSelection);
+        statusButton.disableProperty().bind(noSelection);
+        usersTable.getSelectionModel().selectedItemProperty().addListener((observable, previous, selected) ->
+                statusButton.setText(selected != null && !selected.isActive() ? "Activate" : "Deactivate"));
         usersTable.setRowFactory(table -> {
             TableRow<User> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
@@ -111,17 +116,18 @@ public class ListUsersController {
     }
 
     @FXML
-    void onDelete() {
+    void onToggleStatus() {
         User selected = usersTable.getSelectionModel().getSelectedItem();
-        boolean confirmed = Dialogs.confirm(usersTable, "Delete " + selected.fullName() + "?",
-                "The user " + selected.getEmail() + " will be permanently deleted.");
-        if (!confirmed) {
+        UserStatus newStatus = selected.isActive() ? UserStatus.INACTIVE : UserStatus.ACTIVE;
+        if (newStatus == UserStatus.INACTIVE && !Dialogs.confirm(usersTable, "Deactivate " + selected.fullName() + "?",
+                "The user " + selected.getEmail() + " will not be able to operate until activated again.")) {
             return;
         }
+        String action = newStatus == UserStatus.ACTIVE ? "activated" : "deactivated";
         BackgroundTasks.run(
-                () -> deleteUserUseCase.execute(selected.getId().value()),
-                done -> reload("User " + selected.fullName() + " deleted."),
-                error -> showMessage(ErrorMessages.of(error, "delete the user"), "error"));
+                () -> changeUserStatusUseCase.execute(new ChangeUserStatusCommand(selected.getId().value(), newStatus)),
+                done -> reload("User " + selected.fullName() + " " + action + "."),
+                error -> showMessage(ErrorMessages.of(error, "change the user status"), "error"));
     }
 
     /**
