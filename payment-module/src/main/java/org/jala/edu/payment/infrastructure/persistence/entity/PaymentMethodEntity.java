@@ -51,6 +51,7 @@ public class PaymentMethodEntity {
     public String getType() { return type; }
     public String getMaskedNumber() { return maskedNumber; }
     public boolean isLastRegistered() { return isLastRegistered; }
+    public void setLastRegistered(boolean lastRegistered) { this.isLastRegistered = lastRegistered; }
     public boolean isActive() { return isActive; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 }
