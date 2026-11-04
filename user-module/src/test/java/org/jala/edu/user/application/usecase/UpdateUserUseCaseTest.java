@@ -2,6 +2,8 @@ package org.jala.edu.user.application.usecase;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.jala.edu.user.UserFixtures.SIGNED_IN_ADMIN;
+import static org.jala.edu.user.UserFixtures.signedInAs;
 import static org.jala.edu.user.UserFixtures.user;
 
 import java.util.UUID;
@@ -13,12 +15,15 @@ import org.jala.edu.user.domain.model.User;
 import org.jala.edu.user.domain.model.UserRole;
 import org.jala.edu.user.domain.model.UserStatus;
 import org.jala.edu.user.infrastructure.adapter.out.persistence.memory.InMemoryUserRepositoryAdapter;
+import org.jala.edu.user.infrastructure.adapter.out.persistence.memory.InMemoryUserStatusHistoryAdapter;
 import org.junit.jupiter.api.Test;
 
 class UpdateUserUseCaseTest {
 
     private final InMemoryUserRepositoryAdapter repository = new InMemoryUserRepositoryAdapter();
-    private final UpdateUserUseCase updateUser = new UpdateUserUseCase(repository);
+    private final InMemoryUserStatusHistoryAdapter history = new InMemoryUserStatusHistoryAdapter();
+    private final UpdateUserUseCase updateUser =
+            new UpdateUserUseCase(repository, history, signedInAs(SIGNED_IN_ADMIN));
 
     @Test
     void updatesProfileRoleAndStatus() {
@@ -112,5 +117,35 @@ class UpdateUserUseCaseTest {
 
         // Assert
         assertThat(thrown).isInstanceOf(UserNotFoundException.class);
+    }
+
+    @Test
+    void recordsTheStatusChangeMadeFromTheEditForm() {
+        // Arrange
+        User existing = repository.save(user("ana@example.com"));
+        UpdateUserCommand command = new UpdateUserCommand(existing.getId().value(), "Ana", "Perez", null,
+                UserRole.CUSTOMER, UserStatus.INACTIVE);
+
+        // Act
+        updateUser.execute(command);
+
+        // Assert
+        assertThat(history.findByUserIdNewestFirst(existing.getId()))
+                .singleElement()
+                .satisfies(change -> assertThat(change.getNewStatus()).isEqualTo(UserStatus.INACTIVE));
+    }
+
+    @Test
+    void recordsNothingWhenOnlyTheProfileChanges() {
+        // Arrange
+        User existing = repository.save(user("ana@example.com"));
+        UpdateUserCommand command = new UpdateUserCommand(existing.getId().value(), "Ana", "Perez", null,
+                UserRole.CUSTOMER, UserStatus.ACTIVE);
+
+        // Act
+        updateUser.execute(command);
+
+        // Assert
+        assertThat(history.findByUserIdNewestFirst(existing.getId())).isEmpty();
     }
 }
