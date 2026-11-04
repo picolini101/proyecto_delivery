@@ -1,6 +1,8 @@
 package org.jala.edu.system;
 
 import org.jala.edu.core.infrastructure.config.ConditionalOnJpaPersistence;
+import org.jala.edu.delivery.application.port.out.CourierRepositoryPort;
+import org.jala.edu.delivery.infrastructure.adapter.out.persistence.memory.InMemoryCourierRepositoryAdapter;
 import org.jala.edu.order.application.port.out.CartRepositoryPort;
 import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryCartRepositoryAdapter;
 import org.slf4j.Logger;
@@ -26,6 +28,13 @@ public class MissingJpaAdaptersAutoConfiguration {
     public CartRepositoryPort inMemoryCartRepositoryBridge() {
         warnInMemory(CartRepositoryPort.class);
         return new InMemoryCartRepositoryAdapter();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public CourierRepositoryPort inMemoryCourierRepositoryBridge() {
+        warnInMemory(CourierRepositoryPort.class);
+        return new InMemoryCourierRepositoryAdapter();
     }
 
     private static void warnInMemory(Class<?> port) {
