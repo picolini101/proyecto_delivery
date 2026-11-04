@@ -1,8 +1,10 @@
 package org.jala.edu.user.application.usecase;
 
 import org.jala.edu.core.application.usecase.UseCase;
+import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.user.application.port.in.UpdateUserCommand;
 import org.jala.edu.user.application.port.out.UserRepositoryPort;
+import org.jala.edu.user.application.port.out.UserStatusHistoryPort;
 import org.jala.edu.user.domain.exception.LastActiveAdminException;
 import org.jala.edu.user.domain.exception.UserNotFoundException;
 import org.jala.edu.user.domain.model.User;
@@ -12,9 +14,14 @@ import org.jala.edu.user.domain.model.UserStatus;
 public class UpdateUserUseCase implements UseCase<UpdateUserCommand, Void> {
 
     private final UserRepositoryPort userRepository;
+    private final UserStatusHistoryPort statusHistory;
+    private final CurrentUserService currentUserService;
 
-    public UpdateUserUseCase(UserRepositoryPort userRepository) {
+    public UpdateUserUseCase(UserRepositoryPort userRepository, UserStatusHistoryPort statusHistory,
+                             CurrentUserService currentUserService) {
         this.userRepository = userRepository;
+        this.statusHistory = statusHistory;
+        this.currentUserService = currentUserService;
     }
 
     /**
@@ -26,8 +33,12 @@ public class UpdateUserUseCase implements UseCase<UpdateUserCommand, Void> {
         UserId id = new UserId(command.id());
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
         ActiveAdminRule.check(user, command.role(), command.status(), userRepository);
+        UserStatus previousStatus = user.getStatus();
         applyChanges(user, command);
         userRepository.save(user);
+        if (user.getStatus() != previousStatus) {
+            StatusHistory.record(user, previousStatus, statusHistory, currentUserService);
+        }
         return null;
     }
 

@@ -2,6 +2,8 @@ package org.jala.edu.user.application.usecase;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.jala.edu.user.UserFixtures.SIGNED_IN_ADMIN;
+import static org.jala.edu.user.UserFixtures.signedInAs;
 import static org.jala.edu.user.UserFixtures.user;
 
 import java.util.Set;
@@ -14,12 +16,15 @@ import org.jala.edu.user.domain.model.User;
 import org.jala.edu.user.domain.model.UserRole;
 import org.jala.edu.user.domain.model.UserStatus;
 import org.jala.edu.user.infrastructure.adapter.out.persistence.memory.InMemoryUserRepositoryAdapter;
+import org.jala.edu.user.infrastructure.adapter.out.persistence.memory.InMemoryUserStatusHistoryAdapter;
 import org.junit.jupiter.api.Test;
 
 class ChangeUserStatusUseCaseTest {
 
     private final InMemoryUserRepositoryAdapter repository = new InMemoryUserRepositoryAdapter();
-    private final ChangeUserStatusUseCase changeStatus = new ChangeUserStatusUseCase(repository);
+    private final InMemoryUserStatusHistoryAdapter history = new InMemoryUserStatusHistoryAdapter();
+    private final ChangeUserStatusUseCase changeStatus =
+            new ChangeUserStatusUseCase(repository, history, signedInAs(SIGNED_IN_ADMIN));
     private final CheckUserAccessUseCase checkAccess = new CheckUserAccessUseCase(repository);
 
     @Test
@@ -92,5 +97,36 @@ class ChangeUserStatusUseCaseTest {
 
         // Assert
         assertThat(thrown).isInstanceOf(UserNotFoundException.class);
+    }
+
+    @Test
+    void recordsWhoChangedTheStatus() {
+        // Arrange
+        User customer = repository.save(user("ana@example.com"));
+
+        // Act
+        changeStatus.execute(new ChangeUserStatusCommand(customer.getId().value(), UserStatus.INACTIVE));
+
+        // Assert
+        assertThat(history.findByUserIdNewestFirst(customer.getId()))
+                .singleElement()
+                .satisfies(change -> {
+                    assertThat(change.getPreviousStatus()).isEqualTo(UserStatus.ACTIVE);
+                    assertThat(change.getNewStatus()).isEqualTo(UserStatus.INACTIVE);
+                    assertThat(change.getChangedById()).isEqualTo(SIGNED_IN_ADMIN.id());
+                    assertThat(change.getChangedByName()).isEqualTo("Sample Admin");
+                });
+    }
+
+    @Test
+    void recordsNothingWhenTheStatusDoesNotChange() {
+        // Arrange
+        User customer = repository.save(user("ana@example.com"));
+
+        // Act
+        changeStatus.execute(new ChangeUserStatusCommand(customer.getId().value(), UserStatus.ACTIVE));
+
+        // Assert
+        assertThat(history.findByUserIdNewestFirst(customer.getId())).isEmpty();
     }
 }

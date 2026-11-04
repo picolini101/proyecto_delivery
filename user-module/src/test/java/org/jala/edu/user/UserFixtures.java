@@ -1,6 +1,10 @@
 package org.jala.edu.user;
 
 import java.time.Instant;
+import java.util.Optional;
+import org.jala.edu.core.contract.CurrentUser;
+import org.jala.edu.core.contract.CurrentUserService;
+import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.user.application.port.in.CreateUserCommand;
 import org.jala.edu.user.domain.model.Email;
 import org.jala.edu.user.domain.model.User;
@@ -19,7 +23,18 @@ public final class UserFixtures {
     public static final String PASSWORD = "Secret123";
     public static final String PHONE = "+59170000000";
 
+    /** The sample administrator, as {@code CurrentUserService} returns it after signing in. */
+    public static final CurrentUser SIGNED_IN_ADMIN =
+            new CurrentUser(SampleUsers.ADMIN, org.jala.edu.core.contract.UserRole.ADMIN, "Sample Admin");
+
     private UserFixtures() {
+    }
+
+    /**
+     * A {@code CurrentUserService} whose session belongs to {@code user}.
+     */
+    public static CurrentUserService signedInAs(CurrentUser user) {
+        return () -> Optional.of(user);
     }
 
     /**

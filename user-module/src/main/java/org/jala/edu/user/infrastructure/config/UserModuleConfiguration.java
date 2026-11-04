@@ -1,11 +1,14 @@
 package org.jala.edu.user.infrastructure.config;
 
+import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.user.application.port.out.PasswordHasher;
 import org.jala.edu.user.application.port.out.UserRepositoryPort;
+import org.jala.edu.user.application.port.out.UserStatusHistoryPort;
 import org.jala.edu.user.application.usecase.ChangeUserStatusUseCase;
 import org.jala.edu.user.application.usecase.CheckUserAccessUseCase;
 import org.jala.edu.user.application.usecase.CreateUserUseCase;
+import org.jala.edu.user.application.usecase.ListUserStatusHistoryUseCase;
 import org.jala.edu.user.application.usecase.ListUsersUseCase;
 import org.jala.edu.user.application.usecase.LoginUseCase;
 import org.jala.edu.user.application.usecase.UpdateUserUseCase;
@@ -29,8 +32,10 @@ public class UserModuleConfiguration {
     }
 
     @Bean
-    public UpdateUserUseCase updateUserUseCase(UserRepositoryPort userRepositoryPort) {
-        return new UpdateUserUseCase(userRepositoryPort);
+    public UpdateUserUseCase updateUserUseCase(UserRepositoryPort userRepositoryPort,
+                                               UserStatusHistoryPort userStatusHistoryPort,
+                                               CurrentUserService currentUserService) {
+        return new UpdateUserUseCase(userRepositoryPort, userStatusHistoryPort, currentUserService);
     }
 
     @Bean
@@ -39,8 +44,17 @@ public class UserModuleConfiguration {
     }
 
     @Bean
-    public ChangeUserStatusUseCase changeUserStatusUseCase(UserRepositoryPort userRepositoryPort) {
-        return new ChangeUserStatusUseCase(userRepositoryPort);
+    public ChangeUserStatusUseCase changeUserStatusUseCase(UserRepositoryPort userRepositoryPort,
+                                                           UserStatusHistoryPort userStatusHistoryPort,
+                                                           CurrentUserService currentUserService) {
+        return new ChangeUserStatusUseCase(userRepositoryPort, userStatusHistoryPort, currentUserService);
+    }
+
+    @Bean
+    public ListUserStatusHistoryUseCase listUserStatusHistoryUseCase(UserRepositoryPort userRepositoryPort,
+                                                                     UserStatusHistoryPort userStatusHistoryPort,
+                                                                     CurrentUserService currentUserService) {
+        return new ListUserStatusHistoryUseCase(userRepositoryPort, userStatusHistoryPort, currentUserService);
     }
 
     @Bean
