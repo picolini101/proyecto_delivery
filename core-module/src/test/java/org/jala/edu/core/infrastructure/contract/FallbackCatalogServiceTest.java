@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.util.List;
 import java.util.UUID;
+import org.jala.edu.core.contract.ProductInfo;
+import org.jala.edu.core.contract.SampleCatalog;
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.domain.exception.ConflictException;
 import org.jala.edu.core.domain.exception.NotFoundException;
@@ -17,12 +19,12 @@ class FallbackCatalogServiceTest {
     @Test
     void availabilityDependsOnTheStock() {
         // Arrange
-        UUID product = FallbackCatalogService.AVAILABLE_PRODUCT;
+        UUID product = SampleCatalog.PIZZA;
 
         // Act
         boolean withinStock = catalogService.isAvailable(product, 10);
         boolean aboveStock = catalogService.isAvailable(product, 11);
-        boolean soldOut = catalogService.isAvailable(FallbackCatalogService.SOLD_OUT_PRODUCT, 1);
+        boolean soldOut = catalogService.isAvailable(SampleCatalog.EMPANADA, 1);
 
         // Assert
         assertThat(withinStock).isTrue();
@@ -33,7 +35,7 @@ class FallbackCatalogServiceTest {
     @Test
     void reservingLowersTheStockAndReleasingRestoresIt() {
         // Arrange
-        UUID product = FallbackCatalogService.AVAILABLE_PRODUCT;
+        UUID product = SampleCatalog.PIZZA;
 
         // Act
         catalogService.reserveStock(product, 8);
@@ -48,7 +50,7 @@ class FallbackCatalogServiceTest {
     @Test
     void cannotReserveMoreThanTheStock() {
         // Arrange
-        UUID product = FallbackCatalogService.AVAILABLE_PRODUCT;
+        UUID product = SampleCatalog.PIZZA;
 
         // Act
         Throwable thrown = catchThrowable(() -> catalogService.reserveStock(product, 11));
@@ -78,7 +80,23 @@ class FallbackCatalogServiceTest {
         List<UUID> customerCommerces = catalogService.findCommerceIdsByMerchant(SampleUsers.CUSTOMER);
 
         // Assert
-        assertThat(merchantCommerces).containsExactly(FallbackCatalogService.SAMPLE_COMMERCE);
+        assertThat(merchantCommerces).containsExactly(SampleCatalog.COMMERCE);
         assertThat(customerCommerces).isEmpty();
+    }
+
+    @Test
+    void servesTheSampleCatalogData() {
+        // Arrange
+        UUID pizza = SampleCatalog.PIZZA;
+
+        // Act
+        ProductInfo product = catalogService.findProduct(pizza).orElseThrow();
+
+        // Assert
+        assertThat(product.commerceId()).isEqualTo(SampleCatalog.COMMERCE);
+        assertThat(product.name()).isEqualTo(SampleCatalog.PIZZA_NAME);
+        assertThat(product.price()).isEqualByComparingTo(SampleCatalog.PIZZA_PRICE);
+        assertThat(catalogService.isAvailable(pizza, SampleCatalog.PIZZA_STOCK)).isTrue();
+        assertThat(catalogService.isAvailable(pizza, SampleCatalog.PIZZA_STOCK + 1)).isFalse();
     }
 }
