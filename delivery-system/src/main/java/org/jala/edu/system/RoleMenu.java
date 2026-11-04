@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 /**
  * Menu by role (#61): which navigation buttons each role sees, by the module's button title. Kept here so the
  * modules do not need to know about roles; a title that is not listed is shown to everyone.
+ * "My commerce orders" is the merchant's button of {@code order-module} (D-08, #79).
  */
 @Component
 public class RoleMenu implements NavigationFilter {
@@ -20,6 +21,7 @@ public class RoleMenu implements NavigationFilter {
             "Users", EnumSet.of(UserRole.ADMIN),
             "Catalog", EnumSet.of(UserRole.ADMIN, UserRole.MERCHANT),
             "Orders", EnumSet.of(UserRole.CUSTOMER),
+            "My commerce orders", EnumSet.of(UserRole.MERCHANT),
             "Payments", EnumSet.of(UserRole.CUSTOMER),
             "Deliveries", EnumSet.of(UserRole.COURIER));
 

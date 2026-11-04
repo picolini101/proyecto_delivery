@@ -12,14 +12,15 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 class RoleMenuTest {
 
-    private static final List<String> TITLES = List.of("Users", "Catalog", "Orders", "Payments", "Deliveries");
+    private static final List<String> TITLES = List.of("Users", "Catalog", "Orders", "My commerce orders", "Payments",
+            "Deliveries");
 
     private final RoleMenu menu = new RoleMenu();
 
     @ParameterizedTest
     @CsvSource(delimiter = '|', value = {
             "ADMIN    | Users,Catalog",
-            "MERCHANT | Catalog",
+            "MERCHANT | Catalog,My commerce orders",
             "CUSTOMER | Orders,Payments",
             "COURIER  | Deliveries"})
     void eachRoleSeesOnlyItsModules(UserRole role, String expected) {

@@ -511,6 +511,19 @@ The button of the open module stays highlighted.
 | Deliveries (`delivery-module`) | `delivery-main.fxml` | none yet |
 | Payments (`payment-module`) | `payment-main.fxml` | none yet |
 
+After login, `RoleMenu` (`delivery-system`) shows each button only to its roles, matched by the button title:
+
+| Button title | Roles |
+|---|---|
+| `Users` | ADMIN |
+| `Catalog` | ADMIN, MERCHANT |
+| `Orders` | CUSTOMER |
+| `My commerce orders` | MERCHANT — second button of `order-module` for "Pedidos de mi comercio" (D-08, #72 / #79) |
+| `Payments` | CUSTOMER |
+| `Deliveries` | COURIER |
+
+A title that is not listed is shown to every role, so keep the title exactly as written here.
+
 Views inside a module switch screens with the `Navigator` bean (`navigator.show(UserViews.CREATE)`), which replaces
 the content area of the main window. Keep a module's view paths in one class (e.g. `UserViews`).
 
