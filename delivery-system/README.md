@@ -390,6 +390,7 @@ modify `core-module`; a contract change is requested to the practitioner with th
   | `CUSTOMER` | `00000000-0000-0000-0000-000000000003` | `CUSTOMER` | active |
   | `COURIER` | `00000000-0000-0000-0000-000000000004` | `COURIER` | active |
   | `INACTIVE_CUSTOMER` | `00000000-0000-0000-0000-000000000005` | `CUSTOMER` | inactive |
+  | `INACTIVE_COURIER` | `00000000-0000-0000-0000-000000000006` | `COURIER` | inactive |
 
 ### Domain-driven files
 

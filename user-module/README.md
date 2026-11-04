@@ -6,7 +6,8 @@ User management for the Delivery System (`org.jala.edu.user`), built with the po
   `CheckUserAccessUseCase`. Users are deactivated, never deleted, and the last active ADMIN cannot be deactivated or
   demoted (FUN-003).
 - **Contract:** serves core's `UserService` to the other modules (`UserServiceAdapter`) and stores the core
-  `SampleUsers` at startup (`SampleUsersLoader`).
+  `SampleUsers` at startup (`SampleUsersLoader`): one active user per role plus an inactive customer and an
+  inactive courier (`inactive.courier@sample.delivery`), so other modules can test the rejection of inactive users.
 - **Persistence:** JPA adapter (MySQL, Flyway migration in `db/migration/user`) and in-memory adapter,
   selected with `delivery.persistence.type`.
 - **Validation:** valid email (`Email`) and optional phone in E.164 format, `^\+[1-9]\d{1,14}$`
