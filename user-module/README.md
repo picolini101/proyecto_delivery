@@ -24,6 +24,8 @@ User management for the Delivery System (`org.jala.edu.user`), built with the po
   `CurrentUserService` to the other modules. The login screen opens before the main window. Each lookup reloads the
   signed-in user (#88): if the administrator deactivates them, the session ends at once (`currentUser()` throws
   `NotAuthenticatedException`), and a new role or name applies to the next operation.
+- **Sign-up (CU-USR-08, #89):** "New customer? Create an account" on the login opens `sign-up.fxml`; `SignUpUseCase`
+  creates an active **CUSTOMER** (other roles are still created by an administrator) and signs them in.
 - **UI:** "Users" navigation button → Users main view → Create user, List users (search by email, edit dialog,
   Activate/Deactivate, status history).
 
