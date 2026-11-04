@@ -16,6 +16,8 @@ public final class UserViews {
     public static final String STATUS_HISTORY = BASE + "user-status-history.fxml";
     /** Login screen shown before the main window (CU-USR-06). */
     public static final String LOGIN = BASE + "login.fxml";
+    /** Sign-up screen for new customers, opened from the login (CU-USR-08). */
+    public static final String SIGN_UP = BASE + "sign-up.fxml";
 
     private UserViews() {
     }

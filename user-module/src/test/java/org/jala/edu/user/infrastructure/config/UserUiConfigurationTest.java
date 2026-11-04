@@ -27,7 +27,8 @@ class UserUiConfigurationTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {UserViews.MAIN, UserViews.CREATE, UserViews.LIST, UserViews.EDIT, UserViews.LOGIN})
+    @ValueSource(strings = {UserViews.MAIN, UserViews.CREATE, UserViews.LIST, UserViews.EDIT, UserViews.LOGIN,
+            UserViews.SIGN_UP})
     void everyUserViewExistsOnTheClasspath(String fxmlPath) {
         // Arrange
         Class<?> anyModuleClass = UserViews.class;

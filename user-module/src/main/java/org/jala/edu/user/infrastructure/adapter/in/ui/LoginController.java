@@ -70,4 +70,9 @@ public class LoginController {
                     form.setDisable(false);
                 });
     }
+
+    @FXML
+    void onCreateAccount() {
+        shell.showScreen(UserViews.SIGN_UP);
+    }
 }
