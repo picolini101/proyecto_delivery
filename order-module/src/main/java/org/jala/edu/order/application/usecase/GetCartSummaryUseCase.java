@@ -63,7 +63,7 @@ public class GetCartSummaryUseCase {
             }
             BigDecimal quantity = BigDecimal.valueOf(item.getQuantity());
             BigDecimal lineSubtotal = product.price().multiply(quantity);
-            CartSummary.Line line = new CartSummary.Line(product.name(), product.price(),
+            CartSummary.Line line = new CartSummary.Line(item.getProductId(), product.name(), product.price(),
                     item.getQuantity(), lineSubtotal);
 
             // Busca la lista de este comercio; si todavia no existe, la crea

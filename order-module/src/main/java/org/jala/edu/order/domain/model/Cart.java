@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.jala.edu.core.domain.exception.DomainException;
+import org.jala.edu.core.domain.exception.NotFoundException;
 
 /**
  * Carrito de compras de un cliente. Es una clase del dominio: solo tiene datos y reglas simples,
@@ -89,5 +90,31 @@ public class Cart {
         } else {
             item.setQuantity(item.getQuantity() + quantity);
         }
+    }
+
+    /**
+     * Quita unidades a un producto que ya esta en el carrito (boton "-" de la pantalla).
+     * La cantidad nunca puede quedar en menos de 1, quitar el producto completo no es parte de este metodo.
+     * Si algo falla, se lanza el error ANTES de cambiar la cantidad, asi que la linea queda como estaba.
+     *
+     * @param productId id del producto
+     * @param quantity  unidades a quitar, debe ser mayor que cero
+     * @throws DomainException   si la cantidad es cero o negativa, o si la linea quedaria en menos de 1
+     * @throws NotFoundException si el producto no esta en el carrito
+     */
+    public void decreaseProduct(UUID productId, int quantity){
+        if(quantity <= 0){
+            throw new DomainException("Quantity must be greater than zero");
+        }
+
+        CartItem item = findItem(productId);
+        if(item == null){
+            throw new NotFoundException("El producto no esta en el carrit");
+        }
+        if(item.getQuantity() - quantity < 1){
+            throw new DomainException("La cantidad no puede quedar en menos de 1");
+        }
+
+        item.setQuantity(item.getQuantity() - quantity);
     }
 }
