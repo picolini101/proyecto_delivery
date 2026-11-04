@@ -49,4 +49,16 @@ class FallbackUserServiceTest {
         assertThat(inactiveAllowed).isFalse();
         assertThat(unknownAllowed).isFalse();
     }
+
+    @Test
+    void rejectsTheInactiveSampleCourier() {
+        // Arrange
+        UUID inactiveCourier = SampleUsers.INACTIVE_COURIER;
+
+        // Act
+        boolean allowed = userService.isActiveWithRole(inactiveCourier, UserRole.COURIER);
+
+        // Assert
+        assertThat(allowed).isFalse();
+    }
 }

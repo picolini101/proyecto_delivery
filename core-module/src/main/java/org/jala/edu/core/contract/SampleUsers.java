@@ -3,7 +3,8 @@ package org.jala.edu.core.contract;
 import java.util.UUID;
 
 /**
- * Fixed accounts, one per role plus an inactive one, so every team can try its module with known ids from day one.
+ * Fixed accounts, one per role plus an inactive customer and an inactive courier, so every team can try its module
+ * with known ids from day one, including the rejection of an inactive user.
  * {@code user-module} stores them at startup; the fallback {@link UserService} answers for them too.
  */
 public final class SampleUsers {
@@ -13,6 +14,7 @@ public final class SampleUsers {
     public static final UUID CUSTOMER = UUID.fromString("00000000-0000-0000-0000-000000000003");
     public static final UUID COURIER = UUID.fromString("00000000-0000-0000-0000-000000000004");
     public static final UUID INACTIVE_CUSTOMER = UUID.fromString("00000000-0000-0000-0000-000000000005");
+    public static final UUID INACTIVE_COURIER = UUID.fromString("00000000-0000-0000-0000-000000000006");
 
     private SampleUsers() {
     }
