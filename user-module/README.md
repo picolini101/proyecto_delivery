@@ -5,6 +5,9 @@ User management for the Delivery System (`org.jala.edu.user`), built with the po
 - **Use cases:** `CreateUserUseCase`, `ListUsersUseCase`, `UpdateUserUseCase`, `ChangeUserStatusUseCase`,
   `CheckUserAccessUseCase`. Users are deactivated, never deleted, and the last active ADMIN cannot be deactivated or
   demoted (FUN-003).
+- **Status history (#82, CU-USR-07):** every activation or deactivation, from the list or the edit form, records
+  the previous and new status, who made it (`CurrentUserService`) and when (`UserStatusChange`,
+  `UserStatusHistoryPort`, table `user_status_changes`). Only an ADMIN can see it (`ListUserStatusHistoryUseCase`).
 - **Contract:** serves core's `UserService` to the other modules (`UserServiceAdapter`) and stores the core
   `SampleUsers` at startup (`SampleUsersLoader`): one active user per role plus an inactive customer and an
   inactive courier (`inactive.courier@sample.delivery`), so other modules can test the rejection of inactive users.
@@ -18,7 +21,7 @@ User management for the Delivery System (`org.jala.edu.user`), built with the po
 - **Login (CU-USR-06):** `LoginUseCase` checks email, password and status; `SessionCurrentUserService` serves core's
   `CurrentUserService` to the other modules. The login screen opens before the main window.
 - **UI:** "Users" navigation button → Users main view → Create user, List users (search by email, edit dialog,
-  Activate/Deactivate).
+  Activate/Deactivate, status history).
 
 ## Build
 
