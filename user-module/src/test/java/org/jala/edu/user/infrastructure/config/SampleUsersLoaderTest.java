@@ -17,17 +17,19 @@ class SampleUsersLoaderTest {
     private final SampleUsersLoader loader = new SampleUsersLoader(repository, new BCryptPasswordHasher());
 
     @Test
-    void storesOneActiveUserPerRoleAndAnInactiveCustomer() {
+    void storesOneActiveUserPerRoleAndTheInactiveCustomerAndCourier() {
         // Arrange (empty repository)
 
         // Act
         loader.load();
 
         // Assert
-        assertThat(repository.findAll()).hasSize(5);
+        assertThat(repository.findAll()).hasSize(6);
         assertThat(stored(SampleUsers.MERCHANT).getRole()).isEqualTo(UserRole.MERCHANT);
         assertThat(stored(SampleUsers.MERCHANT).isActive()).isTrue();
         assertThat(stored(SampleUsers.INACTIVE_CUSTOMER).isActive()).isFalse();
+        assertThat(stored(SampleUsers.INACTIVE_COURIER).getRole()).isEqualTo(UserRole.COURIER);
+        assertThat(stored(SampleUsers.INACTIVE_COURIER).isActive()).isFalse();
     }
 
     @Test
@@ -39,7 +41,7 @@ class SampleUsersLoaderTest {
         loader.load();
 
         // Assert
-        assertThat(repository.findAll()).hasSize(5);
+        assertThat(repository.findAll()).hasSize(6);
     }
 
     private User stored(UUID id) {

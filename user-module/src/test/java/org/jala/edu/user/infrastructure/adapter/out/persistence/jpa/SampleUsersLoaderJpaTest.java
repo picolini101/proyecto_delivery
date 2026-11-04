@@ -22,7 +22,7 @@ class SampleUsersLoaderJpaTest {
     private UserPersistenceAdapter adapter;
 
     @Test
-    void loadingTwiceKeepsFiveSampleUsers() {
+    void loadingTwiceKeepsSixSampleUsers() {
         // Arrange
         SampleUsersLoader loader = new SampleUsersLoader(adapter, new BCryptPasswordHasher());
         loader.run(null);
@@ -31,6 +31,6 @@ class SampleUsersLoaderJpaTest {
         loader.run(null);
 
         // Assert
-        assertThat(adapter.findAll()).hasSize(5);
+        assertThat(adapter.findAll()).hasSize(6);
     }
 }

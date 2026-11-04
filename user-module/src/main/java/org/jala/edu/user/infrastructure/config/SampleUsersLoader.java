@@ -47,6 +47,8 @@ public class SampleUsersLoader implements ApplicationRunner {
         store(SampleUsers.COURIER, "Courier", "courier@sample.delivery", UserRole.COURIER, UserStatus.ACTIVE);
         store(SampleUsers.INACTIVE_CUSTOMER, "Inactive", "inactive@sample.delivery", UserRole.CUSTOMER,
                 UserStatus.INACTIVE);
+        store(SampleUsers.INACTIVE_COURIER, "Inactive Courier", "inactive.courier@sample.delivery", UserRole.COURIER,
+                UserStatus.INACTIVE);
     }
 
     private void store(UUID id, String lastName, String email, UserRole role, UserStatus status) {
