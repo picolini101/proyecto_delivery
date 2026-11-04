@@ -2,6 +2,8 @@ package org.jala.edu.core.infrastructure.contract;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.jala.edu.core.contract.CatalogService;
 import org.jala.edu.core.contract.CurrentUserService;
@@ -10,6 +12,7 @@ import org.jala.edu.core.contract.PaymentService;
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.contract.UserRole;
 import org.jala.edu.core.contract.UserService;
+import org.jala.edu.core.contract.UserSummary;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
@@ -72,7 +75,28 @@ class ContractFallbackAutoConfigurationTest {
 
         @Bean
         UserService userService() {
-            return (UUID userId, UserRole... roles) -> true;
+            return new UserModuleUserService();
+        }
+    }
+
+    /**
+     * Stands for user-module's implementation: anything that is not the fallback.
+     */
+    static class UserModuleUserService implements UserService {
+
+        @Override
+        public boolean isActiveWithRole(UUID userId, UserRole... roles) {
+            return true;
+        }
+
+        @Override
+        public Optional<UserSummary> findUser(UUID userId) {
+            return Optional.empty();
+        }
+
+        @Override
+        public List<UserSummary> findActiveByRole(UserRole role) {
+            return List.of();
         }
     }
 }
