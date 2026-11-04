@@ -244,6 +244,11 @@ Data survives restarts and the sample users are not duplicated. A module that ha
 in memory and logs `No JPA adapter for <Port>` at startup (`MissingJpaAdaptersAutoConfiguration`); each team adds
 its own JPA adapter and migrations, and the practitioner then removes that entry.
 
+Database rules (Proposal 1, decided in Sprint 2): one shared schema; table prefixes `cat_`, `ord_`, `del_`, `pay_`;
+no foreign keys across modules (store the other module's UUID and validate it through its contract). Step-by-step
+guide with the `user-module` example and a review checklist:
+[Guías/Persistencia-JPA](https://gitlab.com/jala-university1/cohort-7/ES.CO.CSSD-125.GA.T2.26.M2/SE/capstone/-/wikis/Gu%C3%ADas/Persistencia-JPA).
+
 ### 3. Stop MySQL
 
 ```bash
