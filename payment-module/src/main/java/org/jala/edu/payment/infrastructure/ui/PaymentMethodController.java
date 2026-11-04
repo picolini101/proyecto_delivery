@@ -16,6 +16,8 @@ import java.util.UUID;
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class PaymentMethodController {
 
+    private static final UUID DEFAULT_USER_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+
     @FXML private TextField aliasField;
     @FXML private ComboBox<String> typeComboBox;
     @FXML private TextField numberField;
@@ -34,6 +36,10 @@ public class PaymentMethodController {
     public void initialize() {
         // Cargar opciones en el ComboBox
         typeComboBox.getItems().addAll("TARJETA", "TRANSFERENCIA");
+
+        if (this.currentUserId == null) {
+            this.currentUserId = DEFAULT_USER_ID;
+        }
     }
 
     public void setUserId(UUID userId) {
