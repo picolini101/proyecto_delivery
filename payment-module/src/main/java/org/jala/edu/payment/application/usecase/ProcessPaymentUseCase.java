@@ -1,3 +1,4 @@
+
 package org.jala.edu.payment.application.usecase;
 
 import java.math.BigDecimal;
@@ -11,6 +12,8 @@ import org.jala.edu.payment.domain.repository.PaymentMethodRepository;
 
 public class ProcessPaymentUseCase {
 
+    private static final BigDecimal MAX_AMOUNT = new BigDecimal("5000.00");
+
     private final UserService userService;
     private final PaymentMethodRepository paymentMethodRepository;
 
@@ -22,11 +25,32 @@ public class ProcessPaymentUseCase {
     }
 
     public PaymentResult execute(ProcessPaymentCommand command) {
+
+        if (command == null) {
+            return new PaymentResult("", false, "La solicitud de pago es obligatoria");
+        }
+
+        if (command.orderId() == null) {
+            return new PaymentResult("", false, "El pedido es obligatorio");
+        }
+
+        if (command.userId() == null) {
+            return new PaymentResult("", false, "El usuario es obligatorio");
+        }
+
+        BigDecimal amount = command.amount();
+
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            return new PaymentResult("", false, "El monto debe ser mayor a cero");
+        }
+
+        if (amount.compareTo(MAX_AMOUNT) > 0) {
+            return new PaymentResult("", false, "El monto excede el límite permitido");
+        }
+
         if (!userService.isActiveWithRole(command.userId(), UserRole.CUSTOMER)) {
             return new PaymentResult(
-                    "",
-                    false,
-                    "User not authorized for this operation"
+                    "", false, "Usuario no autorizado para realizar pagos"
             );
         }
 
@@ -36,21 +60,7 @@ public class ProcessPaymentUseCase {
                 .isPresent();
 
         if (!hasValidMethod) {
-            return new PaymentResult("", false, "sin método de pago");
-        }
-
-        BigDecimal amount = command.amount();
-
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            return new PaymentResult("", false, "El monto debe ser mayor a cero");
-        }
-
-        if (amount.compareTo(new BigDecimal("5000.00")) > 0) {
-            return new PaymentResult(
-                    "",
-                    false,
-                    "El monto excede el límite permitido"
-            );
+            return new PaymentResult("", false, "Sin método de pago válido");
         }
 
         PaymentTransaction transaction = PaymentTransaction.recordApproved(
