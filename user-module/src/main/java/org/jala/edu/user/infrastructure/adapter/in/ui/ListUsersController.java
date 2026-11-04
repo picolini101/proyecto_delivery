@@ -30,8 +30,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * JavaFX inbound adapter for the "list users" use case (view: {@code list-users.fxml}).
- * Also entry point for editing (dialog) and activating or deactivating the selected user. Users are never deleted:
- * other modules keep their id (FUN-003).
+ * Also entry point for editing (dialog), activating or deactivating the selected user and seeing its status history
+ * (dialog, #82). Users are never deleted: other modules keep their id (FUN-003).
  */
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -77,6 +77,9 @@ public class ListUsersController {
     private Button statusButton;
 
     @FXML
+    private Button historyButton;
+
+    @FXML
     private Label messageLabel;
 
     @FXML
@@ -91,6 +94,7 @@ public class ListUsersController {
         BooleanBinding noSelection = usersTable.getSelectionModel().selectedItemProperty().isNull();
         editButton.disableProperty().bind(noSelection);
         statusButton.disableProperty().bind(noSelection);
+        historyButton.disableProperty().bind(noSelection);
         usersTable.getSelectionModel().selectedItemProperty().addListener((observable, previous, selected) ->
                 statusButton.setText(selected != null && !selected.isActive() ? "Activate" : "Deactivate"));
         usersTable.setRowFactory(table -> {
@@ -128,6 +132,14 @@ public class ListUsersController {
         SpringFxmlLoader.View<EditUserController> view = fxmlLoader.loadView(UserViews.EDIT);
         view.controller().edit(selected, () -> reload("User " + selected.getEmail() + " updated."));
         Dialogs.showModal(usersTable, "Edit user", view.root());
+    }
+
+    @FXML
+    void onShowHistory() {
+        User selected = usersTable.getSelectionModel().getSelectedItem();
+        SpringFxmlLoader.View<UserStatusHistoryController> view = fxmlLoader.loadView(UserViews.STATUS_HISTORY);
+        view.controller().show(selected);
+        Dialogs.showModal(usersTable, "Status history", view.root());
     }
 
     @FXML
