@@ -360,7 +360,7 @@ modify `core-module`; a contract change is requested to the practitioner with th
 
 | Contract | Implemented by | Used by |
 |---|---|---|
-| `UserService.isActiveWithRole(userId, roles...)` | `user-module` | every module |
+| `UserService` (`isActiveWithRole(userId, roles...)`, `findUser(userId)`, `findActiveByRole(role)`) | `user-module` | every module |
 | `CatalogService` (`findProduct`, `isAvailable`, `reserveStock`, `releaseStock`, `findCommerceIdsByMerchant`) | `catalog-module` | `order-module` |
 | `PaymentService.pay(orderId, userId, amount)` | `payment-module` | `order-module` |
 | `OrderService` (`findReadyForDelivery`, `assign`, `markOnTheWay`, `markDelivered`) | `order-module` | `delivery-module` |
@@ -373,6 +373,10 @@ modify `core-module`; a contract change is requested to the practitioner with th
 
   If `isActiveWithRole` returns `false`, reject the operation with "User not authorized for this operation".
   Use the enum names (`ADMIN`, `MERCHANT`, `CUSTOMER`, `COURIER`), not their Spanish labels.
+- **Showing or choosing a user (#85):** `findUser(userId)` returns a `UserSummary` (name, email, phone, role and
+  whether they are active) and `findActiveByRole(role)` lists the active users of a role by name, e.g. the merchants
+  for a commerce form or a courier's name and phone. Keep only the user's id in your module; read the rest from
+  `UserService` instead of copying it.
 - **Implementing a contract:** the owning module adds a class in `infrastructure` that implements the interface by
   calling its own use cases, and registers it as a `@Bean` in its configuration class.
 - **Until the owner delivers:** `core-module` registers a fallback for every contract nobody implements yet
