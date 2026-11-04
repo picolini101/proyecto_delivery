@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
 /**
- * Adds the "Users" button to the main window navigation bar, which opens the module's main view, and provides the
- * login screen shown before the main window.
+ * Adds the "Users" and "My account" buttons to the main window navigation bar and provides the login screen shown
+ * before the main window.
  */
 @Configuration
 public class UserUiConfiguration {
@@ -18,6 +18,15 @@ public class UserUiConfiguration {
     @Order(100)
     public NavigationItem userNavigationItem() {
         return new NavigationItem("Users", UserViews.MAIN);
+    }
+
+    /**
+     * "My account" (#90): every role sees it, because {@code RoleMenu} shows titles it does not list to everyone.
+     */
+    @Bean
+    @Order(190)
+    public NavigationItem myAccountNavigationItem() {
+        return new NavigationItem("My account", UserViews.MY_ACCOUNT);
     }
 
     @Bean

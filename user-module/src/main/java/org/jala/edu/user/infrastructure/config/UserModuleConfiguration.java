@@ -5,6 +5,7 @@ import org.jala.edu.core.contract.UserService;
 import org.jala.edu.user.application.port.out.PasswordHasher;
 import org.jala.edu.user.application.port.out.UserRepositoryPort;
 import org.jala.edu.user.application.port.out.UserStatusHistoryPort;
+import org.jala.edu.user.application.usecase.ChangePasswordUseCase;
 import org.jala.edu.user.application.usecase.ChangeUserStatusUseCase;
 import org.jala.edu.user.application.usecase.CheckUserAccessUseCase;
 import org.jala.edu.user.application.usecase.CreateUserUseCase;
@@ -63,6 +64,12 @@ public class UserModuleConfiguration {
     @Bean
     public SignUpUseCase signUpUseCase(CreateUserUseCase createUserUseCase, UserRepositoryPort userRepositoryPort) {
         return new SignUpUseCase(createUserUseCase, userRepositoryPort);
+    }
+
+    @Bean
+    public ChangePasswordUseCase changePasswordUseCase(UserRepositoryPort userRepositoryPort,
+                                                       PasswordHasher passwordHasher) {
+        return new ChangePasswordUseCase(userRepositoryPort, passwordHasher);
     }
 
     @Bean

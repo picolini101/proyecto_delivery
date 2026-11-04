@@ -18,6 +18,8 @@ public final class UserViews {
     public static final String LOGIN = BASE + "login.fxml";
     /** Sign-up screen for new customers, opened from the login (CU-USR-08). */
     public static final String SIGN_UP = BASE + "sign-up.fxml";
+    /** The signed-in user's account and password (CU-USR-09), opened by the "My account" button. */
+    public static final String MY_ACCOUNT = BASE + "my-account.fxml";
 
     private UserViews() {
     }
