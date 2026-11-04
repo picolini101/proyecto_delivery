@@ -7,7 +7,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
 /**
- * Adds the "Deliveries" button to the main window navigation bar; it opens the module's main view.
+ * Adds the "Deliveries" button to the main window navigation bar;
+ * it opens the module's main view.
  */
 @Configuration
 public class DeliveryUiConfiguration {
