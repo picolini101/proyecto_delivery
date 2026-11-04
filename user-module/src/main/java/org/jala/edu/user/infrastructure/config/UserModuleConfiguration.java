@@ -8,6 +8,7 @@ import org.jala.edu.user.application.port.out.UserStatusHistoryPort;
 import org.jala.edu.user.application.usecase.ChangeUserStatusUseCase;
 import org.jala.edu.user.application.usecase.CheckUserAccessUseCase;
 import org.jala.edu.user.application.usecase.CreateUserUseCase;
+import org.jala.edu.user.application.usecase.ListUserStatusHistoryUseCase;
 import org.jala.edu.user.application.usecase.ListUsersUseCase;
 import org.jala.edu.user.application.usecase.LoginUseCase;
 import org.jala.edu.user.application.usecase.UpdateUserUseCase;
@@ -47,6 +48,13 @@ public class UserModuleConfiguration {
                                                            UserStatusHistoryPort userStatusHistoryPort,
                                                            CurrentUserService currentUserService) {
         return new ChangeUserStatusUseCase(userRepositoryPort, userStatusHistoryPort, currentUserService);
+    }
+
+    @Bean
+    public ListUserStatusHistoryUseCase listUserStatusHistoryUseCase(UserRepositoryPort userRepositoryPort,
+                                                                     UserStatusHistoryPort userStatusHistoryPort,
+                                                                     CurrentUserService currentUserService) {
+        return new ListUserStatusHistoryUseCase(userRepositoryPort, userStatusHistoryPort, currentUserService);
     }
 
     @Bean
