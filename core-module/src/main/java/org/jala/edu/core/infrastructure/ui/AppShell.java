@@ -1,6 +1,7 @@
 package org.jala.edu.core.infrastructure.ui;
 
 import java.util.Objects;
+import java.util.Optional;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -20,16 +21,21 @@ public class AppShell {
     static final String MAIN_VIEW = "/org/jala/edu/core/infrastructure/ui/main-view.fxml";
     private static final String STYLESHEET = "/org/jala/edu/core/infrastructure/ui/app.css";
 
+    /** Shown on the login when an operation finds that the session is no longer valid. */
+    public static final String SESSION_ENDED = "Your session has ended. Please sign in again.";
+
     private final SpringFxmlLoader fxmlLoader;
     private final ObjectProvider<LoginScreen> loginScreen;
     private final ApplicationEventPublisher events;
 
     private Stage stage;
+    private String loginNotice;
 
     void start(Stage primaryStage) {
         this.stage = primaryStage;
         stage.setTitle("Delivery System");
         if (hasLogin()) {
+            BackgroundTasks.whenSessionEnds(() -> signOut(SESSION_ENDED));
             showLogin();
         } else {
             showMainWindow();
@@ -52,8 +58,25 @@ public class AppShell {
      * Forgets the current user ({@link SignOutEvent}) and goes back to the login screen.
      */
     public void signOut() {
+        signOut(null);
+    }
+
+    /**
+     * Like {@link #signOut()}, and the login screen shows {@code notice}, e.g. why the session ended.
+     */
+    public void signOut(String notice) {
         events.publishEvent(new SignOutEvent(this));
+        loginNotice = notice;
         showLogin();
+    }
+
+    /**
+     * @return the notice for the login screen once, e.g. {@value #SESSION_ENDED}; empty afterwards
+     */
+    public Optional<String> takeLoginNotice() {
+        Optional<String> notice = Optional.ofNullable(loginNotice);
+        loginNotice = null;
+        return notice;
     }
 
     /**

@@ -3,6 +3,7 @@ package org.jala.edu.core.infrastructure.ui;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jala.edu.core.contract.NotAuthenticatedException;
 import org.jala.edu.core.domain.exception.DomainException;
 
 /**
@@ -17,7 +18,7 @@ public final class ErrorMessages {
      * @param action what was being attempted, e.g. {@code "update the user"}
      */
     public static String of(Throwable error, String action) {
-        if (error instanceof DomainException) {
+        if (error instanceof DomainException || error instanceof NotAuthenticatedException) {
             return error.getMessage();
         }
         log.error("Could not {}", action, error);
