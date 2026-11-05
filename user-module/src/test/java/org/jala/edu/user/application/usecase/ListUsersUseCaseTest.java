@@ -12,6 +12,8 @@ import java.util.List;
 import org.jala.edu.user.application.port.in.ListUsersQuery;
 import org.jala.edu.user.domain.exception.AdminRequiredException;
 import org.jala.edu.user.domain.model.User;
+import org.jala.edu.user.domain.model.UserRole;
+import org.jala.edu.user.domain.model.UserStatus;
 import org.jala.edu.user.infrastructure.adapter.out.persistence.memory.InMemoryUserRepositoryAdapter;
 import org.junit.jupiter.api.Test;
 
@@ -52,7 +54,7 @@ class ListUsersUseCaseTest {
         repository.save(user("luis@example.com"));
 
         // Act
-        List<User> users = listUsers.execute(new ListUsersQuery("  ANA@Mail "));
+        List<User> users = listUsers.execute(ListUsersQuery.byEmail("  ANA@Mail "));
 
         // Assert
         assertThat(users).containsExactly(ana);
@@ -64,7 +66,7 @@ class ListUsersUseCaseTest {
         repository.save(user("ana@mail.com"));
 
         // Act
-        List<User> users = listUsers.execute(new ListUsersQuery("pedro"));
+        List<User> users = listUsers.execute(ListUsersQuery.byEmail("pedro"));
 
         // Assert
         assertThat(users).isEmpty();
@@ -77,7 +79,7 @@ class ListUsersUseCaseTest {
         repository.save(user("luis@example.com"));
 
         // Act
-        List<User> users = listUsers.execute(new ListUsersQuery("   "));
+        List<User> users = listUsers.execute(ListUsersQuery.byEmail("   "));
 
         // Assert
         assertThat(users).hasSize(2);
@@ -94,5 +96,27 @@ class ListUsersUseCaseTest {
 
         // Assert
         assertThat(thrown).isInstanceOf(AdminRequiredException.class);
+    }
+
+    @Test
+    void filtersByRoleAndStatusTogetherWithTheEmail() {
+        // Arrange
+        User activeCourier = repository.save(user("ana@example.com", UserRole.COURIER));
+        User inactiveCourier = user("ana.old@example.com", UserRole.COURIER);
+        inactiveCourier.deactivate();
+        repository.save(inactiveCourier);
+        repository.save(user("ana.customer@example.com", UserRole.CUSTOMER));
+        repository.save(user("luis@example.com", UserRole.COURIER));
+
+        // Act
+        List<User> couriers = listUsers.execute(new ListUsersQuery(null, UserRole.COURIER, null));
+        List<User> activeAnaCouriers =
+                listUsers.execute(new ListUsersQuery("ana", UserRole.COURIER, UserStatus.ACTIVE));
+        List<User> inactive = listUsers.execute(new ListUsersQuery(null, null, UserStatus.INACTIVE));
+
+        // Assert
+        assertThat(couriers).hasSize(3);
+        assertThat(activeAnaCouriers).containsExactly(activeCourier);
+        assertThat(inactive).containsExactly(inactiveCourier);
     }
 }
