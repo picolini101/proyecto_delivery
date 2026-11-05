@@ -31,8 +31,9 @@ User management for the Delivery System (`org.jala.edu.user`), built with the po
   `NotAuthenticatedException`), and a new role or name applies to the next operation.
 - **Sign-up (CU-USR-08, #89):** "New customer? Create an account" on the login opens `sign-up.fxml`; `SignUpUseCase`
   creates an active **CUSTOMER** (other roles are still created by an administrator) and signs them in.
-- **Change password (CU-USR-09, #90):** the "My account" button, which every role sees, shows the signed-in user and
-  lets them change their password after typing the current one (`ChangePasswordUseCase`).
+- **My account (RF-1.07, RF-1.08, CU-USR-09):** the "My account" button, which every role sees, shows the signed-in
+  user's email, role and status, lets them edit their own name and phone (`UpdateMyProfileUseCase`; email and role
+  stay with the administrator) and change their password after typing the current one (`ChangePasswordUseCase`).
 - **UI:** "Users" navigation button → Users main view → Create user, List users (search by email, edit dialog,
   Activate/Deactivate, status history).
 
