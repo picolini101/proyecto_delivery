@@ -1,5 +1,4 @@
-
-package org.jala.edu.payment.infrastructure.config;
+package org.jala.edu.payment.application.usecase;
 
 import java.math.BigDecimal;
 
@@ -58,11 +57,15 @@ public class ProcessPaymentUseCase {
             return reject(command, "Usuario no autorizado para realizar pagos");
         }
 
-        if (!paymentMethodValidationPort.hasActivePaymentMethod(
-                command.userId())) {
-            return reject(command, "Sin metodo de pago valido");
+        if (command.paymentMethodId() == null) {
+            return reject(command, "El metodo de pago es obligatorio");
         }
 
+        if (!paymentMethodValidationPort.isValidPaymentMethod(
+                command.userId(),
+                command.paymentMethodId())) {
+            return reject(command, "Metodo de pago invalido o inactivo");
+        }
         String reference = paymentTransactionPort.recordApproved(
                 command.orderId(),
                 command.userId(),

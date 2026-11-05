@@ -1,4 +1,6 @@
+
 package org.jala.edu.payment.application.usecase;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -12,7 +14,6 @@ import org.jala.edu.core.contract.UserService;
 import org.jala.edu.payment.application.port.in.ProcessPaymentCommand;
 import org.jala.edu.payment.application.port.out.PaymentMethodValidationPort;
 import org.jala.edu.payment.application.port.out.PaymentTransactionPort;
-import org.jala.edu.payment.infrastructure.config.ProcessPaymentUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -25,6 +26,7 @@ class ProcessPaymentUseCaseTest {
 
     private UUID orderId;
     private UUID userId;
+    private UUID paymentMethodId;
 
     @BeforeEach
     void setUp() {
@@ -37,6 +39,7 @@ class ProcessPaymentUseCaseTest {
 
         orderId = UUID.randomUUID();
         userId = UUID.randomUUID();
+        paymentMethodId = UUID.randomUUID();
     }
 
     @Test
@@ -51,7 +54,8 @@ class ProcessPaymentUseCaseTest {
     void shouldRejectMissingOrderId() {
         ProcessPaymentCommand command =
                 new ProcessPaymentCommand(
-                        null, userId, new BigDecimal("100"));
+                        null, userId, paymentMethodId,
+                        new BigDecimal("100"));
 
         PaymentResult result = useCase.execute(command);
 
@@ -65,7 +69,8 @@ class ProcessPaymentUseCaseTest {
     void shouldRejectZeroAmount() {
         ProcessPaymentCommand command =
                 new ProcessPaymentCommand(
-                        orderId, userId, BigDecimal.ZERO);
+                        orderId, userId, paymentMethodId,
+                        BigDecimal.ZERO);
 
         PaymentResult result = useCase.execute(command);
 
@@ -79,7 +84,8 @@ class ProcessPaymentUseCaseTest {
     void shouldRejectAmountAboveLimit() {
         ProcessPaymentCommand command =
                 new ProcessPaymentCommand(
-                        orderId, userId, new BigDecimal("5000.01"));
+                        orderId, userId, paymentMethodId,
+                        new BigDecimal("5000.01"));
 
         PaymentResult result = useCase.execute(command);
 
@@ -95,7 +101,8 @@ class ProcessPaymentUseCaseTest {
 
         ProcessPaymentCommand command =
                 new ProcessPaymentCommand(
-                        orderId, userId, new BigDecimal("100"));
+                        orderId, userId, paymentMethodId,
+                        new BigDecimal("100"));
 
         PaymentResult result = useCase.execute(command);
 
@@ -108,40 +115,68 @@ class ProcessPaymentUseCaseTest {
     void shouldRejectMissingPaymentMethod() {
         when(userService.isActiveWithRole(
                 userId, UserRole.CUSTOMER)).thenReturn(true);
-        when(methodPort.hasActivePaymentMethod(userId))
-                .thenReturn(false);
 
         ProcessPaymentCommand command =
                 new ProcessPaymentCommand(
-                        orderId, userId, new BigDecimal("100"));
+                        orderId, userId, null,
+                        new BigDecimal("100"));
 
         PaymentResult result = useCase.execute(command);
 
         assertFalse(result.approved());
-        assertEquals("Sin metodo de pago valido",
+        assertEquals("El metodo de pago es obligatorio",
                 result.reason());
+        verifyNoInteractions(methodPort);
+    }
+
+    @Test
+    void shouldRejectInvalidPaymentMethod() {
+        when(userService.isActiveWithRole(
+                userId, UserRole.CUSTOMER)).thenReturn(true);
+
+        when(methodPort.isValidPaymentMethod(
+                userId, paymentMethodId)).thenReturn(false);
+
+        ProcessPaymentCommand command =
+                new ProcessPaymentCommand(
+                        orderId, userId, paymentMethodId,
+                        new BigDecimal("100"));
+
+        PaymentResult result = useCase.execute(command);
+
+        assertFalse(result.approved());
+        assertEquals("Metodo de pago invalido o inactivo",
+                result.reason());
+
+        verify(transactionPort, never()).recordApproved(
+                any(), any(), any());
     }
 
     @Test
     void shouldApproveValidPayment() {
         when(userService.isActiveWithRole(
                 userId, UserRole.CUSTOMER)).thenReturn(true);
-        when(methodPort.hasActivePaymentMethod(userId))
-                .thenReturn(true);
+
+        when(methodPort.isValidPaymentMethod(
+                userId, paymentMethodId)).thenReturn(true);
+
         when(transactionPort.recordApproved(
                 eq(orderId), eq(userId), any(BigDecimal.class)))
                 .thenReturn("PAY-001");
 
         ProcessPaymentCommand command =
                 new ProcessPaymentCommand(
-                        orderId, userId, new BigDecimal("100"));
+                        orderId, userId, paymentMethodId,
+                        new BigDecimal("100"));
 
         PaymentResult result = useCase.execute(command);
 
         assertTrue(result.approved());
         assertEquals("PAY-001", result.paymentReference());
+
         verify(transactionPort).recordApproved(
                 eq(orderId), eq(userId), any(BigDecimal.class));
+
         verify(transactionPort, never()).recordRejected(
                 any(), any(), any(), anyString());
     }
