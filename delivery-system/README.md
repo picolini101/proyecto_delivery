@@ -362,7 +362,7 @@ modify `core-module`; a contract change is requested to the practitioner with th
 |---|---|---|
 | `UserService` (`isActiveWithRole(userId, roles...)`, `findUser(userId)`, `findActiveByRole(role)`) | `user-module` | every module |
 | `CatalogService` (`findProduct`, `isAvailable`, `reserveStock`, `releaseStock`, `findCommerceIdsByMerchant`) | `catalog-module` | `order-module` |
-| `PaymentService.pay(orderId, userId, amount)` | `payment-module` | `order-module` |
+| `PaymentService.pay(orderId, userId, paymentMethodId, amount)` | `payment-module` | `order-module` |
 | `OrderService` (`findReadyForDelivery`, `assign`, `markOnTheWay`, `markDelivered`) | `order-module` | `delivery-module` |
 
 - **Calling a contract:** the use case receives the interface through its constructor, like a repository port:
@@ -387,7 +387,7 @@ modify `core-module`; a contract change is requested to the practitioner with th
   |---|---|
   | `FallbackUserService` | the `SampleUsers` below |
   | `FallbackCatalogService` | `AVAILABLE_PRODUCT` (Pizza, 50.00, stock 10) and `SOLD_OUT_PRODUCT` (Empanada, 8.50), both from `SAMPLE_COMMERCE`, owned by the sample merchant |
-  | `FallbackPaymentService` | approves amounts above 0 up to 1000.00 |
+  | `FallbackPaymentService` | with any payment method, approves amounts above 0 up to 1000.00; rejects a missing method |
   | `FallbackOrderService` | three orders ready for delivery, shipping cost 10.00 |
 
 - **Sample users** (`SampleUsers`): `user-module` stores them at startup, so the same ids work with the real service.
@@ -400,6 +400,10 @@ modify `core-module`; a contract change is requested to the practitioner with th
   | `COURIER` | `00000000-0000-0000-0000-000000000004` | `COURIER` | active |
   | `INACTIVE_CUSTOMER` | `00000000-0000-0000-0000-000000000005` | `CUSTOMER` | inactive |
   | `INACTIVE_COURIER` | `00000000-0000-0000-0000-000000000006` | `COURIER` | inactive |
+
+- **Sample payment method** (`SamplePaymentMethods.CUSTOMER_CARD`, `00000000-0000-0000-0000-000000000401`): a card of
+  the sample customer. Until there is a screen to choose a method, `order-module` passes it to `PaymentService.pay`;
+  `payment-module` stores it at startup once it implements the contract (#86).
 
 ### Domain-driven files
 

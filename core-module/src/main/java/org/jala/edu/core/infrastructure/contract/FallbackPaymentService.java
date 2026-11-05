@@ -6,16 +6,19 @@ import org.jala.edu.core.contract.PaymentResult;
 import org.jala.edu.core.contract.PaymentService;
 
 /**
- * Stand-in {@link PaymentService}: approves amounts above zero up to {@link #MAX_AMOUNT}, so callers can try
- * both outcomes. The real approval rule belongs to {@code payment-module}.
+ * Stand-in {@link PaymentService}: with any payment method, approves amounts above zero up to {@link #MAX_AMOUNT}, so
+ * callers can try both outcomes. The real approval rule belongs to {@code payment-module}.
  */
 public class FallbackPaymentService implements PaymentService {
 
     public static final BigDecimal MAX_AMOUNT = new BigDecimal("1000.00");
 
     @Override
-    public PaymentResult pay(UUID orderId, UUID userId, BigDecimal amount) {
+    public PaymentResult pay(UUID orderId, UUID userId, UUID paymentMethodId, BigDecimal amount) {
         String reference = "FALLBACK-" + orderId;
+        if (paymentMethodId == null) {
+            return new PaymentResult(reference, false, "Payment method is required");
+        }
         if (amount == null || amount.signum() <= 0) {
             return new PaymentResult(reference, false, "Amount must be greater than zero");
         }
