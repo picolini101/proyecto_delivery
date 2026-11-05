@@ -25,11 +25,13 @@ public class UpdateUserUseCase implements UseCase<UpdateUserCommand, Void> {
     }
 
     /**
+     * @throws org.jala.edu.user.domain.exception.AdminRequiredException if the signed-in user is not an ADMIN
      * @throws UserNotFoundException    if no user has the command's id
      * @throws LastActiveAdminException if it would demote or deactivate the only active ADMIN
      */
     @Override
     public Void execute(UpdateUserCommand command) {
+        AdminOnly.check(currentUserService);
         UserId id = new UserId(command.id());
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
         ActiveAdminRule.check(user, command.role(), command.status(), userRepository);

@@ -2,11 +2,15 @@ package org.jala.edu.user.application.usecase;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.jala.edu.user.UserFixtures.SIGNED_IN_ADMIN;
+import static org.jala.edu.user.UserFixtures.SIGNED_IN_CUSTOMER;
 import static org.jala.edu.user.UserFixtures.createCommand;
+import static org.jala.edu.user.UserFixtures.signedInAs;
 import static org.jala.edu.user.UserFixtures.user;
 
 import java.util.UUID;
 import org.jala.edu.user.application.port.in.CreateUserCommand;
+import org.jala.edu.user.domain.exception.AdminRequiredException;
 import org.jala.edu.user.domain.exception.EmailAlreadyRegisteredException;
 import org.jala.edu.user.domain.model.User;
 import org.jala.edu.user.domain.model.UserId;
@@ -21,7 +25,7 @@ class CreateUserUseCaseTest {
 
     private final InMemoryUserRepositoryAdapter repository = new InMemoryUserRepositoryAdapter();
     private final BCryptPasswordHasher hasher = new BCryptPasswordHasher();
-    private final CreateUserUseCase createUser = new CreateUserUseCase(repository, hasher);
+    private final CreateUserUseCase createUser = new CreateUserUseCase(repository, hasher, signedInAs(SIGNED_IN_ADMIN));
 
     @Test
     void storesAnActiveUserAndReturnsItsId() {
@@ -80,6 +84,19 @@ class CreateUserUseCaseTest {
 
         // Assert
         assertThat(thrown).hasMessage("Password must have at least 8 characters");
+        assertThat(repository.findAll()).isEmpty();
+    }
+
+    @Test
+    void onlyAnAdministratorCanCreateUsers() {
+        // Arrange
+        CreateUserUseCase asCustomer = new CreateUserUseCase(repository, hasher, signedInAs(SIGNED_IN_CUSTOMER));
+
+        // Act
+        Throwable thrown = catchThrowable(() -> asCustomer.execute(createCommand("ana@example.com")));
+
+        // Assert
+        assertThat(thrown).isInstanceOf(AdminRequiredException.class);
         assertThat(repository.findAll()).isEmpty();
     }
 }

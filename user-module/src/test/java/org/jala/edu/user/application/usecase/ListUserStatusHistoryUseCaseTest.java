@@ -3,13 +3,12 @@ package org.jala.edu.user.application.usecase;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.jala.edu.user.UserFixtures.SIGNED_IN_ADMIN;
+import static org.jala.edu.user.UserFixtures.SIGNED_IN_CUSTOMER;
 import static org.jala.edu.user.UserFixtures.signedInAs;
 import static org.jala.edu.user.UserFixtures.user;
 
 import java.util.List;
 import java.util.UUID;
-import org.jala.edu.core.contract.CurrentUser;
-import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.user.application.port.in.ChangeUserStatusCommand;
 import org.jala.edu.user.domain.exception.AdminRequiredException;
 import org.jala.edu.user.domain.exception.UserNotFoundException;
@@ -21,9 +20,6 @@ import org.jala.edu.user.infrastructure.adapter.out.persistence.memory.InMemoryU
 import org.junit.jupiter.api.Test;
 
 class ListUserStatusHistoryUseCaseTest {
-
-    private static final CurrentUser SIGNED_IN_CUSTOMER =
-            new CurrentUser(SampleUsers.CUSTOMER, org.jala.edu.core.contract.UserRole.CUSTOMER, "Sample Customer");
 
     private final InMemoryUserRepositoryAdapter repository = new InMemoryUserRepositoryAdapter();
     private final InMemoryUserStatusHistoryAdapter history = new InMemoryUserStatusHistoryAdapter();

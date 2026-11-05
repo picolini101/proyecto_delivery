@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.UUID;
 import org.jala.edu.core.application.usecase.UseCase;
 import org.jala.edu.core.contract.CurrentUserService;
-import org.jala.edu.core.contract.UserRole;
 import org.jala.edu.user.application.port.out.UserRepositoryPort;
 import org.jala.edu.user.application.port.out.UserStatusHistoryPort;
 import org.jala.edu.user.domain.exception.AdminRequiredException;
@@ -34,9 +33,7 @@ public class ListUserStatusHistoryUseCase implements UseCase<UUID, List<UserStat
      */
     @Override
     public List<UserStatusChange> execute(UUID userId) {
-        if (currentUserService.currentUser().role() != UserRole.ADMIN) {
-            throw new AdminRequiredException();
-        }
+        AdminOnly.check(currentUserService);
         UserId id = new UserId(userId);
         if (!userRepository.existsById(id)) {
             throw new UserNotFoundException(id);

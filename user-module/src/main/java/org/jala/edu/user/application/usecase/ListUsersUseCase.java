@@ -3,6 +3,7 @@ package org.jala.edu.user.application.usecase;
 import java.util.List;
 import java.util.Locale;
 import org.jala.edu.core.application.usecase.UseCase;
+import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.user.application.port.in.ListUsersQuery;
 import org.jala.edu.user.application.port.out.UserRepositoryPort;
 import org.jala.edu.user.domain.model.User;
@@ -10,9 +11,11 @@ import org.jala.edu.user.domain.model.User;
 public class ListUsersUseCase implements UseCase<ListUsersQuery, List<User>> {
 
     private final UserRepositoryPort userRepository;
+    private final CurrentUserService currentUserService;
 
-    public ListUsersUseCase(UserRepositoryPort userRepository) {
+    public ListUsersUseCase(UserRepositoryPort userRepository, CurrentUserService currentUserService) {
         this.userRepository = userRepository;
+        this.currentUserService = currentUserService;
     }
 
     /**
@@ -20,6 +23,7 @@ public class ListUsersUseCase implements UseCase<ListUsersQuery, List<User>> {
      */
     @Override
     public List<User> execute(ListUsersQuery query) {
+        AdminOnly.check(currentUserService);
         String filter = query.emailFilter();
         if (filter == null || filter.isBlank()) {
             return userRepository.findAll();

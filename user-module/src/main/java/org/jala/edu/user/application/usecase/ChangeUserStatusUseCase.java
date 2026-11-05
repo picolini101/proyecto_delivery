@@ -29,11 +29,13 @@ public class ChangeUserStatusUseCase implements UseCase<ChangeUserStatusCommand,
     }
 
     /**
+     * @throws org.jala.edu.user.domain.exception.AdminRequiredException if the signed-in user is not an ADMIN
      * @throws UserNotFoundException    if no user has the command's id
      * @throws LastActiveAdminException if it would deactivate the only active ADMIN
      */
     @Override
     public Void execute(ChangeUserStatusCommand command) {
+        AdminOnly.check(currentUserService);
         UserId id = new UserId(command.id());
         User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
         if (command.status() == user.getStatus()) {

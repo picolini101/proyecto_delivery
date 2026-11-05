@@ -27,6 +27,13 @@ public final class UserFixtures {
     public static final CurrentUser SIGNED_IN_ADMIN =
             new CurrentUser(SampleUsers.ADMIN, org.jala.edu.core.contract.UserRole.ADMIN, "Sample Admin");
 
+    /** A signed-in customer, to check that administrator-only use cases reject other roles. */
+    public static final CurrentUser SIGNED_IN_CUSTOMER =
+            new CurrentUser(SampleUsers.CUSTOMER, org.jala.edu.core.contract.UserRole.CUSTOMER, "Sample Customer");
+
+    /** A {@code CurrentUserService} with nobody signed in, e.g. on the sign-up screen. */
+    public static final CurrentUserService NOBODY_SIGNED_IN = Optional::empty;
+
     private UserFixtures() {
     }
 
