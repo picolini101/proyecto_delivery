@@ -5,7 +5,8 @@ import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.payment.domain.model.Alias;
 import org.jala.edu.payment.domain.model.PaymentMethod;
 import org.jala.edu.payment.domain.model.PaymentType;
-import org.jala.edu.payment.domain.port.UserService;
+import org.jala.edu.core.contract.UserService;
+import org.jala.edu.core.contract.UserRole;
 import org.jala.edu.payment.application.port.out.PaymentMethodRepositoryPort;
 import java.util.List;
 import java.util.Objects;
@@ -27,7 +28,7 @@ public class ManagePaymentMethodUseCase {
         Objects.requireNonNull(command, "El comando no puede ser nulo");
 
         // CA4 (D-07): Validar usuario activo con rol CUSTOMER
-        if (!userService.isUserActiveAndHasRole(command.getUserId(), "CUSTOMER")) {
+        if (!userService.isActiveWithRole(command.getUserId(), UserRole.CUSTOMER)) {
             throw new DomainException("User not authorized for this operation");
         }
 
@@ -60,7 +61,7 @@ public class ManagePaymentMethodUseCase {
     public List<PaymentMethod> listPaymentMethods(UUID userId) {
         Objects.requireNonNull(userId, "El userId no puede ser nulo");
 
-        if (!userService.isUserActiveAndHasRole(userId, "CUSTOMER")) {
+        if (!userService.isActiveWithRole(userId, UserRole.CUSTOMER)) {
             throw new DomainException("User not authorized for this operation");
         }
 

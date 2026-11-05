@@ -1,11 +1,12 @@
 package org.jala.edu.payment.application.usecase;
 
-import org.jala.edu.payment.application.port.in.RegisterPaymentMethodCommand;
+import org.jala.edu.core.contract.UserRole;
+import org.jala.edu.core.contract.UserService;
 import org.jala.edu.core.domain.exception.DomainException;
+import org.jala.edu.payment.application.port.in.RegisterPaymentMethodCommand;
+import org.jala.edu.payment.application.port.out.PaymentMethodRepositoryPort;
 import org.jala.edu.payment.domain.model.PaymentMethod;
 import org.jala.edu.payment.domain.model.PaymentType;
-import org.jala.edu.payment.domain.port.UserService;
-import org.jala.edu.payment.application.port.out.PaymentMethodRepositoryPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -47,7 +48,7 @@ class ManagePaymentMethodUseCaseTest {
         RegisterPaymentMethodCommand command = new RegisterPaymentMethodCommand(
                 userId, "Mi Tarjeta Principal", "TARJETA", "4532123456789012"
         );
-        when(userService.isUserActiveAndHasRole(userId, "CUSTOMER")).thenReturn(true);
+        when(userService.isActiveWithRole(userId, UserRole.CUSTOMER)).thenReturn(true);
         when(repository.save(any(PaymentMethod.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
@@ -62,7 +63,7 @@ class ManagePaymentMethodUseCaseTest {
         assertTrue(result.isActive());
 
         // Verificaciones de comportamiento
-        verify(userService).isUserActiveAndHasRole(userId, "CUSTOMER");
+        verify(userService).isActiveWithRole(userId, UserRole.CUSTOMER);
         verify(repository).clearLastRegisteredFlag(userId);
         verify(repository).save(any(PaymentMethod.class));
     }
@@ -74,7 +75,7 @@ class ManagePaymentMethodUseCaseTest {
         RegisterPaymentMethodCommand command = new RegisterPaymentMethodCommand(
                 userId, "Alias Valido", "TARJETA", "1234"
         );
-        when(userService.isUserActiveAndHasRole(userId, "CUSTOMER")).thenReturn(false);
+        when(userService.isActiveWithRole(userId, UserRole.CUSTOMER)).thenReturn(false);
 
         // Act & Assert
         DomainException exception = assertThrows(DomainException.class, () ->
@@ -92,7 +93,7 @@ class ManagePaymentMethodUseCaseTest {
         RegisterPaymentMethodCommand command = new RegisterPaymentMethodCommand(
                 userId, "Alias Valido", "PAYPAL_INVALIDO", "1234"
         );
-        when(userService.isUserActiveAndHasRole(userId, "CUSTOMER")).thenReturn(true);
+        when(userService.isActiveWithRole(userId, UserRole.CUSTOMER)).thenReturn(true);
 
         // Act & Assert
         DomainException exception = assertThrows(DomainException.class, () ->
@@ -110,7 +111,7 @@ class ManagePaymentMethodUseCaseTest {
         RegisterPaymentMethodCommand command = new RegisterPaymentMethodCommand(
                 userId, "  ", "TRANSFERENCIA", "1234"
         );
-        when(userService.isUserActiveAndHasRole(userId, "CUSTOMER")).thenReturn(true);
+        when(userService.isActiveWithRole(userId, UserRole.CUSTOMER)).thenReturn(true);
 
         // Act & Assert
         assertThrows(DomainException.class, () -> useCase.registerPaymentMethod(command));
@@ -121,7 +122,7 @@ class ManagePaymentMethodUseCaseTest {
     @DisplayName("CA4: Debe listar métodos de pago cuando el usuario es CUSTOMER autorizado")
     void shouldListPaymentMethodsSuccessfully() {
         // Arrange
-        when(userService.isUserActiveAndHasRole(userId, "CUSTOMER")).thenReturn(true);
+        when(userService.isActiveWithRole(userId, UserRole.CUSTOMER)).thenReturn(true);
         when(repository.findByUserId(userId)).thenReturn(List.of());
 
         // Act
