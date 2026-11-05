@@ -69,8 +69,8 @@ public class UserModuleConfiguration {
      * fallback.
      */
     @Bean
-    public SessionCurrentUserService currentUserService() {
-        return new SessionCurrentUserService();
+    public SessionCurrentUserService currentUserService(FindUserUseCase findUserUseCase) {
+        return new SessionCurrentUserService(findUserUseCase);
     }
 
     @Bean

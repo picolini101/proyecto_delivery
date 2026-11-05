@@ -21,7 +21,9 @@ User management for the Delivery System (`org.jala.edu.user`), built with the po
   (`PasswordHasher`, `BCryptPasswordHasher`). Sample users share the test password `Sample123`
   (`SampleUsersLoader.SAMPLE_PASSWORD`); never use it for a real account.
 - **Login (CU-USR-06):** `LoginUseCase` checks email, password and status; `SessionCurrentUserService` serves core's
-  `CurrentUserService` to the other modules. The login screen opens before the main window.
+  `CurrentUserService` to the other modules. The login screen opens before the main window. Each lookup reloads the
+  signed-in user (#88): if the administrator deactivates them, the session ends at once (`currentUser()` throws
+  `NotAuthenticatedException`), and a new role or name applies to the next operation.
 - **UI:** "Users" navigation button → Users main view → Create user, List users (search by email, edit dialog,
   Activate/Deactivate, status history).
 
