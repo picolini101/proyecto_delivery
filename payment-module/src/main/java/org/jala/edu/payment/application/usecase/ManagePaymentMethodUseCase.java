@@ -1,12 +1,12 @@
 package org.jala.edu.payment.application.usecase;
 
-import org.jala.edu.payment.application.dto.RegisterPaymentMethodCommand;
+import org.jala.edu.payment.application.port.in.RegisterPaymentMethodCommand;
 import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.payment.domain.model.Alias;
 import org.jala.edu.payment.domain.model.PaymentMethod;
 import org.jala.edu.payment.domain.model.PaymentType;
 import org.jala.edu.payment.domain.port.UserService;
-import org.jala.edu.payment.domain.repository.PaymentMethodRepository;
+import org.jala.edu.payment.application.port.out.PaymentMethodRepositoryPort;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -15,10 +15,10 @@ import java.util.UUID;
 
 public class ManagePaymentMethodUseCase {
 
-    private final PaymentMethodRepository repository;
+    private final PaymentMethodRepositoryPort repository;
     private final UserService userService;
 
-    public ManagePaymentMethodUseCase(PaymentMethodRepository repository, UserService userService) {
+    public ManagePaymentMethodUseCase(PaymentMethodRepositoryPort repository, UserService userService) {
         this.repository = Objects.requireNonNull(repository, "El repositorio no puede ser nulo");
         this.userService = Objects.requireNonNull(userService, "El servicio de usuario no puede ser nulo");
     }

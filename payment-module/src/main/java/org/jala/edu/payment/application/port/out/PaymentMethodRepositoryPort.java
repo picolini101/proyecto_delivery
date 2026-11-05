@@ -1,4 +1,4 @@
-package org.jala.edu.payment.domain.repository;
+package org.jala.edu.payment.application.port.out;
 
 import org.jala.edu.payment.domain.model.PaymentMethod;
 
@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public interface PaymentMethodRepository {
+public interface PaymentMethodRepositoryPort {
 
     // Guarda o actualiza un método de pagp.
     PaymentMethod save(PaymentMethod paymentMethod);

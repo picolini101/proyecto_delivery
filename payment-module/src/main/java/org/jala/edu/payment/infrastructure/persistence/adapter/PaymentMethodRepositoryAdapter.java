@@ -3,7 +3,7 @@ package org.jala.edu.payment.infrastructure.persistence.adapter;
 import org.jala.edu.payment.domain.model.Alias;
 import org.jala.edu.payment.domain.model.PaymentMethod;
 import org.jala.edu.payment.domain.model.PaymentType;
-import org.jala.edu.payment.domain.repository.PaymentMethodRepository;
+import org.jala.edu.payment.application.port.out.PaymentMethodRepositoryPort;
 import org.jala.edu.payment.infrastructure.persistence.entity.PaymentMethodEntity;
 import org.jala.edu.payment.infrastructure.persistence.repository.SpringDataPaymentMethodRepository;
 import org.jala.edu.core.infrastructure.config.ConditionalOnJpaPersistence;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 @Component
 @ConditionalOnJpaPersistence
-public class PaymentMethodRepositoryAdapter implements PaymentMethodRepository {
+public class PaymentMethodRepositoryAdapter implements PaymentMethodRepositoryPort {
 
     private final SpringDataPaymentMethodRepository springDataRepository;
 

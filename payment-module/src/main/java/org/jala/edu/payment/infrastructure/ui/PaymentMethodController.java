@@ -2,7 +2,7 @@ package org.jala.edu.payment.infrastructure.ui;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-import org.jala.edu.payment.application.dto.RegisterPaymentMethodCommand;
+import org.jala.edu.payment.application.port.in.RegisterPaymentMethodCommand;
 import org.jala.edu.payment.application.usecase.ManagePaymentMethodUseCase;
 import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.payment.domain.model.PaymentMethod;

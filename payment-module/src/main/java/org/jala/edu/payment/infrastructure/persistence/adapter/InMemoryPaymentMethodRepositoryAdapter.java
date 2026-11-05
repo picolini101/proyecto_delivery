@@ -2,7 +2,7 @@ package org.jala.edu.payment.infrastructure.persistence.adapter;
 
 import org.jala.edu.core.infrastructure.config.ConditionalOnInMemoryPersistence;
 import org.jala.edu.payment.domain.model.PaymentMethod;
-import org.jala.edu.payment.domain.repository.PaymentMethodRepository;
+import org.jala.edu.payment.application.port.out.PaymentMethodRepositoryPort;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;
@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Component
 @ConditionalOnInMemoryPersistence
-public class InMemoryPaymentMethodRepositoryAdapter implements PaymentMethodRepository {
+public class InMemoryPaymentMethodRepositoryAdapter implements PaymentMethodRepositoryPort {
 
     private final Map<UUID, PaymentMethod> store = new LinkedHashMap<>();
 

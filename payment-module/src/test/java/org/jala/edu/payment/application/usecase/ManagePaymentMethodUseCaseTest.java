@@ -1,11 +1,11 @@
 package org.jala.edu.payment.application.usecase;
 
-import org.jala.edu.payment.application.dto.RegisterPaymentMethodCommand;
-import org.jala.edu.payment.domain.exception.DomainException;
+import org.jala.edu.payment.application.port.in.RegisterPaymentMethodCommand;
+import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.payment.domain.model.PaymentMethod;
 import org.jala.edu.payment.domain.model.PaymentType;
 import org.jala.edu.payment.domain.port.UserService;
-import org.jala.edu.payment.domain.repository.PaymentMethodRepository;
+import org.jala.edu.payment.application.port.out.PaymentMethodRepositoryPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
 class ManagePaymentMethodUseCaseTest {
 
     @Mock
-    private PaymentMethodRepository repository;
+    private PaymentMethodRepositoryPort repository;
 
     @Mock
     private UserService userService;

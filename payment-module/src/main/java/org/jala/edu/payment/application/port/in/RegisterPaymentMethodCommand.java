@@ -1,4 +1,4 @@
-package org.jala.edu.payment.application.dto;
+package org.jala.edu.payment.application.port.in;
 
 import java.util.Objects;
 import java.util.UUID;
