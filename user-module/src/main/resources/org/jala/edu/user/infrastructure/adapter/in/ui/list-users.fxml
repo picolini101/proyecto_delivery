@@ -15,19 +15,25 @@
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="org.jala.edu.user.infrastructure.adapter.in.ui.ListUsersController">
 
+    <!-- Row 1: title, result message and the actions on the selected user. -->
     <HBox styleClass="toolbar">
-        <Label styleClass="page-title" text="User list"/>
-        <TextField fx:id="searchField" promptText="Search by email" prefWidth="200" onAction="#onSearch"/>
-        <ComboBox fx:id="roleFilter" promptText="All roles" onAction="#onSearch"/>
-        <ComboBox fx:id="statusFilter" promptText="All statuses" onAction="#onSearch"/>
-        <Button text="Search" onAction="#onSearch"/>
-        <Button text="Clear" onAction="#onClearSearch"/>
+        <Label styleClass="page-title" text="User list" minWidth="-Infinity"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Label fx:id="messageLabel" styleClass="message"/>
-        <Button fx:id="editButton" text="Edit" onAction="#onEdit"/>
-        <Button fx:id="statusButton" text="Deactivate" onAction="#onToggleStatus"/>
-        <Button fx:id="historyButton" text="History" onAction="#onShowHistory"/>
-        <Button fx:id="refreshButton" text="Refresh" onAction="#onRefresh"/>
+        <Button fx:id="editButton" text="Edit" minWidth="-Infinity" onAction="#onEdit"/>
+        <Button fx:id="statusButton" text="Deactivate" minWidth="-Infinity" onAction="#onToggleStatus"/>
+        <Button fx:id="historyButton" text="History" minWidth="-Infinity" onAction="#onShowHistory"/>
+        <Button fx:id="refreshButton" text="Refresh" minWidth="-Infinity" onAction="#onRefresh"/>
+    </HBox>
+
+    <!-- Row 2: search by email and the role and status filters (#99). -->
+    <HBox styleClass="toolbar">
+        <TextField fx:id="searchField" promptText="Search by email" HBox.hgrow="ALWAYS" onAction="#onSearch"/>
+        <ComboBox fx:id="roleFilter" promptText="All roles" minWidth="-Infinity" prefWidth="140" onAction="#onSearch"/>
+        <ComboBox fx:id="statusFilter" promptText="All statuses" minWidth="-Infinity" prefWidth="140"
+                  onAction="#onSearch"/>
+        <Button text="Search" minWidth="-Infinity" onAction="#onSearch"/>
+        <Button text="Clear" minWidth="-Infinity" onAction="#onClearSearch"/>
     </HBox>
 
     <TableView fx:id="usersTable" VBox.vgrow="ALWAYS">
