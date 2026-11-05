@@ -1,7 +1,7 @@
 package org.jala.edu.payment.application.usecase;
 
 import org.jala.edu.payment.application.dto.RegisterPaymentMethodCommand;
-import org.jala.edu.payment.domain.exception.DomainException;
+import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.payment.domain.model.Alias;
 import org.jala.edu.payment.domain.model.PaymentMethod;
 import org.jala.edu.payment.domain.model.PaymentType;

@@ -4,7 +4,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import org.jala.edu.payment.application.dto.RegisterPaymentMethodCommand;
 import org.jala.edu.payment.application.usecase.ManagePaymentMethodUseCase;
-import org.jala.edu.payment.domain.exception.DomainException;
+import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.payment.domain.model.PaymentMethod;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;

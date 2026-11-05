@@ -1,6 +1,6 @@
 package org.jala.edu.payment.domain.model;
 
-import org.jala.edu.payment.domain.exception.DomainException;
+import org.jala.edu.core.domain.exception.DomainException;
 import java.util.Objects;
 
 public final class Alias {
