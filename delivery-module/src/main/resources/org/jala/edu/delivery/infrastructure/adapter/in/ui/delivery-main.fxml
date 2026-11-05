@@ -18,6 +18,8 @@
            text="Follow each delivery from pickup to drop-off and the courier assigned to it."/>
 
     <HBox styleClass="module-actions">
+        <Button fx:id="readyOrdersButton" styleClass="module-action" text="Ready orders"
+                onAction="#onReadyOrders"/>
         <Button fx:id="deliveryHistoryButton" styleClass="module-action" text="Delivery history"
                 onAction="#onDeliveryHistory"/>
     </HBox>

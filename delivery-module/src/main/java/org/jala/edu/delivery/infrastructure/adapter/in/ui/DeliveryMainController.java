@@ -18,6 +18,11 @@ public class DeliveryMainController {
     private final Navigator navigator;
 
     @FXML
+    void onReadyOrders() {
+        navigator.show(DeliveryViews.READY_ORDERS);
+    }
+
+    @FXML
     void onDeliveryHistory() {
         navigator.show(DeliveryViews.HISTORY);
     }
