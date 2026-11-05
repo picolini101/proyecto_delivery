@@ -1,13 +1,21 @@
 package org.jala.edu.core.infrastructure.ui;
 
+import java.time.Clock;
+import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.input.InputEvent;
 import javafx.stage.Stage;
 import lombok.RequiredArgsConstructor;
+import org.jala.edu.core.infrastructure.config.SessionTimeout;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 /**
@@ -23,13 +31,19 @@ public class AppShell {
 
     /** Shown on the login when an operation finds that the session is no longer valid. */
     public static final String SESSION_ENDED = "Your session has ended. Please sign in again.";
+    /** Shown on the login when the session was idle for longer than {@link SessionTimeout} (RF-1.15). */
+    public static final String SESSION_IDLE = "You were signed out after a period of inactivity.";
+
+    private static final javafx.util.Duration IDLE_CHECK_EVERY = javafx.util.Duration.seconds(15);
 
     private final SpringFxmlLoader fxmlLoader;
     private final ObjectProvider<LoginScreen> loginScreen;
     private final ApplicationEventPublisher events;
+    private final Environment environment;
 
     private Stage stage;
     private String loginNotice;
+    private Timeline idleCheck;
 
     void start(Stage primaryStage) {
         this.stage = primaryStage;
@@ -52,6 +66,9 @@ public class AppShell {
      */
     public void showMainWindow() {
         show(fxmlLoader.load(MAIN_VIEW));
+        if (hasLogin()) {
+            watchIdleTime();
+        }
     }
 
     /**
@@ -83,6 +100,7 @@ public class AppShell {
      * Shows the login screen again, e.g. from a screen it opened with {@link #showScreen(String)}.
      */
     public void showLogin() {
+        stopIdleCheck();
         show(fxmlLoader.load(loginScreen.getObject().fxmlPath()));
     }
 
@@ -91,6 +109,34 @@ public class AppShell {
      */
     public void showScreen(String fxmlPath) {
         show(fxmlLoader.load(fxmlPath));
+    }
+
+    /**
+     * Any key or mouse action in the main window counts as activity; when the session stays idle longer than the
+     * timeout, the user is signed out and sees {@link #SESSION_IDLE} on the login.
+     */
+    private void watchIdleTime() {
+        Duration timeout = SessionTimeout.from(environment);
+        if (timeout.isZero()) {
+            return;
+        }
+        IdleTimer timer = new IdleTimer(timeout, Clock.systemUTC());
+        stage.getScene().addEventFilter(InputEvent.ANY, event -> timer.touch());
+        stopIdleCheck();
+        idleCheck = new Timeline(new KeyFrame(IDLE_CHECK_EVERY, event -> {
+            if (timer.expired()) {
+                signOut(SESSION_IDLE);
+            }
+        }));
+        idleCheck.setCycleCount(Animation.INDEFINITE);
+        idleCheck.play();
+    }
+
+    private void stopIdleCheck() {
+        if (idleCheck != null) {
+            idleCheck.stop();
+            idleCheck = null;
+        }
     }
 
     private void show(Parent root) {
