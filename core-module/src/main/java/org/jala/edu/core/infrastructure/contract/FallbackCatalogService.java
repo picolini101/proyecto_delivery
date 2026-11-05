@@ -1,6 +1,5 @@
 package org.jala.edu.core.infrastructure.contract;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -8,27 +7,36 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jala.edu.core.contract.CatalogService;
 import org.jala.edu.core.contract.ProductInfo;
+import org.jala.edu.core.contract.SampleCatalog;
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.domain.exception.ConflictException;
 import org.jala.edu.core.domain.exception.NotFoundException;
 
 /**
- * Stand-in {@link CatalogService} with one commerce owned by {@link SampleUsers#MERCHANT} and two products: one
- * available with stock 10 and one sold out. Stock changes are kept in memory and lost when the application stops.
+ * Stand-in {@link CatalogService} with the {@link SampleCatalog}: one commerce owned by {@link SampleUsers#MERCHANT},
+ * an available product with stock and a sold-out one. Stock changes are kept in memory and lost when the application
+ * stops.
  */
 public class FallbackCatalogService implements CatalogService {
 
-    public static final UUID SAMPLE_COMMERCE = UUID.fromString("00000000-0000-0000-0000-000000000301");
-    public static final UUID AVAILABLE_PRODUCT = UUID.fromString("00000000-0000-0000-0000-000000000101");
-    public static final UUID SOLD_OUT_PRODUCT = UUID.fromString("00000000-0000-0000-0000-000000000102");
-
-    private static final int INITIAL_STOCK = 10;
+    /** @deprecated use {@link SampleCatalog#COMMERCE}, which {@code catalog-module} also stores (#87). */
+    @Deprecated(forRemoval = true)
+    public static final UUID SAMPLE_COMMERCE = SampleCatalog.COMMERCE;
+    /** @deprecated use {@link SampleCatalog#PIZZA}, which {@code catalog-module} also stores (#87). */
+    @Deprecated(forRemoval = true)
+    public static final UUID AVAILABLE_PRODUCT = SampleCatalog.PIZZA;
+    /** @deprecated use {@link SampleCatalog#EMPANADA}, which {@code catalog-module} also stores (#87). */
+    @Deprecated(forRemoval = true)
+    public static final UUID SOLD_OUT_PRODUCT = SampleCatalog.EMPANADA;
 
     private static final Map<UUID, ProductInfo> PRODUCTS = Map.of(
-            AVAILABLE_PRODUCT, new ProductInfo(AVAILABLE_PRODUCT, SAMPLE_COMMERCE, "Pizza", new BigDecimal("50.00")),
-            SOLD_OUT_PRODUCT, new ProductInfo(SOLD_OUT_PRODUCT, SAMPLE_COMMERCE, "Empanada", new BigDecimal("8.50")));
+            SampleCatalog.PIZZA, new ProductInfo(SampleCatalog.PIZZA, SampleCatalog.COMMERCE, SampleCatalog.PIZZA_NAME,
+                    SampleCatalog.PIZZA_PRICE),
+            SampleCatalog.EMPANADA, new ProductInfo(SampleCatalog.EMPANADA, SampleCatalog.COMMERCE,
+                    SampleCatalog.EMPANADA_NAME, SampleCatalog.EMPANADA_PRICE));
 
-    private final Map<UUID, Integer> stock = new ConcurrentHashMap<>(Map.of(AVAILABLE_PRODUCT, INITIAL_STOCK));
+    private final Map<UUID, Integer> stock =
+            new ConcurrentHashMap<>(Map.of(SampleCatalog.PIZZA, SampleCatalog.PIZZA_STOCK));
 
     @Override
     public Optional<ProductInfo> findProduct(UUID productId) {
@@ -57,7 +65,7 @@ public class FallbackCatalogService implements CatalogService {
 
     @Override
     public List<UUID> findCommerceIdsByMerchant(UUID merchantId) {
-        return SampleUsers.MERCHANT.equals(merchantId) ? List.of(SAMPLE_COMMERCE) : List.of();
+        return SampleUsers.MERCHANT.equals(merchantId) ? List.of(SampleCatalog.COMMERCE) : List.of();
     }
 
     private void requireProduct(UUID productId) {

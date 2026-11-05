@@ -386,7 +386,7 @@ modify `core-module`; a contract change is requested to the practitioner with th
   | Fallback | Sample data |
   |---|---|
   | `FallbackUserService` | the `SampleUsers` below |
-  | `FallbackCatalogService` | `AVAILABLE_PRODUCT` (Pizza, 50.00, stock 10) and `SOLD_OUT_PRODUCT` (Empanada, 8.50), both from `SAMPLE_COMMERCE`, owned by the sample merchant |
+  | `FallbackCatalogService` | the `SampleCatalog` below |
   | `FallbackPaymentService` | with any payment method, approves amounts above 0 up to 1000.00; rejects a missing method |
   | `FallbackOrderService` | three orders ready for delivery, shipping cost 10.00 |
 
@@ -404,6 +404,23 @@ modify `core-module`; a contract change is requested to the practitioner with th
 - **Sample payment method** (`SamplePaymentMethods.CUSTOMER_CARD`, `00000000-0000-0000-0000-000000000401`): a card of
   the sample customer. Until there is a screen to choose a method, `order-module` passes it to `PaymentService.pay`;
   `payment-module` stores it at startup once it implements the contract (#86).
+
+- **Sample catalog** (`SampleCatalog`, #87): the same ids work with the fallback now and with `catalog-module` later.
+
+  | Constant | Id | Data |
+  |---|---|---|
+  | `COMMERCE` | `00000000-0000-0000-0000-000000000301` | "Sample Pizzeria", active, owned by `SampleUsers.MERCHANT` |
+  | `PIZZA` | `00000000-0000-0000-0000-000000000101` | Pizza, 50.00, available, stock 10 |
+  | `EMPANADA` | `00000000-0000-0000-0000-000000000102` | Empanada, 8.50, sold out (stock 0) |
+
+  Rules while the catalog is built:
+  - **`catalog-module`**: when it implements `CatalogService`, it stores the `SampleCatalog` at startup with these
+    ids (like `SampleUsersLoader` in `user-module`) and leaves existing rows untouched.
+  - **Every team**: use `SampleCatalog` in tests and sample screens, not ids of your own. If a story changes what a
+    product or commerce needs (a new field, a new status), update the sample data in the same MR: ask the
+    practitioner to change `SampleCatalog` and the fallback, and keep the `catalog-module` loader in step.
+  - `FallbackCatalogService.AVAILABLE_PRODUCT`, `SOLD_OUT_PRODUCT` and `SAMPLE_COMMERCE` still work but are
+    deprecated: switch to `SampleCatalog.PIZZA`, `EMPANADA` and `COMMERCE`.
 
 ### Domain-driven files
 
