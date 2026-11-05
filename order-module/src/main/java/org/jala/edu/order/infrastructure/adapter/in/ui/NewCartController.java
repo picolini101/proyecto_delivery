@@ -1,7 +1,6 @@
 package org.jala.edu.order.infrastructure.adapter.in.ui;
 
 import java.util.List;
-import java.util.UUID;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -20,7 +19,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.control.ScrollPane;
 import lombok.RequiredArgsConstructor;
 import org.jala.edu.core.contract.ProductInfo;
-import org.jala.edu.core.contract.SampleUsers;
+import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
 import org.jala.edu.core.infrastructure.ui.ErrorMessages;
 import org.jala.edu.core.infrastructure.ui.Navigator;
@@ -52,9 +51,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class NewCartController {
 
-    /** Sin login hasta el sprint 2: el cliente actual es el de prueba. */
-    private static final UUID CURRENT_CUSTOMER = SampleUsers.CUSTOMER;
-
     /** Cantidad maxima que se puede elegir con el boton "+". */
     private static final int MAX_QUANTITY = 99;
 
@@ -81,6 +77,8 @@ public class NewCartController {
 
     /** Para volver a la pantalla anterior. */
     private final Navigator navigator;
+
+    private final CurrentUserService currentUserService;
 
     private final IncreaseCartItemQuantityUseCase increaseQuantity;
 
@@ -370,7 +368,7 @@ public class NewCartController {
     private void addToCart(ProductInfo product, int quantity, Button accept, StackPane action) {
         accept.setDisable(true);
         BackgroundTasks.run(
-                () -> addProductToCart.execute(CURRENT_CUSTOMER, product.productId(), quantity),
+                () -> addProductToCart.execute(currentUserService.currentUser().id(), product.productId(), quantity),
                 cart -> productAdded(product, quantity, action),
                 error -> addFailed(error, accept));
     }
@@ -403,7 +401,7 @@ public class NewCartController {
     /** Pide el resumen del carrito al caso de uso (en segundo plano) y lo dibuja en pantalla. */
     private void refreshCart() {
         BackgroundTasks.run(
-                () -> getCartSummary.execute(CURRENT_CUSTOMER),
+                () -> getCartSummary.execute(currentUserService.currentUser().id()),
                 summary -> showCart(summary),
                 error -> showError(error, "cargar el carrito"));
     }
@@ -453,7 +451,7 @@ public class NewCartController {
         return row;
     }
     private void changeLine(CartSummary.Line line, HBox controls, boolean increase) {
-        controls.setDisable(true); BackgroundTasks.run(() -> increase ? increaseQuantity.execute(CURRENT_CUSTOMER,line.productId(),1) : decreaseQuantity.execute(CURRENT_CUSTOMER,line.productId(),1), cart -> refreshCart(), error -> { showError(error,"actualizar cantidad"); controls.setDisable(false); });
+        controls.setDisable(true); BackgroundTasks.run(() -> increase ? increaseQuantity.execute(currentUserService.currentUser().id(),line.productId(),1) : decreaseQuantity.execute(currentUserService.currentUser().id(),line.productId(),1), cart -> refreshCart(), error -> { showError(error,"actualizar cantidad"); controls.setDisable(false); });
     }
     /**
      * Acorta un id para mostrarlo: devuelve solo los ultimos 4 caracteres.
