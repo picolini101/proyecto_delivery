@@ -118,12 +118,14 @@ public class MyAccountController {
 
     @FXML
     void onChangePassword() {
-        ChangePasswordCommand command = new ChangePasswordCommand(currentUserService.currentUser().id(),
-                currentPasswordField.getText(), newPasswordField.getText());
+        String currentPassword = currentPasswordField.getText();
+        String newPassword = newPasswordField.getText();
         passwordForm.setDisable(true);
         messageLabel.setText("");
+        // The session is read inside the background work, so an ended session goes back to the login (#94).
         BackgroundTasks.run(
-                () -> changePasswordUseCase.execute(command),
+                () -> changePasswordUseCase.execute(new ChangePasswordCommand(currentUserService.currentUser().id(),
+                        currentPassword, newPassword)),
                 ignored -> {
                     clearPasswordForm();
                     showMessage(messageLabel, "Password changed. Use the new one the next time you sign in.",
