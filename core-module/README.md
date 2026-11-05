@@ -23,6 +23,10 @@ Inject `CurrentUserService` in a use case to know who performs an operation, ins
 CurrentUser user = currentUserService.currentUser(); // id, role and displayName; throws NotAuthenticatedException
 ```
 
+If the session is no longer valid (for example, an administrator deactivated the user), `currentUser()` throws
+`NotAuthenticatedException`. Work started with `BackgroundTasks.run` then goes back to the login with the notice
+"Your session has ended. Please sign in again." instead of calling your error callback, so modules do not handle it.
+
 Keep validating permissions with `UserService.isActiveWithRole`. Until `user-module` provides the login, the fallback
 answers with the sample user of the role in `delivery.sample-user` (`ADMIN`, `MERCHANT`, `CUSTOMER` or `COURIER`;
 `CUSTOMER` by default). With `javafx:run`, set it in `application.yml` or as the environment variable
