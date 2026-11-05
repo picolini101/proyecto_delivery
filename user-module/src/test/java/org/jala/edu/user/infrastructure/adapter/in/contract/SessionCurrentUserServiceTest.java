@@ -4,6 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.jala.edu.user.UserFixtures.user;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import org.jala.edu.core.contract.CurrentUser;
 import org.jala.edu.core.contract.NotAuthenticatedException;
 import org.jala.edu.user.application.usecase.FindUserUseCase;
@@ -113,5 +118,70 @@ class SessionCurrentUserServiceTest {
 
         // Assert
         assertThat(session.findCurrentUser()).isEmpty();
+    }
+
+    @Test
+    void theSessionEndsAfterTheIdleTimeoutAndStaysEnded() {
+        // Arrange
+        MutableClock clock = new MutableClock(Instant.parse("2026-11-09T10:00:00Z"));
+        SessionCurrentUserService expiring =
+                new SessionCurrentUserService(new FindUserUseCase(repository), Duration.ofMinutes(30), clock);
+        expiring.signIn(repository.save(user("ana@example.com")));
+
+        // Act
+        clock.advance(Duration.ofMinutes(31));
+
+        // Assert
+        assertThat(expiring.findCurrentUser()).isEmpty();
+        clock.advance(Duration.ofSeconds(1));
+        assertThat(expiring.findCurrentUser()).isEmpty();
+    }
+
+    @Test
+    void eachLookupKeepsTheSessionAlive() {
+        // Arrange
+        MutableClock clock = new MutableClock(Instant.parse("2026-11-09T10:00:00Z"));
+        SessionCurrentUserService expiring =
+                new SessionCurrentUserService(new FindUserUseCase(repository), Duration.ofMinutes(30), clock);
+        expiring.signIn(repository.save(user("ana@example.com")));
+
+        // Act
+        clock.advance(Duration.ofMinutes(20));
+        expiring.findCurrentUser();
+        clock.advance(Duration.ofMinutes(20));
+
+        // Assert
+        assertThat(expiring.findCurrentUser()).isPresent();
+    }
+
+    /**
+     * A clock the test moves forward by hand.
+     */
+    private static final class MutableClock extends Clock {
+
+        private Instant now;
+
+        MutableClock(Instant start) {
+            this.now = start;
+        }
+
+        void advance(Duration duration) {
+            now = now.plus(duration);
+        }
+
+        @Override
+        public ZoneId getZone() {
+            return ZoneOffset.UTC;
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            return this;
+        }
+
+        @Override
+        public Instant instant() {
+            return now;
+        }
     }
 }

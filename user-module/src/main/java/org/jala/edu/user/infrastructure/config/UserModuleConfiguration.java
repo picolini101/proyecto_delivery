@@ -1,8 +1,10 @@
 package org.jala.edu.user.infrastructure.config;
 
+import java.time.Clock;
 import org.jala.edu.core.application.port.out.TransactionRunner;
 import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.core.contract.UserService;
+import org.jala.edu.core.infrastructure.config.SessionTimeout;
 import org.jala.edu.user.application.port.out.PasswordHasher;
 import org.jala.edu.user.application.port.out.UserRepositoryPort;
 import org.jala.edu.user.application.port.out.UserStatusHistoryPort;
@@ -23,6 +25,7 @@ import org.jala.edu.user.infrastructure.adapter.in.contract.UserServiceAdapter;
 import org.jala.edu.user.infrastructure.adapter.out.security.BCryptPasswordHasher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 
 @Configuration
 public class UserModuleConfiguration {
@@ -95,8 +98,8 @@ public class UserModuleConfiguration {
      * fallback.
      */
     @Bean
-    public SessionCurrentUserService currentUserService(FindUserUseCase findUserUseCase) {
-        return new SessionCurrentUserService(findUserUseCase);
+    public SessionCurrentUserService currentUserService(FindUserUseCase findUserUseCase, Environment environment) {
+        return new SessionCurrentUserService(findUserUseCase, SessionTimeout.from(environment), Clock.systemUTC());
     }
 
     @Bean

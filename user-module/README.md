@@ -28,7 +28,8 @@ User management for the Delivery System (`org.jala.edu.user`), built with the po
 - **Login (CU-USR-06):** `LoginUseCase` checks email, password and status; `SessionCurrentUserService` serves core's
   `CurrentUserService` to the other modules. The login screen opens before the main window. Each lookup reloads the
   signed-in user (#88): if the administrator deactivates them, the session ends at once (`currentUser()` throws
-  `NotAuthenticatedException`), and a new role or name applies to the next operation.
+  `NotAuthenticatedException`), and a new role or name applies to the next operation. The session also ends after
+  `delivery.session.idle-timeout` (30 minutes by default) without activity (RF-1.15).
 - **Sign-up (CU-USR-08, #89):** "New customer? Create an account" on the login opens `sign-up.fxml`; `SignUpUseCase`
   creates an active **CUSTOMER** (other roles are still created by an administrator) and signs them in.
 - **My account (RF-1.07, RF-1.08, CU-USR-09):** the "My account" button, which every role sees, shows the signed-in
