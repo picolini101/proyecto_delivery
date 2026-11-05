@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.core.contract.OrderService;
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.contract.UserService;
@@ -61,13 +62,15 @@ public class DeliveryModuleConfiguration {
     }
 
     @Bean
-    public ListReadyOrdersUseCase listReadyOrdersUseCase(OrderService orderService, UserService userService) {
-        return new ListReadyOrdersUseCase(orderService, userService);
+    public ListReadyOrdersUseCase listReadyOrdersUseCase(OrderService orderService, UserService userService,
+                                                          CurrentUserService currentUserService) {
+        return new ListReadyOrdersUseCase(orderService, userService, currentUserService);
     }
 
     @Bean
-    public TomarPedidoUseCase tomarPedidoUseCase(OrderService orderService, UserService userService) {
-        return new TomarPedidoUseCase(orderService, userService);
+    public TomarPedidoUseCase tomarPedidoUseCase(OrderService orderService, UserService userService,
+                                                  CurrentUserService currentUserService) {
+        return new TomarPedidoUseCase(orderService, userService, currentUserService);
     }
 
     private static CompletedDelivery sampleDelivery(String orderId, String amount, String locality, LocalDate deliveredOn) {

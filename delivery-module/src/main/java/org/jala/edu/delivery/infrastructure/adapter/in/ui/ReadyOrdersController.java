@@ -10,7 +10,6 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import lombok.RequiredArgsConstructor;
-import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
 import org.jala.edu.core.infrastructure.ui.ErrorMessages;
 import org.jala.edu.delivery.application.port.in.ListReadyOrdersQuery;
@@ -24,7 +23,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Courier dashboard of orders ready for delivery (view: {@code ready-orders.fxml}).
- * There is no sign-in yet, so the board acts as the sample courier from {@link SampleUsers}.
+ * The signed-in courier is resolved inside the use cases.
  */
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -76,7 +75,7 @@ public class ReadyOrdersController {
         ReadyOrderSummary selected = ordersTable.getSelectionModel().getSelectedItem();
         refreshButton.setDisable(true);
         BackgroundTasks.run(
-                () -> tomarPedidoUseCase.execute(new TomarPedidoCommand(selected.orderId(), SampleUsers.COURIER)),
+                () -> tomarPedidoUseCase.execute(new TomarPedidoCommand(selected.orderId())),
                 done -> reload("Pedido tomado."),
                 error -> {
                     showMessage(ErrorMessages.of(error, "take the order"), "error");
@@ -87,7 +86,7 @@ public class ReadyOrdersController {
     private void reload(String successMessage) {
         refreshButton.setDisable(true);
         BackgroundTasks.run(
-                () -> listReadyOrdersUseCase.execute(new ListReadyOrdersQuery(SampleUsers.COURIER)),
+                () -> listReadyOrdersUseCase.execute(new ListReadyOrdersQuery()),
                 orders -> {
                     ordersTable.getItems().setAll(orders);
                     if (successMessage == null) {

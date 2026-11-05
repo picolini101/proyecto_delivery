@@ -7,6 +7,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import org.jala.edu.core.contract.ReadyOrder;
 import org.jala.edu.core.contract.SampleUsers;
+import org.jala.edu.core.contract.UserRole;
+import org.jala.edu.core.infrastructure.contract.FallbackCurrentUserService;
 import org.jala.edu.core.infrastructure.contract.FallbackOrderService;
 import org.jala.edu.core.infrastructure.contract.FallbackUserService;
 import org.jala.edu.delivery.application.port.in.ListReadyOrdersQuery;
@@ -17,14 +19,12 @@ import org.junit.jupiter.api.Test;
 class ListReadyOrdersUseCaseTest {
 
     private final FallbackOrderService orders = new FallbackOrderService();
-    private final ListReadyOrdersUseCase listReadyOrders =
-            new ListReadyOrdersUseCase(orders, new FallbackUserService());
+    private final ListReadyOrdersQuery query = new ListReadyOrdersQuery();
+    private final ListReadyOrdersUseCase listReadyOrders = new ListReadyOrdersUseCase(orders, new FallbackUserService(),
+            new FallbackCurrentUserService(UserRole.COURIER));
 
     @Test
     void listsReadyOrdersCopyingAddressAndShippingCostFromTheContract() {
-        // Arrange
-        ListReadyOrdersQuery query = new ListReadyOrdersQuery(SampleUsers.COURIER);
-
         // Act
         List<ReadyOrderSummary> ready = listReadyOrders.execute(query);
 
@@ -49,7 +49,6 @@ class ListReadyOrdersUseCaseTest {
         // Arrange
         orders.findReadyForDelivery()
                 .forEach(order -> orders.assign(order.orderId(), SampleUsers.COURIER));
-        ListReadyOrdersQuery query = new ListReadyOrdersQuery(SampleUsers.COURIER);
 
         // Act
         List<ReadyOrderSummary> ready = listReadyOrders.execute(query);
@@ -61,10 +60,11 @@ class ListReadyOrdersUseCaseTest {
     @Test
     void rejectsAUserWhoIsNotAnActiveCourier() {
         // Arrange
-        ListReadyOrdersQuery query = new ListReadyOrdersQuery(SampleUsers.CUSTOMER);
+        ListReadyOrdersUseCase asCustomer = new ListReadyOrdersUseCase(orders, new FallbackUserService(),
+                new FallbackCurrentUserService(UserRole.CUSTOMER));
 
         // Act
-        Throwable thrown = catchThrowable(() -> listReadyOrders.execute(query));
+        Throwable thrown = catchThrowable(() -> asCustomer.execute(query));
 
         // Assert
         assertThat(thrown).isInstanceOf(UnauthorizedOperationException.class)
