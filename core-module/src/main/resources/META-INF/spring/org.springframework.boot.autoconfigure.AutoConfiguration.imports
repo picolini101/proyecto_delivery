@@ -1,1 +1,2 @@
 org.jala.edu.core.infrastructure.contract.ContractFallbackAutoConfiguration
+org.jala.edu.core.infrastructure.persistence.transaction.TransactionRunnerAutoConfiguration
