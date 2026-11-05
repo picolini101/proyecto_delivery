@@ -32,6 +32,23 @@ answers with the sample user of the role in `delivery.sample-user` (`ADMIN`, `ME
 `CUSTOMER` by default). With `javafx:run`, set it in `application.yml` or as the environment variable
 `DELIVERY_SAMPLE_USER=COURIER`, because the plugin does not forward `-D` properties to the application.
 
+## Transactions
+
+When a use case saves more than once (for example an order and its payment, or a user and their history), receive
+`TransactionRunner` (`org.jala.edu.core.application.port.out`) in its constructor and wrap the writes, so with MySQL
+they commit or roll back together (RNF-1.05). The use case stays free of Spring:
+
+```java
+return transactions.inTransaction(() -> {
+    orderRepository.save(order);
+    stockPort.reserve(order.lines());
+    return order.getId();
+});
+```
+
+`core` registers the bean (`TransactionRunnerAutoConfiguration`): a real transaction with `-Pjpa`, plain execution in
+memory mode. In unit tests use `TransactionRunner.direct()`.
+
 ## Build
 
 ```bash
