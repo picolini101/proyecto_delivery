@@ -8,7 +8,9 @@ User management for the Delivery System (`org.jala.edu.user`), built with the po
 - **Status history (#82, CU-USR-07):** every activation or deactivation, from the list or the edit form, records
   the previous and new status, who made it (`CurrentUserService`) and when (`UserStatusChange`,
   `UserStatusHistoryPort`, table `user_status_changes`). Only an ADMIN can see it (`ListUserStatusHistoryUseCase`).
-- **Contract:** serves core's `UserService` to the other modules (`UserServiceAdapter`) and stores the core
+- **Contract:** serves core's `UserService` to the other modules (`UserServiceAdapter`): the access check, and since
+  #85 `findUser` and `findActiveByRole` (`FindUserUseCase`, `ListActiveUsersByRoleUseCase`), which return users only
+  as core's `UserSummary`. It also stores the core
   `SampleUsers` at startup (`SampleUsersLoader`): one active user per role plus an inactive customer and an
   inactive courier (`inactive.courier@sample.delivery`), so other modules can test the rejection of inactive users.
 - **Persistence:** JPA adapter (MySQL, Flyway migration in `db/migration/user`) and in-memory adapter,

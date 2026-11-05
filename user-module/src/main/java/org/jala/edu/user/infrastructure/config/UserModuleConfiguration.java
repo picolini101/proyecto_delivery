@@ -8,6 +8,8 @@ import org.jala.edu.user.application.port.out.UserStatusHistoryPort;
 import org.jala.edu.user.application.usecase.ChangeUserStatusUseCase;
 import org.jala.edu.user.application.usecase.CheckUserAccessUseCase;
 import org.jala.edu.user.application.usecase.CreateUserUseCase;
+import org.jala.edu.user.application.usecase.FindUserUseCase;
+import org.jala.edu.user.application.usecase.ListActiveUsersByRoleUseCase;
 import org.jala.edu.user.application.usecase.ListUserStatusHistoryUseCase;
 import org.jala.edu.user.application.usecase.ListUsersUseCase;
 import org.jala.edu.user.application.usecase.LoginUseCase;
@@ -80,8 +82,19 @@ public class UserModuleConfiguration {
      * The {@link UserService} contract other modules receive; it replaces core's fallback.
      */
     @Bean
-    public UserService userService(CheckUserAccessUseCase checkUserAccessUseCase) {
-        return new UserServiceAdapter(checkUserAccessUseCase);
+    public FindUserUseCase findUserUseCase(UserRepositoryPort userRepositoryPort) {
+        return new FindUserUseCase(userRepositoryPort);
+    }
+
+    @Bean
+    public ListActiveUsersByRoleUseCase listActiveUsersByRoleUseCase(UserRepositoryPort userRepositoryPort) {
+        return new ListActiveUsersByRoleUseCase(userRepositoryPort);
+    }
+
+    @Bean
+    public UserService userService(CheckUserAccessUseCase checkUserAccessUseCase, FindUserUseCase findUserUseCase,
+                                   ListActiveUsersByRoleUseCase listActiveUsersByRoleUseCase) {
+        return new UserServiceAdapter(checkUserAccessUseCase, findUserUseCase, listActiveUsersByRoleUseCase);
     }
 
     @Bean
