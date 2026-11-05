@@ -34,8 +34,8 @@ User management for the Delivery System (`org.jala.edu.user`), built with the po
 - **My account (RF-1.07, RF-1.08, CU-USR-09):** the "My account" button, which every role sees, shows the signed-in
   user's email, role and status, lets them edit their own name and phone (`UpdateMyProfileUseCase`; email and role
   stay with the administrator) and change their password after typing the current one (`ChangePasswordUseCase`).
-- **UI:** "Users" navigation button → Users main view → Create user, List users (search by email, edit dialog,
-  Activate/Deactivate, status history).
+- **UI:** "Users" navigation button → Users main view → Create user, List users (search by email, filter by role
+  and status, edit dialog, Activate/Deactivate, status history).
 
 ## Build
 

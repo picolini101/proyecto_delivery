@@ -19,12 +19,20 @@ public class ListUsersUseCase implements UseCase<ListUsersQuery, List<User>> {
     }
 
     /**
-     * Returns the users whose email contains the query's filter (every user when it is blank), oldest first.
+     * Returns the users that match every filter of the query (all users when none is set), oldest first.
+     *
+     * @throws org.jala.edu.user.domain.exception.AdminRequiredException if the signed-in user is not an ADMIN
      */
     @Override
     public List<User> execute(ListUsersQuery query) {
         AdminOnly.check(currentUserService);
-        String filter = query.emailFilter();
+        return byEmail(query.emailFilter()).stream()
+                .filter(user -> query.role() == null || user.getRole() == query.role())
+                .filter(user -> query.status() == null || user.getStatus() == query.status())
+                .toList();
+    }
+
+    private List<User> byEmail(String filter) {
         if (filter == null || filter.isBlank()) {
             return userRepository.findAll();
         }

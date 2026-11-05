@@ -6,12 +6,14 @@ import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseButton;
+import javafx.util.StringConverter;
 import lombok.RequiredArgsConstructor;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
 import org.jala.edu.core.infrastructure.ui.Dialogs;
@@ -23,6 +25,7 @@ import org.jala.edu.user.application.port.in.ListUsersQuery;
 import org.jala.edu.user.application.usecase.ChangeUserStatusUseCase;
 import org.jala.edu.user.application.usecase.ListUsersUseCase;
 import org.jala.edu.user.domain.model.User;
+import org.jala.edu.user.domain.model.UserRole;
 import org.jala.edu.user.domain.model.UserStatus;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -45,6 +48,12 @@ public class ListUsersController {
 
     @FXML
     private TextField searchField;
+
+    @FXML
+    private ComboBox<UserRole> roleFilter;
+
+    @FXML
+    private ComboBox<UserStatus> statusFilter;
 
     @FXML
     private TableView<User> usersTable;
@@ -84,6 +93,8 @@ public class ListUsersController {
 
     @FXML
     void initialize() {
+        setUpFilter(roleFilter, UserRole.values(), "All roles");
+        setUpFilter(statusFilter, UserStatus.values(), "All statuses");
         bind(nameColumn, User::fullName);
         bind(emailColumn, user -> user.getEmail().value());
         bind(phoneColumn, user -> user.getPhoneNumber() == null ? "" : user.getPhoneNumber());
@@ -123,6 +134,8 @@ public class ListUsersController {
     @FXML
     void onClearSearch() {
         searchField.clear();
+        roleFilter.setValue(null);
+        statusFilter.setValue(null);
         reload(null);
     }
 
@@ -163,10 +176,12 @@ public class ListUsersController {
     private void reload(String successMessage) {
         refreshButton.setDisable(true);
         BackgroundTasks.run(
-                () -> listUsersUseCase.execute(new ListUsersQuery(searchField.getText())),
+                () -> listUsersUseCase.execute(new ListUsersQuery(searchField.getText(), roleFilter.getValue(),
+                        statusFilter.getValue())),
                 users -> {
                     usersTable.getItems().setAll(users);
-                    boolean searching = !searchField.getText().isBlank();
+                    boolean searching = !searchField.getText().isBlank() || roleFilter.getValue() != null
+                            || statusFilter.getValue() != null;
                     if (searching && users.isEmpty()) {
                         showMessage("No users match the search", "info");
                     } else if (successMessage == null) {
@@ -180,6 +195,25 @@ public class ListUsersController {
                     showMessage(ErrorMessages.of(error, "load the users"), "error");
                     refreshButton.setDisable(false);
                 });
+    }
+
+    /**
+     * The first item, {@code null}, means "no filter" and shows {@code allLabel}.
+     */
+    private static <E extends Enum<E>> void setUpFilter(ComboBox<E> filter, E[] values, String allLabel) {
+        filter.getItems().add(null);
+        filter.getItems().addAll(values);
+        filter.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(E value) {
+                return value == null ? allLabel : DisplayFormat.label(value);
+            }
+
+            @Override
+            public E fromString(String text) {
+                throw new UnsupportedOperationException("The filters are not editable");
+            }
+        });
     }
 
     private void showMessage(String text, String styleClass) {
