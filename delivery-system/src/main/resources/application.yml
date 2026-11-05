@@ -7,6 +7,9 @@ delivery:
   # Until the login exists, the fallback CurrentUserService answers with this sample user:
   # ADMIN | MERCHANT | CUSTOMER | COURIER (or DELIVERY_SAMPLE_USER=COURIER)
   sample-user: CUSTOMER
+  session:
+    # RF-1.15: a signed-in session ends after this long without keyboard or mouse activity (e.g. 30m, 1h; 0 = never).
+    idle-timeout: 30m
 
 spring:
   application:

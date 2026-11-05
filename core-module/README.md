@@ -27,6 +27,9 @@ If the session is no longer valid (for example, an administrator deactivated the
 `NotAuthenticatedException`. Work started with `BackgroundTasks.run` then goes back to the login with the notice
 "Your session has ended. Please sign in again." instead of calling your error callback, so modules do not handle it.
 
+Sessions also end after a period without keyboard or mouse activity (RF-1.15): `delivery.session.idle-timeout`
+(`SessionTimeout`, 30 minutes by default, `0` to disable). The main window then returns to the login.
+
 Keep validating permissions with `UserService.isActiveWithRole`. Until `user-module` provides the login, the fallback
 answers with the sample user of the role in `delivery.sample-user` (`ADMIN`, `MERCHANT`, `CUSTOMER` or `COURIER`;
 `CUSTOMER` by default). With `javafx:run`, set it in `application.yml` or as the environment variable
