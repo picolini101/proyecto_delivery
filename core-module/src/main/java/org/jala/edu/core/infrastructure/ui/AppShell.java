@@ -56,8 +56,18 @@ public class AppShell {
         showLogin();
     }
 
-    private void showLogin() {
+    /**
+     * Shows the login screen again, e.g. from a screen it opened with {@link #showScreen(String)}.
+     */
+    public void showLogin() {
         show(fxmlLoader.load(loginScreen.getObject().fxmlPath()));
+    }
+
+    /**
+     * Shows a full-window view outside the main window, e.g. the sign-up screen reached from the login (#89).
+     */
+    public void showScreen(String fxmlPath) {
+        show(fxmlLoader.load(fxmlPath));
     }
 
     private void show(Parent root) {

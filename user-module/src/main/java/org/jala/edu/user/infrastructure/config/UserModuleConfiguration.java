@@ -13,6 +13,7 @@ import org.jala.edu.user.application.usecase.ListActiveUsersByRoleUseCase;
 import org.jala.edu.user.application.usecase.ListUserStatusHistoryUseCase;
 import org.jala.edu.user.application.usecase.ListUsersUseCase;
 import org.jala.edu.user.application.usecase.LoginUseCase;
+import org.jala.edu.user.application.usecase.SignUpUseCase;
 import org.jala.edu.user.application.usecase.UpdateUserUseCase;
 import org.jala.edu.user.infrastructure.adapter.in.contract.SessionCurrentUserService;
 import org.jala.edu.user.infrastructure.adapter.in.contract.UserServiceAdapter;
@@ -57,6 +58,11 @@ public class UserModuleConfiguration {
                                                                      UserStatusHistoryPort userStatusHistoryPort,
                                                                      CurrentUserService currentUserService) {
         return new ListUserStatusHistoryUseCase(userRepositoryPort, userStatusHistoryPort, currentUserService);
+    }
+
+    @Bean
+    public SignUpUseCase signUpUseCase(CreateUserUseCase createUserUseCase, UserRepositoryPort userRepositoryPort) {
+        return new SignUpUseCase(createUserUseCase, userRepositoryPort);
     }
 
     @Bean

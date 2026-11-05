@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- Same layout as the login: the StackPane centers the form in the window. -->
+<StackPane xmlns="http://javafx.com/javafx/25"
+           xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="org.jala.edu.user.infrastructure.adapter.in.ui.SignUpController">
+    <VBox styleClass="page" maxWidth="480" maxHeight="-Infinity">
+
+        <Label styleClass="page-title" text="Delivery System · Create an account"/>
+
+        <GridPane fx:id="form" styleClass="form">
+            <columnConstraints>
+                <ColumnConstraints minWidth="110"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+            </columnConstraints>
+
+            <Label text="First name *" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+            <TextField fx:id="firstNameField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+            <Label text="Last name *" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+            <TextField fx:id="lastNameField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+            <Label text="Email *" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+            <TextField fx:id="emailField" promptText="name@example.com" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+            <Label text="Phone" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+            <TextField fx:id="phoneField" promptText="Optional, e.g. +59170000000" GridPane.rowIndex="3"
+                       GridPane.columnIndex="1"/>
+
+            <Label text="Password *" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+            <PasswordField fx:id="passwordField" promptText="At least 8 characters"
+                           GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+            <Button fx:id="signUpButton" styleClass="primary" text="Create account" defaultButton="true"
+                    onAction="#onSignUp" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+        </GridPane>
+
+        <Label fx:id="messageLabel" styleClass="message" wrapText="true"/>
+        <Hyperlink text="Back to sign in" onAction="#onBackToSignIn"/>
+    </VBox>
+</StackPane>
