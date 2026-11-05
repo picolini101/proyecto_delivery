@@ -50,6 +50,10 @@ public class LoginController {
     @FXML
     void initialize() {
         signInButton.disableProperty().bind(isBlank(emailField).or(isBlank(passwordField)));
+        shell.takeLoginNotice().ifPresent(notice -> {
+            messageLabel.getStyleClass().add("error");
+            messageLabel.setText(notice);
+        });
     }
 
     @FXML
