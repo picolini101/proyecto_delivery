@@ -1,20 +1,25 @@
 package org.jala.edu.order.infrastructure.adapter.in.ui;
 
 import java.util.List;
-import java.util.UUID;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.collections.FXCollections;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.control.ScrollPane;
 import lombok.RequiredArgsConstructor;
 import org.jala.edu.core.contract.ProductInfo;
-import org.jala.edu.core.contract.SampleUsers;
+import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
 import org.jala.edu.core.infrastructure.ui.ErrorMessages;
 import org.jala.edu.core.infrastructure.ui.Navigator;
@@ -46,9 +51,6 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class NewCartController {
 
-    /** Sin login hasta el sprint 2: el cliente actual es el de prueba. */
-    private static final UUID CURRENT_CUSTOMER = SampleUsers.CUSTOMER;
-
     /** Cantidad maxima que se puede elegir con el boton "+". */
     private static final int MAX_QUANTITY = 99;
 
@@ -76,6 +78,8 @@ public class NewCartController {
     /** Para volver a la pantalla anterior. */
     private final Navigator navigator;
 
+    private final CurrentUserService currentUserService;
+
     private final IncreaseCartItemQuantityUseCase increaseQuantity;
 
     private final DecreaseCartItemQuantityUseCase decreaseQuantity;
@@ -87,8 +91,22 @@ public class NewCartController {
     private FlowPane productsPane;
 
     /** Contenedor donde se dibujan las lineas del carrito. */
-    @FXML
-    private VBox cartBox;
+    @FXML private ScrollPane productsView;
+    @FXML private VBox cartView;
+    @FXML private TableView<CartSummary.Line> cartTable;
+    @FXML private TableColumn<CartSummary.Line, String> productColumn;
+    @FXML private TableColumn<CartSummary.Line, Integer> numberColumn;
+    @FXML private TableColumn<CartSummary.Line, Integer> quantityColumn;
+    @FXML private TableColumn<CartSummary.Line, String> unitPriceColumn;
+    @FXML private TableColumn<CartSummary.Line, String> subtotalColumn;
+    @FXML private VBox tableContent;
+    @FXML private VBox emptyState;
+    @FXML private HBox shippingRow;
+    @FXML private HBox totalRow;
+    @FXML private Label pageTitle;
+    @FXML private Button showCartButton;
+    @FXML private Button tableAddProductButton;
+    @FXML private Button emptyAddProductButton;
 
     /** Etiqueta para mostrar mensajes de exito o error. */
     @FXML
@@ -98,24 +116,13 @@ public class NewCartController {
     @FXML
     private Label emptyLabel;
 
-    /** Texto del subtotal. */
-    @FXML
-    private Label subtotalLabel;
-
-    /** Texto del envio. */
-    @FXML
-    private Label shippingLabel;
-
-    /** Texto del total. */
-    @FXML
-    private Label totalLabel;
-
-    /**
+/**
      * JavaFX llama a este metodo automaticamente cuando termina de cargar el FXML.
      * Carga los productos para dibujar sus tarjetas y luego dibuja el carrito actual.
      */
     @FXML
     void initialize() {
+        configureTable();
         BackgroundTasks.run(
                 () -> listCatalogProducts.execute(),
                 products -> showProducts(products),
@@ -127,6 +134,117 @@ public class NewCartController {
     @FXML
     void onBack() {
         navigator.show(OrderViews.MAIN);
+    }
+
+    @FXML void onShowCart() {
+        clearMessage();
+        productsView.setVisible(false); productsView.setManaged(false);
+        cartView.setVisible(true); cartView.setManaged(true);
+        pageTitle.setVisible(false); pageTitle.setManaged(false);
+        showCartButton.setVisible(false); showCartButton.setManaged(false);
+        refreshCart();
+    }
+    @FXML void onAddProduct() {
+        cartView.setVisible(false); cartView.setManaged(false);
+        productsView.setVisible(true); productsView.setManaged(true);
+        messageLabel.setVisible(false); messageLabel.setManaged(false);
+        pageTitle.setVisible(true); pageTitle.setManaged(true);
+        showCartButton.setVisible(true); showCartButton.setManaged(true);
+    }
+
+    private void configureTable() {
+        cartTable.skinProperty().addListener((observable, previousSkin, currentSkin) ->
+                javafx.application.Platform.runLater(this::styleTableHeaders));
+        setPrimaryButtonHover(tableAddProductButton);
+        setPrimaryButtonHover(emptyAddProductButton);
+        cartTable.setRowFactory(table -> new javafx.scene.control.TableRow<>() {
+            @Override protected void updateItem(CartSummary.Line item, boolean empty) {
+                super.updateItem(item, empty);
+                setStyle(empty ? "" : (getIndex() % 2 == 0
+                        ? "-fx-background-color: white; -fx-border-color: transparent transparent #eef2f7 transparent;"
+                        : "-fx-background-color: #fbfdff; -fx-border-color: transparent transparent #eef2f7 transparent;"));
+            }
+        });
+        numberColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(
+                data.getTableView().getItems().indexOf(data.getValue()) + 1));
+        numberColumn.setCellFactory(column -> new TableCell<>() {
+            @Override protected void updateItem(Integer item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : String.valueOf(getIndex() + 1));
+                setAlignment(Pos.CENTER);
+                setStyle("-fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: #334155;");
+            }
+        });
+        productColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().productName()));
+        unitPriceColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().unitPrice() + "$"));
+        subtotalColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().lineSubtotal() + "$"));
+        styleTextColumn(productColumn);
+        styleTextColumn(unitPriceColumn);
+        styleTextColumn(subtotalColumn);
+        quantityColumn.setCellFactory(column -> new TableCell<>() {
+            @Override protected void updateItem(Integer ignored, boolean empty) {
+                super.updateItem(ignored, empty);
+                if (empty || getIndex() < 0 || getIndex() >= getTableView().getItems().size()) {
+                    setGraphic(null);
+                    return;
+                }
+                CartSummary.Line line = getTableView().getItems().get(getIndex());
+                HBox controls = new HBox(10);
+                controls.setAlignment(Pos.CENTER);
+                controls.setStyle("-fx-padding: 3 5; -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 9; -fx-background-radius: 9;");
+                Button minus = new Button("−");
+                styleStepperButton(minus);
+                minus.setDisable(line.quantity() <= 1);
+                Label count = new Label(String.valueOf(line.quantity()));
+                count.setStyle("-fx-min-width: 28px; -fx-alignment: center; -fx-text-fill: #1e293b; -fx-font-weight: bold;");
+                Button plus = new Button("+");
+                styleStepperButton(plus);
+                controls.getChildren().setAll(minus, count, plus);
+                minus.setOnAction(event -> changeLine(line, controls, false));
+                plus.setOnAction(event -> changeLine(line, controls, true));
+                setGraphic(controls);
+            }
+        });
+        quantityColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().quantity()));
+        cartTable.setFixedCellSize(56);
+    }
+
+    private void styleTableHeaders() {
+        for (javafx.scene.Node header : cartTable.lookupAll(".column-header")) {
+            header.setStyle("-fx-background-color: #f1f5f9; -fx-size: 42px; -fx-border-color: transparent transparent #e2e8f0 transparent;");
+        }
+        for (javafx.scene.Node label : cartTable.lookupAll(".column-header .label")) {
+            label.setStyle("-fx-text-fill: #334155; -fx-font-weight: bold; -fx-font-size: 12px;");
+        }
+        for (javafx.scene.Node filler : cartTable.lookupAll(".filler")) {
+            filler.setStyle("-fx-background-color: #f1f5f9;");
+        }
+    }
+
+    private void styleTextColumn(TableColumn<CartSummary.Line, String> column) {
+        column.setCellFactory(ignored -> new TableCell<>() {
+            @Override protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : item);
+                setAlignment(Pos.CENTER);
+                setStyle("-fx-background-color: transparent; -fx-border-color: transparent; -fx-text-fill: #334155;");
+            }
+        });
+    }
+
+    private void setPrimaryButtonHover(Button button) {
+        String normal = "-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 11 24; -fx-background-radius: 9; -fx-cursor: hand;";
+        String hover = "-fx-background-color: #1d4ed8; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 11 24; -fx-background-radius: 9; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.25), 9, 0.15, 0, 3);";
+        button.setOnMouseEntered(event -> button.setStyle(hover));
+        button.setOnMouseExited(event -> button.setStyle(normal));
+    }
+
+    private void styleStepperButton(Button button) {
+        String normal = "-fx-background-color: #eff6ff; -fx-text-fill: #1d4ed8; -fx-font-weight: bold; -fx-font-size: 15px; -fx-min-width: 30px; -fx-min-height: 30px; -fx-background-radius: 7; -fx-cursor: hand;";
+        String hover = "-fx-background-color: #dbeafe; -fx-text-fill: #1d4ed8; -fx-font-weight: bold; -fx-font-size: 15px; -fx-min-width: 30px; -fx-min-height: 30px; -fx-background-radius: 7; -fx-cursor: hand;";
+        button.setStyle(normal);
+        button.setOnMouseEntered(event -> button.setStyle(hover));
+        button.setOnMouseExited(event -> button.setStyle(normal));
     }
 
     /**
@@ -250,7 +368,7 @@ public class NewCartController {
     private void addToCart(ProductInfo product, int quantity, Button accept, StackPane action) {
         accept.setDisable(true);
         BackgroundTasks.run(
-                () -> addProductToCart.execute(CURRENT_CUSTOMER, product.productId(), quantity),
+                () -> addProductToCart.execute(currentUserService.currentUser().id(), product.productId(), quantity),
                 cart -> productAdded(product, quantity, action),
                 error -> addFailed(error, accept));
     }
@@ -283,7 +401,7 @@ public class NewCartController {
     /** Pide el resumen del carrito al caso de uso (en segundo plano) y lo dibuja en pantalla. */
     private void refreshCart() {
         BackgroundTasks.run(
-                () -> getCartSummary.execute(CURRENT_CUSTOMER),
+                () -> getCartSummary.execute(currentUserService.currentUser().id()),
                 summary -> showCart(summary),
                 error -> showError(error, "cargar el carrito"));
     }
@@ -293,44 +411,55 @@ public class NewCartController {
      * Al final actualiza el subtotal, el envio y el total.
      *
      * Dibuja el carrito: por cada comercio un titulo, y por cada linea el nombre, el subtotal y los botones
-     * "-" y "+" para cambiar la cantidad (ver {@link #buildCartLine(CartSummary.Line)}).
+     * "-" y "+" para cambiar la cantidad (ver ).
      * Al final actualiza el subtotal, el envio y el total.
      *
      *
      * @param summary resumen calculado por {@link GetCartSummaryUseCase}
      */
     private void showCart(CartSummary summary) {
-        // Borra lo dibujado antes para no repetir lineas
-        cartBox.getChildren().clear();
-        for (CartSummary.Group group : summary.groups()) {
-            Label header = new Label("Comercio " + shortId(group.commerceId()));
-            header.setStyle("-fx-font-weight: bold; -fx-text-fill: #555555;");
-            cartBox.getChildren().add(header);
-            for (CartSummary.Line line : group.lines()) {
-                cartBox.getChildren().add(buildCartLine(line));
-            }
-        }
-
-        // Muestra el texto "carrito vacio" solo si no hay productos.
-        // setManaged(false) hace que el texto oculto tampoco ocupe espacio.
-        boolean empty = summary.groups().isEmpty();
-        emptyLabel.setVisible(empty);
-        emptyLabel.setManaged(empty);
-
-        subtotalLabel.setText("Subtotal: " + summary.subtotal());
-        shippingLabel.setText("Envío: " + summary.shipping());
-        totalLabel.setText("Total: " + summary.total());
+        List<CartSummary.Line> lines = summary.groups().stream().flatMap(group -> group.lines().stream()).toList();
+        cartTable.setItems(FXCollections.observableArrayList(lines));
+        double tableHeight = cartTable.getFixedCellSize() * lines.size() + 48;
+        cartTable.setMinHeight(tableHeight);
+        cartTable.setPrefHeight(tableHeight);
+        cartTable.setMaxHeight(tableHeight);
+        boolean empty = lines.isEmpty();
+        tableContent.setVisible(!empty);
+        tableContent.setManaged(!empty);
+        emptyState.setVisible(empty);
+        emptyState.setManaged(empty);
+        shippingRow.getChildren().setAll(summaryRow("ENVIO", summary.shipping() + "$", false));
+        totalRow.getChildren().setAll(summaryRow("TOTAL", summary.total() + "$", true));
     }
 
+    private HBox summaryRow(String title, String amount, boolean total) {
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+        Label label = new Label(title);
+        Label value = new Label(amount);
+        String textStyle = total
+                ? "-fx-text-fill: #1b4f72; -fx-font-size: 16px; -fx-font-weight: bold;"
+                : "-fx-text-fill: #475569; -fx-font-size: 14px;";
+        label.setStyle(textStyle);
+        value.setStyle(textStyle);
+        HBox row = new HBox(24, spacer, label, value);
+        row.setAlignment(Pos.CENTER_RIGHT);
+        row.setStyle(total
+                ? "-fx-padding: 12 18; -fx-background-color: transparent; -fx-border-color: #c7dceb transparent transparent transparent;"
+                : "-fx-padding: 12 18; -fx-background-color: transparent;");
+        return row;
+    }
+    private void changeLine(CartSummary.Line line, HBox controls, boolean increase) {
+        controls.setDisable(true); BackgroundTasks.run(() -> increase ? increaseQuantity.execute(currentUserService.currentUser().id(),line.productId(),1) : decreaseQuantity.execute(currentUserService.currentUser().id(),line.productId(),1), cart -> refreshCart(), error -> { showError(error,"actualizar cantidad"); controls.setDisable(false); });
+    }
     /**
      * Acorta un id para mostrarlo: devuelve solo los ultimos 4 caracteres.
      *
      * @param id id completo
      * @return los ultimos 4 caracteres del id
      */
-    private static String shortId(UUID id) {
-        return id.toString().substring(32);
-    }
+
 
     /**
      * Muestra un error arriba de la pantalla. Si el error es una regla del negocio (por ejemplo sin stock)
@@ -354,102 +483,27 @@ public class NewCartController {
         messageLabel.getStyleClass().removeAll("info", "success", "error");
         messageLabel.getStyleClass().add(styleClass);
         messageLabel.setText(text);
+        messageLabel.setStyle(styleClass.equals("error")
+                ? "-fx-padding: 9 14; -fx-background-color: #fef2f2; -fx-background-radius: 8; -fx-font-size: 13px; -fx-text-fill: #b91c1c;"
+                : "-fx-padding: 9 14; -fx-background-color: #eff6ff; -fx-background-radius: 8; -fx-font-size: 13px; -fx-text-fill: #15803d;");
+        messageLabel.setVisible(true);
+        messageLabel.setManaged(true);
+        PauseTransition timeout = new PauseTransition(Duration.seconds(3));
+        timeout.setOnFinished(event -> {
+            if (text.equals(messageLabel.getText())) {
+                clearMessage();
+            }
+        });
+        timeout.play();
     }
 
     /** Borra el mensaje de arriba: quita el texto y el color */
     public void clearMessage(){
         messageLabel.getStyleClass().removeAll("info", "success", "error");
         messageLabel.setText("");
-    }
-
-    /**
-     * Construye una linea del carrito en dos filas: arriba el nombre y el subtotal; abajo los botones
-     * "-" y "+" con la cantidad y el precio de una unidad.
-     * El "-" se desactiva cuando la cantidad es 1 (la cantidad nunca baja de 1).
-     *
-     * @param line linea del resumen del carrito
-     * @return la linea lista para agregarla al carrito de la pantalla
-     */
-
-    private VBox buildCartLine(CartSummary.Line line) {
-        Label name = new Label(line.productName());
-        name.setWrapText(true);
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        Label amount = new Label(line.lineSubtotal().toString());
-        amount.setStyle("-fx-font-weight: bold;");
-        HBox top = new HBox(8, name, spacer, amount);
-
-        Button minus = new Button("-");
-        minus.setStyle(ROUND_BUTTON_STYLE);
-        minus.setDisable(line.quantity() <= 1);
-        Label count = new Label(String.valueOf(line.quantity()));
-        count.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-min-width: 28; -fx-alignment: center;");
-
-        Button plus = new Button("+");
-        plus.setStyle(ROUND_BUTTON_STYLE);
-        HBox stepper = new HBox(8, minus, count, plus);
-        stepper.setAlignment(Pos.CENTER_LEFT);
-        minus.setOnAction(event -> decreaseLine(line, stepper));
-        plus.setOnAction(event -> increaseLine(line, stepper));
-
-        Label unitPrice = new Label("c/u " + line.unitPrice());
-        unitPrice.setStyle("-fx-text-fill: #888888;");
-        HBox bottom = new HBox(10, stepper, unitPrice);
-        bottom.setAlignment(Pos.CENTER_LEFT);
-
-        VBox box = new VBox(4, top, bottom);
-        box.setStyle("-fx-padding: 6 0 6 0;");
-        return box;
-    }
-
-    /**
-     * Se ejecuta al presionar "+" en una linea del carrito: suma 1 unidad usando el caso de uso de HU4
-     * (en segundo plano). Si el stock no alcanza, el caso de uso lanza un error y la cantidad no cambia.
-     * Mientras trabaja, los botones de esa linea quedan desactivados para que no se presionen dos veces.
-     *
-     * @param line    linea del carrito
-     * @param stepper caja con los botones "-" y "+" de la linea
-     */
-    private void increaseLine(CartSummary.Line line, HBox stepper) {
-        stepper.setDisable(true);
-        BackgroundTasks.run(
-                () -> increaseQuantity.execute(CURRENT_CUSTOMER, line.productId(), 1),
-                cart -> lineChanged(),
-                error -> lineChangeFailed(error, stepper, "agregar unidades al carrito"));
-    }
-
-    /**
-     * Se ejecuta al presionar "-" en una linea del carrito: quita 1 unidad (en segundo plano).
-     *
-     * @param line    linea del carrito
-     * @param stepper caja con los botones "-" y "+" de la linea
-     */
-    private void decreaseLine(CartSummary.Line line, HBox stepper) {
-        stepper.setDisable(true);
-        BackgroundTasks.run(
-                () -> decreaseQuantity.execute(CURRENT_CUSTOMER, line.productId(), 1),
-                cart -> lineChanged(),
-                error -> lineChangeFailed(error, stepper, "quitar unidades del carrito"));
-    }
-
-    /** Se llama cuando el cambio de cantidad salio bien: limpia el mensaje anterior y vuelve a dibujar el carrito. */
-    private void lineChanged() {
-        clearMessage();
-        refreshCart();
-    }
-
-    /**
-     * Se llama cuando no se pudo cambiar la cantidad (por ejemplo sin stock): muestra el error y activa otra vez
-     * los botones de la linea. La cantidad del carrito no cambio.
-     *
-     * @param error   el error que ocurrio
-     * @param stepper caja con los botones "-" y "+" de la linea
-     * @param action  lo que se estaba intentando hacer
-     */
-    private void lineChangeFailed(Throwable error, HBox stepper, String action) {
-        showError(error, action);
-        stepper.setDisable(false);
+        messageLabel.setStyle("-fx-padding: 9 14; -fx-background-color: #eff6ff; -fx-background-radius: 8; -fx-font-size: 13px;");
+        messageLabel.setVisible(false);
+        messageLabel.setManaged(false);
     }
 
 }
