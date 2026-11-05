@@ -9,6 +9,7 @@ import static org.jala.edu.user.UserFixtures.user;
 
 import java.util.List;
 import java.util.UUID;
+import org.jala.edu.core.application.port.out.TransactionRunner;
 import org.jala.edu.user.application.port.in.ChangeUserStatusCommand;
 import org.jala.edu.user.domain.exception.AdminRequiredException;
 import org.jala.edu.user.domain.exception.UserNotFoundException;
@@ -24,7 +25,8 @@ class ListUserStatusHistoryUseCaseTest {
     private final InMemoryUserRepositoryAdapter repository = new InMemoryUserRepositoryAdapter();
     private final InMemoryUserStatusHistoryAdapter history = new InMemoryUserStatusHistoryAdapter();
     private final ChangeUserStatusUseCase changeStatus =
-            new ChangeUserStatusUseCase(repository, history, signedInAs(SIGNED_IN_ADMIN));
+            new ChangeUserStatusUseCase(repository, history, signedInAs(SIGNED_IN_ADMIN),
+                    TransactionRunner.direct());
     private final ListUserStatusHistoryUseCase listHistory =
             new ListUserStatusHistoryUseCase(repository, history, signedInAs(SIGNED_IN_ADMIN));
 

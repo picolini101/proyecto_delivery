@@ -7,8 +7,12 @@ import static org.jala.edu.user.UserFixtures.SIGNED_IN_CUSTOMER;
 import static org.jala.edu.user.UserFixtures.signedInAs;
 import static org.jala.edu.user.UserFixtures.user;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
+import org.jala.edu.core.application.port.out.TransactionRunner;
 import org.jala.edu.user.application.port.in.ChangeUserStatusCommand;
 import org.jala.edu.user.application.port.in.CheckUserAccessQuery;
 import org.jala.edu.user.domain.exception.AdminRequiredException;
@@ -17,6 +21,7 @@ import org.jala.edu.user.domain.exception.UserNotFoundException;
 import org.jala.edu.user.domain.model.User;
 import org.jala.edu.user.domain.model.UserRole;
 import org.jala.edu.user.domain.model.UserStatus;
+import org.jala.edu.user.domain.model.UserStatusChange;
 import org.jala.edu.user.infrastructure.adapter.out.persistence.memory.InMemoryUserRepositoryAdapter;
 import org.jala.edu.user.infrastructure.adapter.out.persistence.memory.InMemoryUserStatusHistoryAdapter;
 import org.junit.jupiter.api.Test;
@@ -26,7 +31,8 @@ class ChangeUserStatusUseCaseTest {
     private final InMemoryUserRepositoryAdapter repository = new InMemoryUserRepositoryAdapter();
     private final InMemoryUserStatusHistoryAdapter history = new InMemoryUserStatusHistoryAdapter();
     private final ChangeUserStatusUseCase changeStatus =
-            new ChangeUserStatusUseCase(repository, history, signedInAs(SIGNED_IN_ADMIN));
+            new ChangeUserStatusUseCase(repository, history, signedInAs(SIGNED_IN_ADMIN),
+                    TransactionRunner.direct());
     private final CheckUserAccessUseCase checkAccess = new CheckUserAccessUseCase(repository);
 
     @Test
@@ -137,7 +143,8 @@ class ChangeUserStatusUseCaseTest {
         // Arrange
         User existing = repository.save(user("ana@example.com"));
         ChangeUserStatusUseCase asCustomer =
-                new ChangeUserStatusUseCase(repository, history, signedInAs(SIGNED_IN_CUSTOMER));
+                new ChangeUserStatusUseCase(repository, history, signedInAs(SIGNED_IN_CUSTOMER),
+                        TransactionRunner.direct());
 
         // Act
         Throwable thrown = catchThrowable(() ->
@@ -147,5 +154,44 @@ class ChangeUserStatusUseCaseTest {
         assertThat(thrown).isInstanceOf(AdminRequiredException.class);
         assertThat(repository.findById(existing.getId()).orElseThrow().isActive()).isTrue();
         assertThat(history.findAll()).isEmpty();
+    }
+
+    @Test
+    void storesTheNewStatusAndItsHistoryInOneTransaction() {
+        // Arrange
+        List<String> events = new ArrayList<>();
+        InMemoryUserRepositoryAdapter users = new InMemoryUserRepositoryAdapter() {
+            @Override
+            public User save(User user) {
+                events.add("save user");
+                return super.save(user);
+            }
+        };
+        InMemoryUserStatusHistoryAdapter changes = new InMemoryUserStatusHistoryAdapter() {
+            @Override
+            public UserStatusChange save(UserStatusChange change) {
+                events.add("save history");
+                return super.save(change);
+            }
+        };
+        TransactionRunner transactions = new TransactionRunner() {
+            @Override
+            public <T> T inTransaction(Supplier<T> work) {
+                events.add("begin");
+                T result = work.get();
+                events.add("commit");
+                return result;
+            }
+        };
+        User customer = users.save(user("ana@example.com"));
+        events.clear();
+        ChangeUserStatusUseCase useCase =
+                new ChangeUserStatusUseCase(users, changes, signedInAs(SIGNED_IN_ADMIN), transactions);
+
+        // Act
+        useCase.execute(new ChangeUserStatusCommand(customer.getId().value(), UserStatus.INACTIVE));
+
+        // Assert
+        assertThat(events).containsExactly("begin", "save user", "save history", "commit");
     }
 }

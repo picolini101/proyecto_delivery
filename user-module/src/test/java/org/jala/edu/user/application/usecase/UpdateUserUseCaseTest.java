@@ -8,6 +8,7 @@ import static org.jala.edu.user.UserFixtures.signedInAs;
 import static org.jala.edu.user.UserFixtures.user;
 
 import java.util.UUID;
+import org.jala.edu.core.application.port.out.TransactionRunner;
 import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.user.application.port.in.UpdateUserCommand;
 import org.jala.edu.user.domain.exception.AdminRequiredException;
@@ -25,7 +26,7 @@ class UpdateUserUseCaseTest {
     private final InMemoryUserRepositoryAdapter repository = new InMemoryUserRepositoryAdapter();
     private final InMemoryUserStatusHistoryAdapter history = new InMemoryUserStatusHistoryAdapter();
     private final UpdateUserUseCase updateUser =
-            new UpdateUserUseCase(repository, history, signedInAs(SIGNED_IN_ADMIN));
+            new UpdateUserUseCase(repository, history, signedInAs(SIGNED_IN_ADMIN), TransactionRunner.direct());
 
     @Test
     void updatesProfileRoleAndStatus() {
@@ -155,7 +156,8 @@ class UpdateUserUseCaseTest {
     void onlyAnAdministratorCanEditUsers() {
         // Arrange
         User existing = repository.save(user("ana@example.com"));
-        UpdateUserUseCase asCustomer = new UpdateUserUseCase(repository, history, signedInAs(SIGNED_IN_CUSTOMER));
+        UpdateUserUseCase asCustomer = new UpdateUserUseCase(repository, history, signedInAs(SIGNED_IN_CUSTOMER),
+                TransactionRunner.direct());
         UpdateUserCommand promote = new UpdateUserCommand(existing.getId().value(), "Ana", "Perez", null,
                 UserRole.ADMIN, UserStatus.ACTIVE);
 
