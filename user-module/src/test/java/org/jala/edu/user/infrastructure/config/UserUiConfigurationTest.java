@@ -26,9 +26,22 @@ class UserUiConfigurationTest {
         assertThat(item.fxmlPath()).isEqualTo(UserViews.MAIN);
     }
 
+    @Test
+    void myAccountButtonOpensTheAccountView() {
+        // Arrange
+        String expectedTitle = "My account";
+
+        // Act
+        NavigationItem item = configuration.myAccountNavigationItem();
+
+        // Assert
+        assertThat(item.title()).isEqualTo(expectedTitle);
+        assertThat(item.fxmlPath()).isEqualTo(UserViews.MY_ACCOUNT);
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {UserViews.MAIN, UserViews.CREATE, UserViews.LIST, UserViews.EDIT, UserViews.LOGIN,
-            UserViews.SIGN_UP})
+            UserViews.SIGN_UP, UserViews.MY_ACCOUNT})
     void everyUserViewExistsOnTheClasspath(String fxmlPath) {
         // Arrange
         Class<?> anyModuleClass = UserViews.class;
