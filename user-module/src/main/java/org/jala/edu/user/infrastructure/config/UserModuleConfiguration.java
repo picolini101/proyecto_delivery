@@ -26,8 +26,9 @@ import org.springframework.context.annotation.Configuration;
 public class UserModuleConfiguration {
 
     @Bean
-    public CreateUserUseCase createUserUseCase(UserRepositoryPort userRepositoryPort, PasswordHasher passwordHasher) {
-        return new CreateUserUseCase(userRepositoryPort, passwordHasher);
+    public CreateUserUseCase createUserUseCase(UserRepositoryPort userRepositoryPort, PasswordHasher passwordHasher,
+                                               CurrentUserService currentUserService) {
+        return new CreateUserUseCase(userRepositoryPort, passwordHasher, currentUserService);
     }
 
     @Bean
@@ -43,8 +44,9 @@ public class UserModuleConfiguration {
     }
 
     @Bean
-    public ListUsersUseCase listUsersUseCase(UserRepositoryPort userRepositoryPort) {
-        return new ListUsersUseCase(userRepositoryPort);
+    public ListUsersUseCase listUsersUseCase(UserRepositoryPort userRepositoryPort,
+                                             CurrentUserService currentUserService) {
+        return new ListUsersUseCase(userRepositoryPort, currentUserService);
     }
 
     @Bean

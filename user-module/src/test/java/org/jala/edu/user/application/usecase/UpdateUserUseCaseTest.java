@@ -3,12 +3,14 @@ package org.jala.edu.user.application.usecase;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.jala.edu.user.UserFixtures.SIGNED_IN_ADMIN;
+import static org.jala.edu.user.UserFixtures.SIGNED_IN_CUSTOMER;
 import static org.jala.edu.user.UserFixtures.signedInAs;
 import static org.jala.edu.user.UserFixtures.user;
 
 import java.util.UUID;
 import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.user.application.port.in.UpdateUserCommand;
+import org.jala.edu.user.domain.exception.AdminRequiredException;
 import org.jala.edu.user.domain.exception.LastActiveAdminException;
 import org.jala.edu.user.domain.exception.UserNotFoundException;
 import org.jala.edu.user.domain.model.User;
@@ -147,5 +149,21 @@ class UpdateUserUseCaseTest {
 
         // Assert
         assertThat(history.findByUserIdNewestFirst(existing.getId())).isEmpty();
+    }
+
+    @Test
+    void onlyAnAdministratorCanEditUsers() {
+        // Arrange
+        User existing = repository.save(user("ana@example.com"));
+        UpdateUserUseCase asCustomer = new UpdateUserUseCase(repository, history, signedInAs(SIGNED_IN_CUSTOMER));
+        UpdateUserCommand promote = new UpdateUserCommand(existing.getId().value(), "Ana", "Perez", null,
+                UserRole.ADMIN, UserStatus.ACTIVE);
+
+        // Act
+        Throwable thrown = catchThrowable(() -> asCustomer.execute(promote));
+
+        // Assert
+        assertThat(thrown).isInstanceOf(AdminRequiredException.class);
+        assertThat(repository.findById(existing.getId()).orElseThrow().getRole()).isEqualTo(UserRole.CUSTOMER);
     }
 }

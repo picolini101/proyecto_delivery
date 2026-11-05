@@ -2,6 +2,7 @@ package org.jala.edu.user.application.usecase;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.jala.edu.user.UserFixtures.NOBODY_SIGNED_IN;
 import static org.jala.edu.user.UserFixtures.user;
 
 import org.jala.edu.core.domain.exception.DomainException;
@@ -19,7 +20,8 @@ class SignUpUseCaseTest {
 
     private final InMemoryUserRepositoryAdapter repository = new InMemoryUserRepositoryAdapter();
     private final BCryptPasswordHasher hasher = new BCryptPasswordHasher();
-    private final SignUpUseCase signUp = new SignUpUseCase(new CreateUserUseCase(repository, hasher), repository);
+    private final SignUpUseCase signUp = new SignUpUseCase(
+            new CreateUserUseCase(repository, hasher, NOBODY_SIGNED_IN), repository);
 
     @Test
     void createsAnActiveCustomerThatCanSignIn() {

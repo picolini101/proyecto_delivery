@@ -3,6 +3,7 @@ package org.jala.edu.user.application.usecase;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.jala.edu.user.UserFixtures.SIGNED_IN_ADMIN;
+import static org.jala.edu.user.UserFixtures.SIGNED_IN_CUSTOMER;
 import static org.jala.edu.user.UserFixtures.signedInAs;
 import static org.jala.edu.user.UserFixtures.user;
 
@@ -10,6 +11,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.jala.edu.user.application.port.in.ChangeUserStatusCommand;
 import org.jala.edu.user.application.port.in.CheckUserAccessQuery;
+import org.jala.edu.user.domain.exception.AdminRequiredException;
 import org.jala.edu.user.domain.exception.LastActiveAdminException;
 import org.jala.edu.user.domain.exception.UserNotFoundException;
 import org.jala.edu.user.domain.model.User;
@@ -128,5 +130,22 @@ class ChangeUserStatusUseCaseTest {
 
         // Assert
         assertThat(history.findByUserIdNewestFirst(customer.getId())).isEmpty();
+    }
+
+    @Test
+    void onlyAnAdministratorCanChangeAStatus() {
+        // Arrange
+        User existing = repository.save(user("ana@example.com"));
+        ChangeUserStatusUseCase asCustomer =
+                new ChangeUserStatusUseCase(repository, history, signedInAs(SIGNED_IN_CUSTOMER));
+
+        // Act
+        Throwable thrown = catchThrowable(() ->
+                asCustomer.execute(new ChangeUserStatusCommand(existing.getId().value(), UserStatus.INACTIVE)));
+
+        // Assert
+        assertThat(thrown).isInstanceOf(AdminRequiredException.class);
+        assertThat(repository.findById(existing.getId()).orElseThrow().isActive()).isTrue();
+        assertThat(history.findAll()).isEmpty();
     }
 }
