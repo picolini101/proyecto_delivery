@@ -14,13 +14,15 @@ import static org.junit.jupiter.api.Assertions.*;
 class PaymentTransactionTest {
     private final UUID orderId = UUID.randomUUID();
     private final UUID userId = UUID.randomUUID();
+    private final UUID paymentMethodId = UUID.randomUUID();
     @Test
     void recordsApprovedTransaction() {
         PaymentTransaction transaction = PaymentTransaction.recordApproved(
-                orderId, userId, new BigDecimal("150.00"));
+                orderId, userId, paymentMethodId, new BigDecimal("150.00"));
         assertNotNull(transaction.getId());
         assertEquals(orderId, transaction.getOrderId());
         assertEquals(userId, transaction.getUserId());
+        assertEquals(paymentMethodId, transaction.getPaymentMethodId());
         assertEquals(new BigDecimal("150.00"), transaction.getAmount());
         assertEquals(PaymentStatus.APPROVED, transaction.getStatus());
         assertTrue(transaction.isApproved());
@@ -28,7 +30,8 @@ class PaymentTransactionTest {
     @Test
     void recordsRejectedTransactionWithReason() {
         PaymentTransaction transaction = PaymentTransaction.recordRejected(
-                orderId, userId, new BigDecimal("150.00"), "Intento de cobro duplicado sobre pedido aprobado");
+                orderId, userId, paymentMethodId, new BigDecimal("150.00"),
+                "Intento de cobro duplicado sobre pedido aprobado");
         assertEquals(PaymentStatus.REJECTED, transaction.getStatus());
         assertFalse(transaction.isApproved());
         assertEquals("Intento de cobro duplicado sobre pedido aprobado", transaction.getReason());
@@ -36,8 +39,8 @@ class PaymentTransactionTest {
     @Test
     void rejectsZeroOrNegativeAmount() {
         assertThrows(DomainException.class, () ->
-                PaymentTransaction.recordApproved(orderId, userId, BigDecimal.ZERO));
+                PaymentTransaction.recordApproved(orderId, userId, paymentMethodId, BigDecimal.ZERO));
         assertThrows(DomainException.class, () ->
-                PaymentTransaction.recordApproved(orderId, userId, new BigDecimal("-10.00")));
+                PaymentTransaction.recordApproved(orderId, userId, paymentMethodId, new BigDecimal("-10.00")));
     }
 }
