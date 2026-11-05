@@ -1,5 +1,6 @@
 package org.jala.edu.user.application.usecase;
 
+import org.jala.edu.core.application.port.out.TransactionRunner;
 import org.jala.edu.core.application.usecase.UseCase;
 import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.user.application.port.in.UpdateUserCommand;
@@ -16,12 +17,14 @@ public class UpdateUserUseCase implements UseCase<UpdateUserCommand, Void> {
     private final UserRepositoryPort userRepository;
     private final UserStatusHistoryPort statusHistory;
     private final CurrentUserService currentUserService;
+    private final TransactionRunner transactions;
 
     public UpdateUserUseCase(UserRepositoryPort userRepository, UserStatusHistoryPort statusHistory,
-                             CurrentUserService currentUserService) {
+                             CurrentUserService currentUserService, TransactionRunner transactions) {
         this.userRepository = userRepository;
         this.statusHistory = statusHistory;
         this.currentUserService = currentUserService;
+        this.transactions = transactions;
     }
 
     /**
@@ -32,16 +35,19 @@ public class UpdateUserUseCase implements UseCase<UpdateUserCommand, Void> {
     @Override
     public Void execute(UpdateUserCommand command) {
         AdminOnly.check(currentUserService);
-        UserId id = new UserId(command.id());
-        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
-        ActiveAdminRule.check(user, command.role(), command.status(), userRepository);
-        UserStatus previousStatus = user.getStatus();
-        applyChanges(user, command);
-        userRepository.save(user);
-        if (user.getStatus() != previousStatus) {
-            StatusHistory.record(user, previousStatus, statusHistory, currentUserService);
-        }
-        return null;
+        return transactions.inTransaction(() -> {
+            UserId id = new UserId(command.id());
+            User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
+            ActiveAdminRule.check(user, command.role(), command.status(), userRepository);
+            UserStatus previousStatus = user.getStatus();
+            applyChanges(user, command);
+            // RNF-1.05: the changes and the status history row are stored together or not at all.
+            userRepository.save(user);
+            if (user.getStatus() != previousStatus) {
+                StatusHistory.record(user, previousStatus, statusHistory, currentUserService);
+            }
+            return null;
+        });
     }
 
     private void applyChanges(User user, UpdateUserCommand command) {

@@ -1,5 +1,6 @@
 package org.jala.edu.user.infrastructure.config;
 
+import org.jala.edu.core.application.port.out.TransactionRunner;
 import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.user.application.port.out.PasswordHasher;
@@ -39,8 +40,9 @@ public class UserModuleConfiguration {
     @Bean
     public UpdateUserUseCase updateUserUseCase(UserRepositoryPort userRepositoryPort,
                                                UserStatusHistoryPort userStatusHistoryPort,
-                                               CurrentUserService currentUserService) {
-        return new UpdateUserUseCase(userRepositoryPort, userStatusHistoryPort, currentUserService);
+                                               CurrentUserService currentUserService,
+                                               TransactionRunner transactionRunner) {
+        return new UpdateUserUseCase(userRepositoryPort, userStatusHistoryPort, currentUserService, transactionRunner);
     }
 
     @Bean
@@ -52,8 +54,10 @@ public class UserModuleConfiguration {
     @Bean
     public ChangeUserStatusUseCase changeUserStatusUseCase(UserRepositoryPort userRepositoryPort,
                                                            UserStatusHistoryPort userStatusHistoryPort,
-                                                           CurrentUserService currentUserService) {
-        return new ChangeUserStatusUseCase(userRepositoryPort, userStatusHistoryPort, currentUserService);
+                                                           CurrentUserService currentUserService,
+                                                           TransactionRunner transactionRunner) {
+        return new ChangeUserStatusUseCase(userRepositoryPort, userStatusHistoryPort, currentUserService,
+                transactionRunner);
     }
 
     @Bean

@@ -20,6 +20,8 @@ User management for the Delivery System (`org.jala.edu.user`), built with the po
 - **Password (D-10):** required when registering, at least 8 characters, stored only as a BCrypt hash
   (`PasswordHasher`, `BCryptPasswordHasher`). Sample users share the test password `Sample123`
   (`SampleUsersLoader.SAMPLE_PASSWORD`); never use it for a real account.
+- **One transaction (RNF-1.05):** changing a status (and editing a user whose status changes) stores the user and
+  the history row through core's `TransactionRunner`, so with MySQL both are saved or neither is.
 - **Administrator only (RF-1.14):** creating, editing, listing and activating or deactivating users check inside the
   use case that an ADMIN is signed in (`AdminOnly`), not only the menu; any other role gets "Only an administrator
   can do this". The customer sign-up reuses the creation rules without that check.
