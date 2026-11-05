@@ -13,6 +13,7 @@ import org.jala.edu.delivery.application.usecase.GetDeliveryHistoryUseCase;
 import org.jala.edu.delivery.application.usecase.ListCouriersUseCase;
 import org.jala.edu.delivery.application.usecase.ListReadyOrdersUseCase;
 import org.jala.edu.delivery.application.usecase.RegisterCourierUseCase;
+import org.jala.edu.delivery.application.usecase.TomarPedidoUseCase;
 import org.jala.edu.delivery.domain.model.CompletedDelivery;
 import org.jala.edu.delivery.infrastructure.adapter.out.persistence.memory.InMemoryDeliveryHistoryAdapter;
 import org.springframework.context.annotation.Bean;
@@ -62,6 +63,11 @@ public class DeliveryModuleConfiguration {
     @Bean
     public ListReadyOrdersUseCase listReadyOrdersUseCase(OrderService orderService, UserService userService) {
         return new ListReadyOrdersUseCase(orderService, userService);
+    }
+
+    @Bean
+    public TomarPedidoUseCase tomarPedidoUseCase(OrderService orderService, UserService userService) {
+        return new TomarPedidoUseCase(orderService, userService);
     }
 
     private static CompletedDelivery sampleDelivery(String orderId, String amount, String locality, LocalDate deliveredOn) {
