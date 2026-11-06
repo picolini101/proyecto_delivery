@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
 <!-- Main view of the catalog module, opened by the "Catalog" navigation button -->
 <VBox styleClass="page"
       xmlns="http://javafx.com/javafx/25"
-      xmlns:fx="http://javafx.com/fxml/1">
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.jala.edu.catalog.infrastructure.adapter.in.ui.CatalogMainController">
 
     <Label styleClass="page-title" text="Catalog"/>
     <Label styleClass="subtitle" wrapText="true"
            text="Browse and manage the items available for delivery."/>
-    <Label styleClass="placeholder" wrapText="true"
-           text="There are no catalog screens yet. They will appear here as they are added."/>
+
+    <HBox styleClass="module-actions">
+        <Button styleClass="module-action" text="Register product" onAction="#onCreateProduct"/>
+    </HBox>
 </VBox>
