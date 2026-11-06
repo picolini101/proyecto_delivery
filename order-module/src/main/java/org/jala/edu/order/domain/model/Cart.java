@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.core.domain.exception.NotFoundException;
+import org.jala.edu.order.domain.exception.ProductNotFoundInCartException;
 
 /**
  * Carrito de compras de un cliente. Es una clase del dominio: solo tiene datos y reglas simples,
@@ -116,5 +117,16 @@ public class Cart {
         }
 
         item.setQuantity(item.getQuantity() - quantity);
+    }
+
+    public void removeItem(UUID productId) {
+        if (productId == null) {
+            throw new ProductNotFoundInCartException("El identificador del producto no puede ser nulo");
+        }
+        CartItem item = findItem(productId);
+        if (item == null) {
+            throw ProductNotFoundInCartException.of(productId);
+        }
+        items.remove(item);
     }
 }

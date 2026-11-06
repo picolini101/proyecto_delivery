@@ -10,8 +10,6 @@ public final class OrderViews {
     public static final String MAIN = BASE + "order-main.fxml";
     public static final String NEW_CART = BASE + "new-cart.fxml";
 
-    public static final String REMOVE_ITEM = BASE + "remove-item-panel.fxml";
-
     private OrderViews() {
     }
 }
