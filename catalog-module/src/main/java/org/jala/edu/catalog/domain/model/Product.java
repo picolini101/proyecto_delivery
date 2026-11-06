@@ -122,6 +122,16 @@ public class Product extends BaseModel<ProductId> {
         touch();
     }
 
+    public void updateStatus(ProductStatus newStatus) {
+        if (newStatus != ProductStatus.AVAILABLE
+                && newStatus != ProductStatus.OUT_OF_STOCK) {
+            throw new DomainException("Invalid product status");
+        }
+
+        this.status = newStatus;
+        touch();
+    }
+
     public boolean isAvailable() {
         return status == ProductStatus.AVAILABLE;
     }

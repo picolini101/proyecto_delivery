@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import java.math.BigDecimal;
 import java.util.UUID;
 import org.jala.edu.catalog.domain.model.Product;
+import org.jala.edu.catalog.domain.model.ProductStatus;
 import org.jala.edu.catalog.infrastructure.adapter.out.persistence.memory.InMemoryProductRepositoryAdapter;
 import org.jala.edu.core.contract.ProductInfo;
 import org.jala.edu.core.domain.exception.ConflictException;
@@ -185,5 +186,13 @@ class CatalogServiceAdapterTest {
         product.adjustStock(0);
 
         assertThat(catalogService.isAvailable(product.getId().value(), 1)).isFalse();
+    }
+
+    @Test
+    void productIsUnavailableWhenStatusIsOutOfStock() {
+        product.updateStatus(ProductStatus.OUT_OF_STOCK);
+
+        assertThat(catalogService.isAvailable(product.getId().value(), 1)).isFalse();
+        assertThat(product.getStock()).isEqualTo(10);
     }
 }

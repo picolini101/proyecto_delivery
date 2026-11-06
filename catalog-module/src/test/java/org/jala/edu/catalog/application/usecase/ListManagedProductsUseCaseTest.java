@@ -7,6 +7,7 @@ import org.jala.edu.catalog.application.dto.ManagedProduct;
 import org.jala.edu.catalog.application.port.in.ListManagedProductsQuery;
 import org.jala.edu.catalog.domain.model.Commerce;
 import org.jala.edu.catalog.domain.model.Product;
+import org.jala.edu.catalog.domain.model.ProductStatus;
 import org.jala.edu.catalog.infrastructure.adapter.out.persistence.memory.InMemoryCommerceRepositoryAdapter;
 import org.jala.edu.catalog.infrastructure.adapter.out.persistence.memory.InMemoryProductRepositoryAdapter;
 import org.junit.jupiter.api.Test;
@@ -93,6 +94,22 @@ class ListManagedProductsUseCaseTest {
         Commerce commerce = commerceRepository.save(Commerce.register("Active Commerce"));
         Product product = Product.register(
                 commerce.getId().value(), "Pizza", "Food", new BigDecimal("50.00"));
+        productRepository.save(product);
+
+        var products = listProducts.execute(new ListManagedProductsQuery());
+
+        assertThat(products).extracting(ManagedProduct::availability)
+                .containsExactly("Agotado");
+    }
+
+    @Test
+    void marksProductAsOutOfStockWhenStatusIsOutOfStockEvenWithPositiveStock() {
+        Commerce commerce = commerceRepository.save(Commerce.register("Active Commerce"));
+        Product product = Product.register(
+                commerce.getId().value(), "Pizza", "Food", new BigDecimal("50.00"));
+
+        product.adjustStock(10);
+        product.updateStatus(ProductStatus.OUT_OF_STOCK);
         productRepository.save(product);
 
         var products = listProducts.execute(new ListManagedProductsQuery());
