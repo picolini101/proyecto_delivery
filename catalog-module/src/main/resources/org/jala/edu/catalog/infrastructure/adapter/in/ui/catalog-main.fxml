@@ -16,6 +16,7 @@
            text="Browse and manage the items available for delivery."/>
 
     <HBox styleClass="module-actions">
+        <Button styleClass="module-action" text="View catalog" onAction="#onViewCatalog"/>
         <Button styleClass="module-action" text="Register product" onAction="#onCreateProduct"/>
         <Button styleClass="module-action" text="Manage products" onAction="#onManageProducts"/>
     </HBox>

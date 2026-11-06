@@ -9,7 +9,7 @@ class CatalogViewsTest {
 
     @ParameterizedTest
     @ValueSource(strings = {CatalogViews.MAIN, CatalogViews.CREATE_PRODUCT,
-            CatalogViews.MANAGE_PRODUCTS, CatalogViews.EDIT_PRODUCT})
+            CatalogViews.MANAGE_PRODUCTS, CatalogViews.EDIT_PRODUCT, CatalogViews.CUSTOMER_CATALOG})
     void everyViewExistsOnTheClasspath(String path) {
         assertThat(getClass().getResource(path)).as("FXML on the classpath: %s", path).isNotNull();
     }

@@ -11,9 +11,9 @@ import org.jala.edu.catalog.application.port.in.AdjustProductStockCommand;
 import org.jala.edu.catalog.domain.exception.ProductNotFoundException;
 import org.jala.edu.catalog.domain.model.Product;
 import org.jala.edu.catalog.infrastructure.adapter.out.persistence.memory.InMemoryProductRepositoryAdapter;
+import org.jala.edu.core.contract.SampleCatalog;
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.domain.exception.DomainException;
-import org.jala.edu.core.infrastructure.contract.FallbackCatalogService;
 import org.jala.edu.core.infrastructure.contract.FallbackUserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,7 +40,7 @@ class AdjustProductStockUseCaseTest {
     @BeforeEach
     void setUp() {
         product = repository.save(Product.register(
-                FallbackCatalogService.SAMPLE_COMMERCE, "Pizza", "Food", new BigDecimal("50.00")));
+                SampleCatalog.COMMERCE, "Pizza", "Food", new BigDecimal("50.00")));
     }
 
     private AdjustProductStockCommand commandFor(UUID requesterId, UUID productId, int quantity) {

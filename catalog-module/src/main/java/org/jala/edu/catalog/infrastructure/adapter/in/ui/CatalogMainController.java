@@ -26,4 +26,9 @@ public class CatalogMainController {
     void onManageProducts() {
         navigator.show(CatalogViews.MANAGE_PRODUCTS);
     }
+
+    @FXML
+    void onViewCatalog() {
+        navigator.show(CatalogViews.CUSTOMER_CATALOG);
+    }
 }
