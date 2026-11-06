@@ -82,7 +82,7 @@ class RemoveProductFromCartUseCaseTest {
     @Test
     @DisplayName("Criterio 2: Eliminar el unico producto deja el carrito vacio y totales en cero exacto")
     void shouldResetTotalsToZeroWhenLastItemRemoved() {
-        // GIVEN: Carrito con un unico producto registrado
+        // Carrito con un unico producto registrado
         Cart cart = cartRepository.findOrCreate(CUSTOMER);
         cart.addProduct(PRODUCT_AVAILABLE, SampleCatalog.COMMERCE, 1);
         cartRepository.save(cart);
