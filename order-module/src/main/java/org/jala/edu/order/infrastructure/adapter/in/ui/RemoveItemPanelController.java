@@ -81,9 +81,9 @@ public class RemoveItemPanelController {
                 itemsContainer.getChildren().add(buildItemRow(item.getProductId(), item.getQuantity()));
             }
         }
-        subtotalValueLabel.setText("Bs. " + summary.subtotal().setScale(2));
-        shippingValueLabel.setText("Bs. " + summary.shipping().setScale(2));
-        totalValueLabel.setText("Bs. " + summary.total().setScale(2));
+        subtotalValueLabel.setText("$. " + summary.subtotal().setScale(2));
+        shippingValueLabel.setText("$. " + summary.shipping().setScale(2));
+        totalValueLabel.setText("$. " + summary.total().setScale(2));
     }
 
     private HBox buildItemRow(UUID productId, int quantity) {

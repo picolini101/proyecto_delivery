@@ -16,27 +16,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-/**
- package org.jala.edu.order.application.usecase;
-
- import static org.junit.jupiter.api.Assertions.*;
-
- import java.math.BigDecimal;
- import java.util.UUID;
- import org.jala.edu.core.contract.SampleCatalog;
- import org.jala.edu.core.contract.SampleUsers;
- import org.jala.edu.core.infrastructure.contract.FallbackCatalogService;
- import org.jala.edu.order.domain.exception.ProductNotFoundInCartException;
- import org.jala.edu.order.domain.model.Cart;
- import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryCartRepositoryAdapter;
- import org.junit.jupiter.api.BeforeEach;
- import org.junit.jupiter.api.DisplayName;
- import org.junit.jupiter.api.Test;
-
- /**
- * Pruebas unitarias de integracion de caso de uso para {@link RemoveProductFromCartUseCase}.
- * Valida los 3 escenarios de aceptacion del PBI Issue #38 (HU-02) con calculo real de importes.
- */
 class RemoveProductFromCartUseCaseTest {
 
     private InMemoryCartRepositoryAdapter cartRepository;
