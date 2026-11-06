@@ -18,6 +18,9 @@ public final class DeliveryViews {
     /** Courier registration view. */
     public static final String COURIER_REGISTRATION = BASE + "courier-registration.fxml";
 
+    /** Ready orders view for the courier dashboard. */
+    public static final String READY_ORDERS = BASE + "ready-orders.fxml";
+
     private DeliveryViews() {
     }
 

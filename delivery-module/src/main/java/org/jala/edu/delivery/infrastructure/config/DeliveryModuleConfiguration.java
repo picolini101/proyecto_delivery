@@ -4,13 +4,17 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import org.jala.edu.core.contract.CurrentUserService;
+import org.jala.edu.core.contract.OrderService;
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.delivery.application.port.out.CourierRepositoryPort;
 import org.jala.edu.delivery.application.port.out.DeliveryHistoryPort;
 import org.jala.edu.delivery.application.usecase.GetDeliveryHistoryUseCase;
 import org.jala.edu.delivery.application.usecase.ListCouriersUseCase;
+import org.jala.edu.delivery.application.usecase.ListReadyOrdersUseCase;
 import org.jala.edu.delivery.application.usecase.RegisterCourierUseCase;
+import org.jala.edu.delivery.application.usecase.TomarPedidoUseCase;
 import org.jala.edu.delivery.domain.model.CompletedDelivery;
 import org.jala.edu.delivery.infrastructure.adapter.out.persistence.memory.InMemoryDeliveryHistoryAdapter;
 import org.springframework.context.annotation.Bean;
@@ -55,6 +59,18 @@ public class DeliveryModuleConfiguration {
     public GetDeliveryHistoryUseCase getDeliveryHistoryUseCase(DeliveryHistoryPort deliveryHistoryPort,
                                                                UserService userService) {
         return new GetDeliveryHistoryUseCase(deliveryHistoryPort, userService);
+    }
+
+    @Bean
+    public ListReadyOrdersUseCase listReadyOrdersUseCase(OrderService orderService, UserService userService,
+                                                          CurrentUserService currentUserService) {
+        return new ListReadyOrdersUseCase(orderService, userService, currentUserService);
+    }
+
+    @Bean
+    public TomarPedidoUseCase tomarPedidoUseCase(OrderService orderService, UserService userService,
+                                                  CurrentUserService currentUserService) {
+        return new TomarPedidoUseCase(orderService, userService, currentUserService);
     }
 
     private static CompletedDelivery sampleDelivery(String orderId, String amount, String locality, LocalDate deliveredOn) {
