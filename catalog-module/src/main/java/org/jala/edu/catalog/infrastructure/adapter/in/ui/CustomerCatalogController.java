@@ -15,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.jala.edu.catalog.application.dto.CatalogProduct;
 import org.jala.edu.catalog.application.port.in.ListAvailableProductsQuery;
 import org.jala.edu.catalog.application.usecase.ListAvailableProductsUseCase;
-import org.jala.edu.core.infrastructure.contract.FallbackCatalogService;
+import org.jala.edu.core.contract.SampleCatalog;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
 import org.jala.edu.core.infrastructure.ui.ErrorMessages;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -31,7 +31,7 @@ import org.springframework.stereotype.Component;
 public class CustomerCatalogController {
 
     // TODO(sprint 2): reemplazar por el comercio elegido por el cliente cuando exista la lista de comercios.
-    private static final UUID SELECTED_COMMERCE = FallbackCatalogService.SAMPLE_COMMERCE;
+    private static final UUID SELECTED_COMMERCE = SampleCatalog.COMMERCE;
 
     private static final String STYLESHEET = "customer-catalog.css";
     private static final double CARD_WIDTH = 200;
