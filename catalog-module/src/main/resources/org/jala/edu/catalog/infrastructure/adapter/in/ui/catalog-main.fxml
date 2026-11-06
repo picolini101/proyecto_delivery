@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<!-- Main view of the catalog module, opened by the "Catalog" navigation button -->
+<!-- Vista principal del módulo de catálogo, abierta mediante el botón de navegación "Catalog" -->
 <VBox styleClass="page"
       xmlns="http://javafx.com/javafx/25"
       xmlns:fx="http://javafx.com/fxml/1"
@@ -17,5 +17,6 @@
 
     <HBox styleClass="module-actions">
         <Button styleClass="module-action" text="Register product" onAction="#onCreateProduct"/>
+        <Button styleClass="module-action" text="Manage products" onAction="#onManageProducts"/>
     </HBox>
 </VBox>
