@@ -10,7 +10,7 @@ import org.jala.edu.catalog.infrastructure.adapter.out.persistence.memory.InMemo
 import org.jala.edu.core.contract.ProductInfo;
 import org.jala.edu.core.domain.exception.ConflictException;
 import org.jala.edu.core.domain.exception.NotFoundException;
-import org.jala.edu.core.infrastructure.contract.FallbackCatalogService;
+import org.jala.edu.core.contract.SampleCatalog;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jala.edu.catalog.domain.model.Commerce;
@@ -35,7 +35,7 @@ class CatalogServiceAdapterTest {
     @BeforeEach
     void setUp() {
         Commerce commerce = Commerce.restore(
-                new CommerceId(FallbackCatalogService.SAMPLE_COMMERCE),
+                new CommerceId(SampleCatalog.COMMERCE),
                 "My Commerce",
                 CommerceStatus.ACTIVE,
                 Instant.now(),

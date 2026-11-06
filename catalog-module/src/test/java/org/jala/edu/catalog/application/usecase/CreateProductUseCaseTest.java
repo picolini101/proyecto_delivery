@@ -10,16 +10,16 @@ import org.jala.edu.catalog.application.port.in.CreateProductCommand;
 import org.jala.edu.catalog.domain.model.Product;
 import org.jala.edu.catalog.domain.model.ProductId;
 import org.jala.edu.catalog.infrastructure.adapter.out.persistence.memory.InMemoryProductRepositoryAdapter;
+import org.jala.edu.core.contract.SampleCatalog;
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.domain.exception.DomainException;
-import org.jala.edu.core.infrastructure.contract.FallbackCatalogService;
 import org.jala.edu.core.infrastructure.contract.FallbackUserService;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 class CreateProductUseCaseTest {
 
-    private static final UUID COMMERCE_ID = FallbackCatalogService.SAMPLE_COMMERCE;
+    private static final UUID COMMERCE_ID = SampleCatalog.COMMERCE;
 
     private final InMemoryProductRepositoryAdapter repository = new InMemoryProductRepositoryAdapter();
     private final CreateProductUseCase createProduct =
