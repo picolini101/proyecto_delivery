@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.jala.edu.catalog.application.port.out.ProductRepositoryPort;
+import org.jala.edu.catalog.infrastructure.adapter.out.persistence.memory.InMemoryProductRepositoryAdapter;
 
 /**
  * Temporary bridge for {@code delivery.persistence.type=jpa}: a repository port whose module has no JPA adapter yet
@@ -39,5 +41,12 @@ public class MissingJpaAdaptersAutoConfiguration {
 
     private static void warnInMemory(Class<?> port) {
         log.warn("No JPA adapter for {}; its data stays in memory and is lost on exit", port.getSimpleName());
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public ProductRepositoryPort inMemoryProductRepositoryBridge() {
+        warnInMemory(ProductRepositoryPort.class);
+        return new InMemoryProductRepositoryAdapter();
     }
 }
