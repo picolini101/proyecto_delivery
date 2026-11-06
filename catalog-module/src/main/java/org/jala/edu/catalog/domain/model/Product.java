@@ -21,6 +21,8 @@ public class Product extends BaseModel<ProductId> {
     private String name;
     private String category;
     private BigDecimal price;
+    private int stock;
+    private ProductStatus status;
 
     private Product(ProductId id, UUID commerceId, String name, String category, BigDecimal price,
                     Instant createdAt, Instant updatedAt) {
@@ -29,6 +31,8 @@ public class Product extends BaseModel<ProductId> {
         this.name = requireText(name, "Name");
         this.category = requireText(category, "Category");
         this.price = requirePositive(price);
+        this.stock = 0;
+        this.status = ProductStatus.AVAILABLE;
     }
 
     /**
@@ -37,6 +41,31 @@ public class Product extends BaseModel<ProductId> {
     public static Product register(UUID commerceId, String name, String category, BigDecimal price) {
         Instant now = now();
         return new Product(ProductId.newId(), commerceId, name, category, price, now, now);
+    }
+
+    /**
+     * Restaura un producto existente desde la persistencia.
+     */
+    public static Product restore(
+            ProductId id,
+            UUID commerceId,
+            String name,
+            String category,
+            BigDecimal price,
+            int stock,
+            Instant createdAt,
+            Instant updatedAt) {
+
+        if (stock < 0) {
+            throw new DomainException("Stock cannot be negative");
+        }
+
+        Product product = new Product(
+                id, commerceId, name, category, price, createdAt, updatedAt);
+
+        product.stock = stock;
+        product.status = ProductStatus.AVAILABLE;
+        return product;
     }
 
     /**
@@ -52,6 +81,55 @@ public class Product extends BaseModel<ProductId> {
         this.category = validCategory;
         this.price = validPrice;
         touch();
+    }
+    public void adjustStock(int quantity) {
+        if (quantity < 0) {
+            throw new DomainException("Stock cannot be negative");
+        }
+
+        this.stock = quantity;
+        touch();
+    }
+    public void reserveStock(int quantity) {
+        requirePositiveQuantity(quantity);
+
+        if (stock < quantity) {
+            throw new DomainException("Insufficient stock");
+        }
+
+        this.stock -= quantity;
+        touch();
+    }
+    public void releaseStock(int quantity) {
+        requirePositiveQuantity(quantity);
+
+        try {
+            this.stock = Math.addExact(stock, quantity);
+        } catch (ArithmeticException exception) {
+            throw new DomainException("Stock exceeds the maximum allowed value");
+        }
+
+        touch();
+    }
+
+    public void enable() {
+        this.status = ProductStatus.AVAILABLE;
+        touch();
+    }
+
+    public void disable() {
+        this.status = ProductStatus.DISABLED;
+        touch();
+    }
+
+    public boolean isAvailable() {
+        return status == ProductStatus.AVAILABLE;
+    }
+
+    private static void requirePositiveQuantity(int quantity) {
+        if (quantity <= 0) {
+            throw new DomainException("Quantity must be greater than zero");
+        }
     }
 
     private static String requireText(String value, String field) {

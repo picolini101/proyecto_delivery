@@ -12,6 +12,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.jala.edu.catalog.application.port.out.ProductRepositoryPort;
 import org.jala.edu.catalog.infrastructure.adapter.out.persistence.memory.InMemoryProductRepositoryAdapter;
+import org.jala.edu.catalog.application.port.out.CommerceRepositoryPort;
+import org.jala.edu.catalog.infrastructure.adapter.out.persistence.memory.InMemoryCommerceRepositoryAdapter;
 
 /**
  * Temporary bridge for {@code delivery.persistence.type=jpa}: a repository port whose module has no JPA adapter yet
@@ -48,5 +50,11 @@ public class MissingJpaAdaptersAutoConfiguration {
     public ProductRepositoryPort inMemoryProductRepositoryBridge() {
         warnInMemory(ProductRepositoryPort.class);
         return new InMemoryProductRepositoryAdapter();
+    }
+    @Bean
+    @ConditionalOnMissingBean
+    public CommerceRepositoryPort inMemoryCommerceRepositoryBridge() {
+        warnInMemory(CommerceRepositoryPort.class);
+        return new InMemoryCommerceRepositoryAdapter();
     }
 }

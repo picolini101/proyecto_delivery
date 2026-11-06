@@ -10,9 +10,9 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.input.MouseButton;
 import lombok.RequiredArgsConstructor;
+import org.jala.edu.catalog.application.dto.ManagedProduct;
 import org.jala.edu.catalog.application.port.in.ListManagedProductsQuery;
 import org.jala.edu.catalog.application.usecase.ListManagedProductsUseCase;
-import org.jala.edu.catalog.domain.model.Product;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
 import org.jala.edu.core.infrastructure.ui.Dialogs;
 import org.jala.edu.core.infrastructure.ui.DisplayFormat;
@@ -36,19 +36,25 @@ public class ManageProductsController {
     private final SpringFxmlLoader fxmlLoader;
 
     @FXML
-    private TableView<Product> productsTable;
+    private TableView<ManagedProduct> productsTable;
 
     @FXML
-    private TableColumn<Product, String> nameColumn;
+    private TableColumn<ManagedProduct, String> nameColumn;
 
     @FXML
-    private TableColumn<Product, String> categoryColumn;
+    private TableColumn<ManagedProduct, String> categoryColumn;
 
     @FXML
-    private TableColumn<Product, String> priceColumn;
+    private TableColumn<ManagedProduct, String> priceColumn;
 
     @FXML
-    private TableColumn<Product, String> createdAtColumn;
+    private TableColumn<ManagedProduct, String> stockColumn;
+
+    @FXML
+    private TableColumn<ManagedProduct, String> availabilityColumn;
+
+    @FXML
+    private TableColumn<ManagedProduct, String> createdAtColumn;
 
     @FXML
     private Button refreshButton;
@@ -61,17 +67,19 @@ public class ManageProductsController {
 
     @FXML
     void initialize() {
-        bind(nameColumn, Product::getName);
-        bind(categoryColumn, Product::getCategory);
-        bind(priceColumn, product -> product.getPrice().toPlainString());
-        bind(createdAtColumn, product -> DisplayFormat.dateTime(product.getCreatedAt()));
+        bind(nameColumn, managed -> managed.product().getName());
+        bind(categoryColumn, managed -> managed.product().getCategory());
+        bind(priceColumn, managed -> managed.product().getPrice().toPlainString());
+        bind(stockColumn, managed -> String.valueOf(managed.product().getStock()));
+        bind(availabilityColumn, ManagedProduct::availability);
+        bind(createdAtColumn, managed -> DisplayFormat.dateTime(managed.product().getCreatedAt()));
 
         // El botón Editar solo se habilita cuando hay un producto seleccionado
         editButton.disableProperty().bind(productsTable.getSelectionModel().selectedItemProperty().isNull());
 
         // Doble clic sobre una fila equivale a pulsar Editar
         productsTable.setRowFactory(table -> {
-            TableRow<Product> row = new TableRow<>();
+            TableRow<ManagedProduct> row = new TableRow<>();
             row.setOnMouseClicked(event -> {
                 if (event.getButton() == MouseButton.PRIMARY && event.getClickCount() == 2 && !row.isEmpty()) {
                     onEdit();
@@ -90,9 +98,9 @@ public class ManageProductsController {
 
     @FXML
     void onEdit() {
-        Product selected = productsTable.getSelectionModel().getSelectedItem();
+        ManagedProduct selected = productsTable.getSelectionModel().getSelectedItem();
         SpringFxmlLoader.View<EditProductController> view = fxmlLoader.loadView(CatalogViews.EDIT_PRODUCT);
-        view.controller().edit(selected, () -> reload("Product " + selected.getName() + " updated."));
+        view.controller().edit(selected.product(), () -> reload("Product " + selected.product().getName() + " updated."));
         Dialogs.showModal(productsTable, "Edit product", view.root());
     }
 
@@ -128,7 +136,7 @@ public class ManageProductsController {
         return size == 1 ? "1 product" : size + " products";
     }
 
-    private static void bind(TableColumn<Product, String> column, Function<Product, String> value) {
+    private static void bind(TableColumn<ManagedProduct, String> column, Function<ManagedProduct, String> value) {
         column.setCellValueFactory(cell -> new ReadOnlyStringWrapper(value.apply(cell.getValue())));
     }
 }
