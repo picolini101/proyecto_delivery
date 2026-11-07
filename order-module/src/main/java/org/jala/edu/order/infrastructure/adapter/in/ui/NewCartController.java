@@ -84,6 +84,7 @@ public class NewCartController {
 
     private final DecreaseCartItemQuantityUseCase decreaseQuantity;
 
+    private final RemoveProductFromCartUseCase removeProductFromCart;
     // Los campos con @FXML son elementos de new-cart.fxml; JavaFX los conecta solos por el nombre (fx:id).
 
     /** Contenedor donde se dibujan las tarjetas de productos. */
@@ -99,6 +100,7 @@ public class NewCartController {
     @FXML private TableColumn<CartSummary.Line, Integer> quantityColumn;
     @FXML private TableColumn<CartSummary.Line, String> unitPriceColumn;
     @FXML private TableColumn<CartSummary.Line, String> subtotalColumn;
+    @FXML private TableColumn<CartSummary.Line, Void> actionColumn;
     @FXML private VBox tableContent;
     @FXML private VBox emptyState;
     @FXML private HBox shippingRow;
@@ -205,6 +207,58 @@ public class NewCartController {
                 setGraphic(controls);
             }
         });
+        // Configuracion de la columna de eliminacion (HU-02)
+        actionColumn.setCellFactory(column -> new TableCell<>() {
+            private final Button deleteButton = new Button("Eliminar");
+
+            {
+                // Estilo rojo moderno acorde a la paleta de la aplicacion
+                String normalStyle = "-fx-background-color: #fee2e2; -fx-text-fill: #dc2626; -fx-font-weight: bold; "
+                        + "-fx-font-size: 12px; -fx-padding: 6 14; -fx-background-radius: 7; -fx-cursor: hand;";
+                String hoverStyle = "-fx-background-color: #fecaca; -fx-text-fill: #b91c1c; -fx-font-weight: bold; "
+                        + "-fx-font-size: 12px; -fx-padding: 6 14; -fx-background-radius: 7; -fx-cursor: hand;";
+
+                deleteButton.setStyle(normalStyle);
+                deleteButton.setOnMouseEntered(e -> deleteButton.setStyle(hoverStyle));
+                deleteButton.setOnMouseExited(e -> deleteButton.setStyle(normalStyle));
+
+                deleteButton.setOnAction(event -> {
+                    CartSummary.Line line = getTableView().getItems().get(getIndex());
+                    // Confirmacion modal obligatoria mediante el contrato central de Dialogs
+                    boolean confirmed = org.jala.edu.core.infrastructure.ui.Dialogs.confirm(
+                            deleteButton,
+                            "Eliminar producto",
+                            "¿Está seguro de que desea eliminar \"" + line.productName() + "\" del carrito?"
+                    );
+                    if (confirmed) {
+                        deleteButton.setDisable(true);
+                        BackgroundTasks.run(
+                                () -> removeProductFromCart.execute(currentUserService.currentUser().id(), line.productId()),
+                                updatedCart -> {
+                                    showMessage("Producto eliminado del carrito", "success");
+                                    refreshCart();
+                                },
+                                error -> {
+                                    showError(error, "eliminar producto");
+                                    deleteButton.setDisable(false);
+                                }
+                        );
+                    }
+                });
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || getIndex() < 0 || getIndex() >= getTableView().getItems().size()) {
+                    setGraphic(null);
+                } else {
+                    setAlignment(Pos.CENTER);
+                    setGraphic(deleteButton);
+                }
+            }
+        });
+
         quantityColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().quantity()));
         cartTable.setFixedCellSize(56);
     }

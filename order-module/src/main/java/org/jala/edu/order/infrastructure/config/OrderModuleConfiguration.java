@@ -3,13 +3,17 @@ package org.jala.edu.order.infrastructure.config;
 import org.jala.edu.core.contract.CatalogService;
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.order.application.port.out.CartRepositoryPort;
-import org.jala.edu.order.application.usecase.*;
+import org.jala.edu.order.application.usecase.AddProductToCartUseCase;
+import org.jala.edu.order.application.usecase.DecreaseCartItemQuantityUseCase;
+import org.jala.edu.order.application.usecase.GetCartSummaryUseCase;
+import org.jala.edu.order.application.usecase.IncreaseCartItemQuantityUseCase;
+import org.jala.edu.order.application.usecase.ListCatalogProductsUseCase;
+import org.jala.edu.order.application.usecase.RemoveProductFromCartUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Registra los casos de uso del modulo. Spring inyecta el catalogo y los usuarios reales,
- * o los fallbacks del core mientras esos módulos no los publiquen.
+ * Registra los casos de uso del modulo de pedidos en el contenedor de Spring.
  */
 @Configuration
 public class OrderModuleConfiguration {
@@ -30,16 +34,21 @@ public class OrderModuleConfiguration {
         return new ListCatalogProductsUseCase(catalog);
     }
 
-    /** agregar mas unidades de un producto que ya esta en el carrito (boton "+"). */
     @Bean
-    public IncreaseCartItemQuantityUseCase increaseCartItemQuantityUseCase(CartRepositoryPort carts, CatalogService catalog, UserService users) {
+    public IncreaseCartItemQuantityUseCase increaseCartItemQuantityUseCase(CartRepositoryPort carts,
+                                                                           CatalogService catalog,
+                                                                           UserService users) {
         return new IncreaseCartItemQuantityUseCase(carts, catalog, users);
     }
 
-    /** Quitar unidades de un producto que ya esta en el carrito (boton "-"). */
     @Bean
-    public DecreaseCartItemQuantityUseCase decreaseCartItemQuantityUseCase(CartRepositoryPort carts, UserService users) {
+    public DecreaseCartItemQuantityUseCase decreaseCartItemQuantityUseCase(CartRepositoryPort carts,
+                                                                           UserService users) {
         return new DecreaseCartItemQuantityUseCase(carts, users);
     }
 
+    @Bean
+    public RemoveProductFromCartUseCase removeProductFromCartUseCase(CartRepositoryPort carts) {
+        return new RemoveProductFromCartUseCase(carts);
+    }
 }
