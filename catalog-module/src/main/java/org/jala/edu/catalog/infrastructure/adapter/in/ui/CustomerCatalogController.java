@@ -100,7 +100,13 @@ public class CustomerCatalogController {
                 () -> listAvailableProducts.execute(new ListAvailableProductsQuery(commerce.id())),
                 products -> {
                     showProducts(products);
-                    showMessage(count(products.size()), "info");
+
+                    if (CatalogEmptyState.hasNoAvailableProducts(products)) {
+                        showMessage("No products are currently available.", "info");
+                    } else {
+                        showMessage(count(products.size()), "info");
+                    }
+
                     refreshButton.setDisable(false);
                 },
                 error -> {
@@ -111,11 +117,6 @@ public class CustomerCatalogController {
 
     private void showProducts(List<CatalogProduct> products) {
         productsPane.getChildren().clear();
-
-        if (products.isEmpty()) {
-            productsPane.getChildren().add(new Label("This commerce has no products available."));
-            return;
-        }
 
         products.forEach(product -> productsPane.getChildren().add(buildCard(product)));
     }
