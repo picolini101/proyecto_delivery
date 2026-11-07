@@ -142,6 +142,14 @@ public class Product extends BaseModel<ProductId> {
         }
     }
 
+    /**
+     * Un producto es comprable si está Disponible y tiene stock (FUN-005).
+     * Regla única reutilizada por la habilitación del comercio y por el catálogo (DRY).
+     */
+    public boolean isPurchasable() {
+        return isAvailable() && stock > 0;
+    }
+
     private static String requireText(String value, String field) {
         if (value == null || value.isBlank()) {
             throw new DomainException(field + " cannot be blank");

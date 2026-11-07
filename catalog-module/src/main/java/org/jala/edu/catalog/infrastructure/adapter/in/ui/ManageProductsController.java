@@ -62,6 +62,9 @@ public class ManageProductsController {
     private TableColumn<ManagedProduct, String> stockColumn;
 
     @FXML
+    private TableColumn<ManagedProduct, String> commerceColumn;
+
+    @FXML
     private TableColumn<ManagedProduct, String> availabilityColumn;
 
     @FXML
@@ -85,6 +88,7 @@ public class ManageProductsController {
     @FXML
     void initialize() {
         bind(nameColumn, managed -> managed.product().getName());
+        bind(commerceColumn, ManagedProduct::commerceName);
         bind(categoryColumn, managed -> managed.product().getCategory());
         bind(priceColumn, managed -> managed.product().getPrice().toPlainString());
         bind(stockColumn, managed -> String.valueOf(managed.product().getStock()));

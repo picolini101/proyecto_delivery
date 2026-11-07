@@ -13,6 +13,8 @@ public final class CatalogViews {
     public static final String MANAGE_PRODUCTS = BASE + "manage-products.fxml";
     public static final String CUSTOMER_CATALOG = BASE + "customer-catalog.fxml";
     public static final String EDIT_PRODUCT = BASE + "edit-product.fxml";
+    public static final String CREATE_COMMERCE = BASE + "create-commerce.fxml";
+    public static final String MANAGE_COMMERCES = BASE + "manage-commerces.fxml";
 
     private CatalogViews() {
     }

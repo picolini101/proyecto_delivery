@@ -4,21 +4,23 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
-import org.jala.edu.catalog.domain.model.Product;
-import org.jala.edu.catalog.domain.model.ProductStatus;
-import org.jala.edu.catalog.infrastructure.adapter.out.persistence.memory.InMemoryProductRepositoryAdapter;
-import org.jala.edu.core.contract.ProductInfo;
-import org.jala.edu.core.domain.exception.ConflictException;
-import org.jala.edu.core.domain.exception.NotFoundException;
-import org.jala.edu.core.contract.SampleCatalog;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.jala.edu.catalog.CatalogFixtures;
 import org.jala.edu.catalog.domain.model.Commerce;
-import org.jala.edu.catalog.infrastructure.adapter.out.persistence.memory.InMemoryCommerceRepositoryAdapter;
 import org.jala.edu.catalog.domain.model.CommerceId;
 import org.jala.edu.catalog.domain.model.CommerceStatus;
-import java.time.Instant;
+import org.jala.edu.catalog.domain.model.Product;
+import org.jala.edu.catalog.domain.model.ProductStatus;
+import org.jala.edu.catalog.infrastructure.adapter.out.persistence.memory.InMemoryCommerceRepositoryAdapter;
+import org.jala.edu.catalog.infrastructure.adapter.out.persistence.memory.InMemoryProductRepositoryAdapter;
+import org.jala.edu.core.contract.ProductInfo;
+import org.jala.edu.core.contract.SampleCatalog;
+import org.jala.edu.core.contract.SampleUsers;
+import org.jala.edu.core.domain.exception.ConflictException;
+import org.jala.edu.core.domain.exception.NotFoundException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class CatalogServiceAdapterTest {
 
@@ -38,6 +40,9 @@ class CatalogServiceAdapterTest {
         Commerce commerce = Commerce.restore(
                 new CommerceId(SampleCatalog.COMMERCE),
                 "My Commerce",
+                CatalogFixtures.ADDRESS,
+                CatalogFixtures.PHONE,
+                SampleUsers.MERCHANT,
                 CommerceStatus.ACTIVE,
                 Instant.now(),
                 Instant.now());
@@ -194,5 +199,12 @@ class CatalogServiceAdapterTest {
 
         assertThat(catalogService.isAvailable(product.getId().value(), 1)).isFalse();
         assertThat(product.getStock()).isEqualTo(10);
+    }
+
+    @Test
+    void findsTheCommercesOwnedByAMerchant() {
+        assertThat(catalogService.findCommerceIdsByMerchant(SampleUsers.MERCHANT))
+                .containsExactly(SampleCatalog.COMMERCE);
+        assertThat(catalogService.findCommerceIdsByMerchant(UUID.randomUUID())).isEmpty();
     }
 }

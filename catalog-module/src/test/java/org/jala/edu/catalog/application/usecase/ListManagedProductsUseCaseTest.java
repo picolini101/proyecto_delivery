@@ -3,6 +3,7 @@ package org.jala.edu.catalog.application.usecase;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import org.jala.edu.catalog.CatalogFixtures;
 import org.jala.edu.catalog.application.dto.ManagedProduct;
 import org.jala.edu.catalog.application.port.in.ListManagedProductsQuery;
 import org.jala.edu.catalog.domain.model.Commerce;
@@ -24,7 +25,7 @@ class ListManagedProductsUseCaseTest {
 
     @Test
     void returnsEveryProductOldestFirst() {
-        Commerce commerce = commerceRepository.save(Commerce.register("Test Commerce"));
+        Commerce commerce = commerceRepository.save(CatalogFixtures.activeCommerce("Test Commerce"));
 
         Product first = productRepository.save(Product.register(
                 commerce.getId().value(), "Pizza", "Food", new BigDecimal("50.00")));
@@ -45,7 +46,7 @@ class ListManagedProductsUseCaseTest {
 
     @Test
     void marksProductAsAvailableWhenCommerceAndProductAreActiveAndStockIsPositive() {
-        Commerce commerce = commerceRepository.save(Commerce.register("Active Commerce"));
+        Commerce commerce = commerceRepository.save(CatalogFixtures.activeCommerce("Active Commerce"));
         Product product = Product.register(
                 commerce.getId().value(), "Pizza", "Food", new BigDecimal("50.00"));
         product.adjustStock(10);
@@ -59,9 +60,8 @@ class ListManagedProductsUseCaseTest {
 
     @Test
     void marksProductAsUnavailableWhenCommerceIsDisabled() {
-        Commerce commerce = Commerce.register("Disabled Commerce");
-        commerce.disable();
-        commerceRepository.save(commerce);
+        // Un comercio recién registrado ya nace Deshabilitado
+        Commerce commerce = commerceRepository.save(CatalogFixtures.disabledCommerce("Disabled Commerce"));
 
         Product product = Product.register(
                 commerce.getId().value(), "Pizza", "Food", new BigDecimal("50.00"));
@@ -76,7 +76,7 @@ class ListManagedProductsUseCaseTest {
 
     @Test
     void marksDisabledProductAsUnavailable() {
-        Commerce commerce = commerceRepository.save(Commerce.register("Active Commerce"));
+        Commerce commerce = commerceRepository.save(CatalogFixtures.activeCommerce("Active Commerce"));
         Product product = Product.register(
                 commerce.getId().value(), "Pizza", "Food", new BigDecimal("50.00"));
         product.adjustStock(10);
@@ -91,7 +91,7 @@ class ListManagedProductsUseCaseTest {
 
     @Test
     void marksProductWithZeroStockAsOutOfStock() {
-        Commerce commerce = commerceRepository.save(Commerce.register("Active Commerce"));
+        Commerce commerce = commerceRepository.save(CatalogFixtures.activeCommerce("Active Commerce"));
         Product product = Product.register(
                 commerce.getId().value(), "Pizza", "Food", new BigDecimal("50.00"));
         productRepository.save(product);
@@ -104,7 +104,7 @@ class ListManagedProductsUseCaseTest {
 
     @Test
     void marksProductAsOutOfStockWhenStatusIsOutOfStockEvenWithPositiveStock() {
-        Commerce commerce = commerceRepository.save(Commerce.register("Active Commerce"));
+        Commerce commerce = commerceRepository.save(CatalogFixtures.activeCommerce("Active Commerce"));
         Product product = Product.register(
                 commerce.getId().value(), "Pizza", "Food", new BigDecimal("50.00"));
 

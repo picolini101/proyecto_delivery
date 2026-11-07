@@ -20,4 +20,10 @@
         <Button styleClass="module-action" text="Register product" onAction="#onCreateProduct"/>
         <Button styleClass="module-action" text="Manage products" onAction="#onManageProducts"/>
     </HBox>
+
+    <!-- Acciones de comercios: solo visibles para el administrador (ver CatalogMainController) -->
+    <HBox fx:id="commerceActions" styleClass="module-actions">
+        <Button styleClass="module-action" text="Register commerce" onAction="#onCreateCommerce"/>
+        <Button styleClass="module-action" text="Manage commerces" onAction="#onManageCommerces"/>
+    </HBox>
 </VBox>

@@ -239,4 +239,17 @@ class ProductTest {
 
         assertThat(product.getStock()).isEqualTo(Integer.MAX_VALUE);
     }
+    @Test
+    void isPurchasableOnlyWhenAvailableAndWithStock() {
+        Product product = Product.register(
+                COMMERCE_ID, "Pizza", "Food", new BigDecimal("50.00"));
+
+        assertThat(product.isPurchasable()).isFalse(); // un producto nuevo nace con stock 0
+
+        product.adjustStock(3);
+        assertThat(product.isPurchasable()).isTrue();
+
+        product.updateStatus(ProductStatus.OUT_OF_STOCK);
+        assertThat(product.isPurchasable()).isFalse();
+    }
 }

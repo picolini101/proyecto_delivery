@@ -42,6 +42,7 @@
         </placeholder>
         <columns>
             <TableColumn fx:id="nameColumn" text="Name" prefWidth="220"/>
+            <TableColumn fx:id="commerceColumn" text="Commerce" prefWidth="180"/>
             <TableColumn fx:id="categoryColumn" text="Category" prefWidth="160"/>
             <TableColumn fx:id="priceColumn" text="Price" prefWidth="100"/>
             <TableColumn fx:id="stockColumn" text="Stock" prefWidth="80"/>
