@@ -543,6 +543,7 @@ After login, `RoleMenu` (`delivery-system`) shows each button only to its roles,
 | `Users` | ADMIN |
 | `My account` | every role (not listed in `RoleMenu`) — `user-module`, change password (#90) |
 | `Catalog` | ADMIN, MERCHANT |
+| `Browse catalog` | CUSTOMER — read-only catalog of `catalog-module` (#50), button added by `delivery-system` (#105) |
 | `Orders` | CUSTOMER |
 | `My commerce orders` | MERCHANT — second button of `order-module` for "Pedidos de mi comercio" (D-08, #72 / #79) |
 | `Payments` | CUSTOMER |
