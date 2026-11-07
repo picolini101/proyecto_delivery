@@ -6,6 +6,7 @@ import static org.assertj.core.groups.Tuple.tuple;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import org.jala.edu.catalog.CatalogFixtures;
 import org.jala.edu.catalog.application.dto.CatalogProduct;
 import org.jala.edu.catalog.application.port.in.ListAvailableProductsQuery;
 import org.jala.edu.catalog.domain.model.Commerce;
@@ -30,7 +31,7 @@ class ListAvailableProductsUseCaseTest {
 
     @BeforeEach
     void setUp() {
-        commerce = commerceRepository.save(Commerce.register("Test Commerce"));
+        commerce = commerceRepository.save(CatalogFixtures.activeCommerce("Test Commerce"));
     }
 
     //  comercio con productos disponibles -> se muestran
@@ -111,7 +112,7 @@ class ListAvailableProductsUseCaseTest {
 
     @Test
     void onlyShowsProductsOfTheRequestedCommerce() {
-        Commerce other = commerceRepository.save(Commerce.register("Other Commerce"));
+        Commerce other = commerceRepository.save(CatalogFixtures.activeCommerce("Other Commerce"));
         saveProduct(commerce, "Pizza", "Food", "50.00", 10);
         saveProduct(other, "Burger", "Food", "30.00", 10);
 

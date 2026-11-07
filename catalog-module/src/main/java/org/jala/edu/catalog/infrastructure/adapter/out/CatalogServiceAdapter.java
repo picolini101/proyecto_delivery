@@ -72,8 +72,14 @@ public class CatalogServiceAdapter implements CatalogService {
 
     @Override
     public List<UUID> findCommerceIdsByMerchant(UUID merchantId) {
-        throw new UnsupportedOperationException(
-                "Merchant-commerce relationship is not implemented");
+        if (merchantId == null) {
+            return List.of();
+        }
+
+        return commerceRepository.findAll().stream()
+                .filter(commerce -> commerce.getMerchantId().equals(merchantId))
+                .map(commerce -> commerce.getId().value())
+                .toList();
     }
 
     private Optional<Product> findDomainProduct(UUID productId) {

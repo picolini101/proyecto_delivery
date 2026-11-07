@@ -1,10 +1,12 @@
 package org.jala.edu.catalog.application.usecase;
 
 import java.util.List;
+import java.util.Optional;
 import org.jala.edu.catalog.application.dto.ManagedProduct;
 import org.jala.edu.catalog.application.port.in.ListManagedProductsQuery;
 import org.jala.edu.catalog.application.port.out.CommerceRepositoryPort;
 import org.jala.edu.catalog.application.port.out.ProductRepositoryPort;
+import org.jala.edu.catalog.domain.model.Commerce;
 import org.jala.edu.catalog.domain.model.CommerceId;
 import org.jala.edu.catalog.domain.model.Product;
 import org.jala.edu.catalog.domain.model.ProductStatus;
@@ -31,13 +33,15 @@ public class ListManagedProductsUseCase
     }
 
     private ManagedProduct toManagedProduct(Product product) {
-        String availability;
+        Optional<Commerce> commerce = commerceRepository
+                .findById(new CommerceId(product.getCommerceId()));
 
-        boolean commerceUnavailable = commerceRepository
-                .findById(new CommerceId(product.getCommerceId()))
-                .map(commerce -> !commerce.isActive())
+        boolean commerceUnavailable = commerce
+                .map(found -> !found.isActive())
                 .orElse(true);
+        String commerceName = commerce.map(Commerce::getName).orElse("Unknown");
 
+        String availability;
         if (commerceUnavailable || product.getStatus() == ProductStatus.DISABLED) {
             availability = "No disponible";
         } else if (product.getStatus() == ProductStatus.OUT_OF_STOCK
@@ -47,6 +51,6 @@ public class ListManagedProductsUseCase
             availability = "Disponible";
         }
 
-        return new ManagedProduct(product, availability);
+        return new ManagedProduct(product, commerceName, availability);
     }
 }

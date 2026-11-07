@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.util.UUID;
 import java.util.stream.Stream;
+import org.jala.edu.catalog.CatalogFixtures;
 import org.jala.edu.catalog.application.port.in.ChangeCommerceStatusCommand;
 import org.jala.edu.catalog.domain.exception.CommerceNotFoundException;
 import org.jala.edu.catalog.domain.model.Commerce;
@@ -37,7 +38,7 @@ class ChangeCommerceStatusUseCaseTest {
     @ParameterizedTest
     @MethodSource("authorizedUsers")
     void disablesAnActiveCommerce(UUID requesterId) {
-        Commerce commerce = repository.save(Commerce.register("My Commerce"));
+        Commerce commerce = repository.save(CatalogFixtures.activeCommerce("My Commerce"));
 
         changeStatus.execute(new ChangeCommerceStatusCommand(
                 requesterId, commerce.getId().value(), CommerceStatus.DISABLED));
@@ -49,8 +50,7 @@ class ChangeCommerceStatusUseCaseTest {
     @ParameterizedTest
     @MethodSource("authorizedUsers")
     void activatesADisabledCommerce(UUID requesterId) {
-        Commerce commerce = Commerce.register("My Commerce");
-        commerce.disable();
+        Commerce commerce = CatalogFixtures.disabledCommerce("My Commerce");
         repository.save(commerce);
 
         changeStatus.execute(new ChangeCommerceStatusCommand(
@@ -63,7 +63,7 @@ class ChangeCommerceStatusUseCaseTest {
     @ParameterizedTest
     @MethodSource("unauthorizedUsers")
     void rejectsUnauthorizedUsers(UUID requesterId) {
-        Commerce commerce = repository.save(Commerce.register("My Commerce"));
+        Commerce commerce = repository.save(CatalogFixtures.activeCommerce("My Commerce"));
 
         Throwable thrown = catchThrowable(() -> changeStatus.execute(
                 new ChangeCommerceStatusCommand(
@@ -85,7 +85,7 @@ class ChangeCommerceStatusUseCaseTest {
 
     @Test
     void rejectsANullStatus() {
-        Commerce commerce = repository.save(Commerce.register("My Commerce"));
+        Commerce commerce = repository.save(CatalogFixtures.activeCommerce("My Commerce"));
 
         Throwable thrown = catchThrowable(() -> changeStatus.execute(
                 new ChangeCommerceStatusCommand(

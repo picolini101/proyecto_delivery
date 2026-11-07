@@ -3,24 +3,31 @@ package org.jala.edu.catalog.infrastructure.config;
 import org.jala.edu.catalog.application.port.out.CommerceRepositoryPort;
 import org.jala.edu.catalog.application.port.out.ProductRepositoryPort;
 import org.jala.edu.catalog.application.usecase.AdjustProductStockUseCase;
-import org.jala.edu.catalog.application.usecase.ChangeCommerceStatusUseCase;
 import org.jala.edu.catalog.application.usecase.CreateProductUseCase;
+import org.jala.edu.catalog.application.usecase.EnableCommerceUseCase;
+import org.jala.edu.catalog.application.usecase.ListAvailableProductsUseCase;
+import org.jala.edu.catalog.application.usecase.ListCommercesUseCase;
 import org.jala.edu.catalog.application.usecase.ListManagedProductsUseCase;
 import org.jala.edu.catalog.application.usecase.RegisterCommerceUseCase;
-import org.jala.edu.catalog.application.usecase.UpdateProductUseCase;
 import org.jala.edu.catalog.application.usecase.UpdateProductStatusUseCase;
-import org.jala.edu.catalog.application.usecase.ListAvailableProductsUseCase;
+import org.jala.edu.catalog.application.usecase.UpdateProductUseCase;
 import org.jala.edu.core.contract.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Registra los casos de uso del catálogo como beans. Los casos de uso son clases simples
+ * (sin anotaciones de Spring), por eso se construyen aquí con sus puertos.
+ */
 @Configuration
 public class CatalogModuleConfiguration {
 
     @Bean
-    public CreateProductUseCase createProductUseCase(ProductRepositoryPort productRepositoryPort,
-                                                     UserService userService) {
-        return new CreateProductUseCase(productRepositoryPort, userService);
+    public CreateProductUseCase createProductUseCase(
+            ProductRepositoryPort productRepositoryPort,
+            CommerceRepositoryPort commerceRepositoryPort,
+            UserService userService) {
+        return new CreateProductUseCase(productRepositoryPort, commerceRepositoryPort, userService);
     }
 
     @Bean
@@ -44,20 +51,6 @@ public class CatalogModuleConfiguration {
     }
 
     @Bean
-    public RegisterCommerceUseCase registerCommerceUseCase(
-            CommerceRepositoryPort commerceRepositoryPort,
-            UserService userService) {
-        return new RegisterCommerceUseCase(commerceRepositoryPort, userService);
-    }
-
-    @Bean
-    public ChangeCommerceStatusUseCase changeCommerceStatusUseCase(
-            CommerceRepositoryPort commerceRepositoryPort,
-            UserService userService) {
-        return new ChangeCommerceStatusUseCase(commerceRepositoryPort, userService);
-    }
-
-    @Bean
     public UpdateProductStatusUseCase updateProductStatusUseCase(
             ProductRepositoryPort productRepositoryPort,
             UserService userService) {
@@ -69,5 +62,27 @@ public class CatalogModuleConfiguration {
             ProductRepositoryPort productRepositoryPort,
             CommerceRepositoryPort commerceRepositoryPort) {
         return new ListAvailableProductsUseCase(productRepositoryPort, commerceRepositoryPort);
+    }
+
+    @Bean
+    public RegisterCommerceUseCase registerCommerceUseCase(
+            CommerceRepositoryPort commerceRepositoryPort,
+            UserService userService) {
+        return new RegisterCommerceUseCase(commerceRepositoryPort, userService);
+    }
+
+    @Bean
+    public EnableCommerceUseCase enableCommerceUseCase(
+            CommerceRepositoryPort commerceRepositoryPort,
+            ProductRepositoryPort productRepositoryPort,
+            UserService userService) {
+        return new EnableCommerceUseCase(
+                commerceRepositoryPort, productRepositoryPort, userService);
+    }
+
+    @Bean
+    public ListCommercesUseCase listCommercesUseCase(
+            CommerceRepositoryPort commerceRepositoryPort) {
+        return new ListCommercesUseCase(commerceRepositoryPort);
     }
 }

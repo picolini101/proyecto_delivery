@@ -1,21 +1,23 @@
 package org.jala.edu.catalog.infrastructure.adapter.in.ui;
 
 import java.util.List;
-import java.util.UUID;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import lombok.RequiredArgsConstructor;
 import org.jala.edu.catalog.application.dto.CatalogProduct;
+import org.jala.edu.catalog.application.dto.CommerceSummary;
 import org.jala.edu.catalog.application.port.in.ListAvailableProductsQuery;
+import org.jala.edu.catalog.application.port.in.ListCommercesQuery;
 import org.jala.edu.catalog.application.usecase.ListAvailableProductsUseCase;
-import org.jala.edu.core.contract.SampleCatalog;
+import org.jala.edu.catalog.application.usecase.ListCommercesUseCase;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
 import org.jala.edu.core.infrastructure.ui.ErrorMessages;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -23,15 +25,13 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
- * Adaptador de entrada JavaFX de solo lectura para que el cliente consulte el catálogo de un comercio
+ * Adaptador de entrada JavaFX de solo lectura para que el cliente consulte el catálogo de un comercio.
+ * El cliente elige entre los comercios Activos; al habilitarse un comercio aparece en la lista.
  */
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 @RequiredArgsConstructor
 public class CustomerCatalogController {
-
-    // TODO(sprint 2): reemplazar por el comercio elegido por el cliente cuando exista la lista de comercios.
-    private static final UUID SELECTED_COMMERCE = SampleCatalog.COMMERCE;
 
     private static final String STYLESHEET = "customer-catalog.css";
     private static final double CARD_WIDTH = 200;
@@ -41,6 +41,10 @@ public class CustomerCatalogController {
     static final String SOLD_OUT = "Agotado";
 
     private final ListAvailableProductsUseCase listAvailableProducts;
+    private final ListCommercesUseCase listCommerces;
+
+    @FXML
+    private ComboBox<CommerceSummary> commerceSelector;
 
     @FXML
     private FlowPane productsPane;
@@ -54,7 +58,10 @@ public class CustomerCatalogController {
     @FXML
     void initialize() {
         productsPane.getStylesheets().add(getClass().getResource(STYLESHEET).toExternalForm());
-        reload();
+        commerceSelector.setConverter(new CommerceNameConverter());
+        // Al elegir otro comercio se recargan sus productos
+        commerceSelector.valueProperty().addListener((observable, previous, selected) -> reload());
+        loadActiveCommerces();
     }
 
     @FXML
@@ -66,10 +73,31 @@ public class CustomerCatalogController {
         return available ? AVAILABLE : SOLD_OUT;
     }
 
+    /** El cliente solo ve comercios Activos; se selecciona el primero para mostrar su catálogo. */
+    private void loadActiveCommerces() {
+        BackgroundTasks.run(
+                () -> listCommerces.execute(ListCommercesQuery.active()),
+                commerces -> {
+                    commerceSelector.getItems().setAll(commerces);
+                    if (commerces.isEmpty()) {
+                        showMessage("There are no commerces available.", "info");
+                    } else {
+                        commerceSelector.setValue(commerces.get(0));
+                    }
+                },
+                error -> showMessage(ErrorMessages.of(error, "load the commerces"), "error"));
+    }
+
     private void reload() {
+        CommerceSummary commerce = commerceSelector.getValue();
+        if (commerce == null) {
+            productsPane.getChildren().clear();
+            return;
+        }
+
         refreshButton.setDisable(true);
         BackgroundTasks.run(
-                () -> listAvailableProducts.execute(new ListAvailableProductsQuery(SELECTED_COMMERCE)),
+                () -> listAvailableProducts.execute(new ListAvailableProductsQuery(commerce.id())),
                 products -> {
                     showProducts(products);
                     showMessage(count(products.size()), "info");
@@ -93,7 +121,7 @@ public class CustomerCatalogController {
     }
 
     /**
-     *  cuadro de imagen con etiqueta de disponibilidad y debajo nombre categoria y precio
+     * Cuadro de imagen con etiqueta de disponibilidad y debajo nombre, categoría y precio.
      */
     private Node buildCard(CatalogProduct product) {
         Label initial = new Label(initialOf(product.name()));
@@ -138,9 +166,7 @@ public class CustomerCatalogController {
     }
 
     private void showMessage(String text, String styleClass) {
-        messageLabel.getStyleClass().removeAll("info", "success", "error");
-        messageLabel.getStyleClass().add(styleClass);
-        messageLabel.setText(text);
+        MessageLabels.show(messageLabel, text, styleClass);
     }
 
     private static String count(int size) {

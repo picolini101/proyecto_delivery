@@ -13,3 +13,4 @@ public class InMemoryCommerceRepositoryAdapter
         extends InMemoryCrudRepository<Commerce, CommerceId>
         implements CommerceRepositoryPort {
 }
+
