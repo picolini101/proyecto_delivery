@@ -252,4 +252,31 @@ class ProductTest {
         product.updateStatus(ProductStatus.OUT_OF_STOCK);
         assertThat(product.isPurchasable()).isFalse();
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"pizza", "PIZZA", "izz", "marg", "food", "OO", "  pizza  "})
+    void matchesPartiallyByNameOrCategoryIgnoringCase(String text) {
+        Product product = Product.register(
+                COMMERCE_ID, "Pizza Margarita", "Food", new BigDecimal("50.00"));
+
+        assertThat(product.matches(text)).isTrue();
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {" ", "   "})
+    void matchesEverythingWhenTheTextIsBlank(String text) {
+        Product product = Product.register(
+                COMMERCE_ID, "Pizza Margarita", "Food", new BigDecimal("50.00"));
+
+        assertThat(product.matches(text)).isTrue();
+    }
+
+    @Test
+    void doesNotMatchWhenTheTextIsInNeitherNameNorCategory() {
+        Product product = Product.register(
+                COMMERCE_ID, "Pizza Margarita", "Food", new BigDecimal("50.00"));
+
+        assertThat(product.matches("burger")).isFalse();
+    }
 }
