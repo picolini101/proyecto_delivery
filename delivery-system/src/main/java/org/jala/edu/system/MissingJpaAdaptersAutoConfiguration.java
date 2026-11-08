@@ -4,7 +4,9 @@ import org.jala.edu.core.infrastructure.config.ConditionalOnJpaPersistence;
 import org.jala.edu.delivery.application.port.out.CourierRepositoryPort;
 import org.jala.edu.delivery.infrastructure.adapter.out.persistence.memory.InMemoryCourierRepositoryAdapter;
 import org.jala.edu.order.application.port.out.CartRepositoryPort;
+import org.jala.edu.order.application.port.out.OrderRepositoryPort;
 import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryCartRepositoryAdapter;
+import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryOrderRepositoryAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -56,5 +58,12 @@ public class MissingJpaAdaptersAutoConfiguration {
     public CommerceRepositoryPort inMemoryCommerceRepositoryBridge() {
         warnInMemory(CommerceRepositoryPort.class);
         return new InMemoryCommerceRepositoryAdapter();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public OrderRepositoryPort inMemoryOrderRepositoryBridge() {
+        warnInMemory(OrderRepositoryPort.class);
+        return new InMemoryOrderRepositoryAdapter();
     }
 }

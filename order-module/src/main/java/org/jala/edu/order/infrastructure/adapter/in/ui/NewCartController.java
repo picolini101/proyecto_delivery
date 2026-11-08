@@ -23,7 +23,9 @@ import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
 import org.jala.edu.core.infrastructure.ui.ErrorMessages;
 import org.jala.edu.core.infrastructure.ui.Navigator;
+import org.jala.edu.order.application.port.in.StartCheckoutCommand;
 import org.jala.edu.order.application.usecase.*;
+import org.jala.edu.order.application.usecase.orders.StartCheckoutUseCase;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -85,6 +87,9 @@ public class NewCartController {
     private final DecreaseCartItemQuantityUseCase decreaseQuantity;
 
     private final RemoveProductFromCartUseCase removeProductFromCart;
+
+    private final StartCheckoutUseCase startCheckout;
+
     // Los campos con @FXML son elementos de new-cart.fxml; JavaFX los conecta solos por el nombre (fx:id).
 
     /** Contenedor donde se dibujan las tarjetas de productos. */
@@ -117,6 +122,9 @@ public class NewCartController {
     /** Texto "Tu carrito esta vacio"; solo se ve cuando no hay productos. */
     @FXML
     private Label emptyLabel;
+
+    @FXML
+    private Button checkoutButton;
 
 /**
      * JavaFX llama a este metodo automaticamente cuando termina de cargar el FXML.
@@ -152,6 +160,26 @@ public class NewCartController {
         messageLabel.setVisible(false); messageLabel.setManaged(false);
         pageTitle.setVisible(true); pageTitle.setManaged(true);
         showCartButton.setVisible(true); showCartButton.setManaged(true);
+    }
+
+    @FXML
+    void onStartCheckout() {
+        checkoutButton.setDisable(true);
+        StartCheckoutCommand command = new StartCheckoutCommand(currentUserService.currentUser().id());
+
+        BackgroundTasks.run(
+                () -> startCheckout.execute(command),
+                orderSummary -> {
+                    showMessage("¡Pedido #" + orderSummary.orderId().toString().substring(0, 8)
+                            + " iniciado con éxito en estado " + orderSummary.status() + "!", "success");
+                    refreshCart();
+                    checkoutButton.setDisable(false);
+                },
+                error -> {
+                    showError(error, "iniciar la compra");
+                    checkoutButton.setDisable(false);
+                }
+        );
     }
 
     private void configureTable() {
