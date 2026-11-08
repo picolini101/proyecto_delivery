@@ -144,6 +144,7 @@ public class NewCartController {
      */
     @FXML
     void initialize() {
+        checkoutButton.setDisable(true);
         configureTable();
         BackgroundTasks.run(
                 () -> listCatalogProducts.execute(),
@@ -176,6 +177,10 @@ public class NewCartController {
 
     @FXML
     void onStartCheckout() {
+        if (deliveryAddress == null) {
+            checkoutButton.setDisable(true);
+            return;
+        }
         checkoutButton.setDisable(true);
         StartCheckoutCommand command = new StartCheckoutCommand(currentUserService.currentUser().id());
 
@@ -186,14 +191,14 @@ public class NewCartController {
                     showMessage("¡Pedido #" + orderSummary.orderId().toString().substring(0, 8)
                             + " iniciado con éxito en estado " + orderSummary.status() + "!", "success");
                     refreshCart();
-                    checkoutButton.setDisable(false);
+                    checkoutButton.setDisable(deliveryAddress == null);
                     if (deliveryAddress != null) {
                         saveAddressForOrder(lastOrderId, deliveryAddress);
                     }
                 },
                 error -> {
                     showError(error, "iniciar la compra");
-                    checkoutButton.setDisable(false);
+                    checkoutButton.setDisable(deliveryAddress == null);
                 }
         );
     }
@@ -208,6 +213,7 @@ public class NewCartController {
     private void addressConfirmed(DeliveryAddress address) {
         deliveryAddress = address;
         deliveryAddressLabel.setText(address.toString());
+        checkoutButton.setDisable(false);
         if (lastOrderId != null) {
             saveAddressForOrder(lastOrderId, address);
         }
