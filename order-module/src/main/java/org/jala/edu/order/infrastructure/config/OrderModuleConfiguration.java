@@ -10,6 +10,7 @@ import org.jala.edu.order.application.usecase.DecreaseCartItemQuantityUseCase;
 import org.jala.edu.order.application.usecase.GetCartSummaryUseCase;
 import org.jala.edu.order.application.usecase.IncreaseCartItemQuantityUseCase;
 import org.jala.edu.order.application.usecase.ListCatalogProductsUseCase;
+import org.jala.edu.order.application.usecase.orders.InputAddressUseCase;
 import org.jala.edu.order.application.usecase.RemoveProductFromCartUseCase;
 import org.jala.edu.order.application.usecase.orders.StartCheckoutUseCase;
 import org.springframework.context.annotation.Bean;
@@ -67,6 +68,11 @@ public class OrderModuleConfiguration {
             OrderRepositoryPort orderRepository
     ) {
         return new StartCheckoutUseCase(users, carts, cartVerifier, orderRepository);
+    }
+
+    @Bean
+    public InputAddressUseCase inputAddressUseCase(OrderRepositoryPort orders) {
+        return new InputAddressUseCase(orders);
     }
 
 }
