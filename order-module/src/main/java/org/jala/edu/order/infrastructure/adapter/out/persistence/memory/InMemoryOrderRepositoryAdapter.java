@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jala.edu.core.infrastructure.config.ConditionalOnInMemoryPersistence;
+import org.jala.edu.core.infrastructure.persistence.memory.InMemoryCrudRepository;
 import org.jala.edu.order.application.port.out.OrderRepositoryPort;
 import org.jala.edu.order.domain.model.CustomerId;
 import org.jala.edu.order.domain.model.Order;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ConditionalOnInMemoryPersistence
-public class InMemoryOrderRepositoryAdapter implements OrderRepositoryPort {
+public class InMemoryOrderRepositoryAdapter extends InMemoryCrudRepository<Order,OrderId > implements OrderRepositoryPort {
 
     private final Map<OrderId, Order> storage = new ConcurrentHashMap<>();
 
