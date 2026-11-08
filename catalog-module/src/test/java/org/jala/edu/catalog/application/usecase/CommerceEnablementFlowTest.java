@@ -3,9 +3,8 @@ package org.jala.edu.catalog.application.usecase;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
-import org.jala.edu.catalog.application.dto.CatalogProduct;
+import org.jala.edu.catalog.application.dto.CatalogProductPage;
 import org.jala.edu.catalog.application.dto.EnableCommerceResult;
 import org.jala.edu.catalog.application.port.in.AdjustProductStockCommand;
 import org.jala.edu.catalog.application.port.in.CreateProductCommand;
@@ -34,22 +33,30 @@ class CommerceEnablementFlowTest {
                 new RegisterCommerceCommand(
                         SampleUsers.ADMIN, "Pizzeria", "Calle 1 # 2-3", "+573001234567",
                         SampleUsers.MERCHANT));
+
         UUID productId = new CreateProductUseCase(products, commerces, users).execute(
                 new CreateProductCommand(
                         SampleUsers.ADMIN, commerceId, "Pizza", "Food", new BigDecimal("50.00")));
+
         new AdjustProductStockUseCase(products, users).execute(
                 new AdjustProductStockCommand(SampleUsers.ADMIN, productId, 10));
-        var listCatalog = new ListAvailableProductsUseCase(products, commerces);
 
-        // Antes de habilitar, el cliente no ve nada
-        assertThat(listCatalog.execute(new ListAvailableProductsQuery(commerceId))).isEmpty();
+        var listCatalog = new ListAvailableProductsUseCase(products, commerces, 10);
+
+        CatalogProductPage beforeEnable =
+                listCatalog.execute(new ListAvailableProductsQuery(commerceId, 1));
+
+        assertThat(beforeEnable.products()).isEmpty();
 
         EnableCommerceResult result = new EnableCommerceUseCase(commerces, products, users)
                 .execute(new EnableCommerceCommand(SampleUsers.ADMIN, commerceId));
 
-        // Después de habilitar, aparece su producto disponible
-        List<CatalogProduct> catalog = listCatalog.execute(new ListAvailableProductsQuery(commerceId));
+        CatalogProductPage catalog =
+                listCatalog.execute(new ListAvailableProductsQuery(commerceId, 1));
+
         assertThat(result).isEqualTo(EnableCommerceResult.ENABLED);
-        assertThat(catalog).extracting(CatalogProduct::name).containsExactly("Pizza");
+        assertThat(catalog.products())
+                .extracting(product -> product.name())
+                .containsExactly("Pizza");
     }
 }

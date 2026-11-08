@@ -21,23 +21,23 @@
 }
 
 .product-initial {
-    -fx-font-size: 56px;
+    -fx-font-size: 40px;
     -fx-font-weight: bold;
     -fx-text-fill: -fx-accent;
 }
 
 .product-name {
-    -fx-font-size: 18px;
+    -fx-font-size: 14px;
     -fx-font-weight: bold;
 }
 
 .product-category {
-    -fx-font-size: 12px;
+    -fx-font-size: 11px;
     -fx-opacity: 0.7;
 }
 
 .product-price {
-    -fx-font-size: 15px;
+    -fx-font-size: 13px;
     -fx-font-weight: bold;
     -fx-text-fill: -fx-accent;
 }
@@ -62,4 +62,16 @@
 .product-card.sold-out .product-name,
 .product-card.sold-out .product-price {
     -fx-opacity: 0.55;
+}
+
+.pagination-controls {
+    -fx-padding: 12;
+}
+
+.pagination-controls .button {
+    -fx-cursor: hand;
+}
+
+.pagination-controls .label {
+    -fx-font-weight: bold;
 }

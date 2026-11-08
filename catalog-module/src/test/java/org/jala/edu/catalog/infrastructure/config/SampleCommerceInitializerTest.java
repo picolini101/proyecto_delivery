@@ -47,6 +47,6 @@ class SampleCommerceInitializerTest {
         initializer.afterPropertiesSet();
 
         assertThat(commerces.findAll()).hasSize(1);
-        assertThat(products.findAll()).hasSize(2);
+        assertThat(products.findAll()).hasSize(19);
     }
 }
