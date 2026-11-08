@@ -3,12 +3,15 @@ package org.jala.edu.order.infrastructure.config;
 import org.jala.edu.core.contract.CatalogService;
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.order.application.port.out.CartRepositoryPort;
+import org.jala.edu.order.application.port.out.OrderRepositoryPort;
+import org.jala.edu.order.application.service.CartVerifier;
 import org.jala.edu.order.application.usecase.AddProductToCartUseCase;
 import org.jala.edu.order.application.usecase.DecreaseCartItemQuantityUseCase;
 import org.jala.edu.order.application.usecase.GetCartSummaryUseCase;
 import org.jala.edu.order.application.usecase.IncreaseCartItemQuantityUseCase;
 import org.jala.edu.order.application.usecase.ListCatalogProductsUseCase;
 import org.jala.edu.order.application.usecase.RemoveProductFromCartUseCase;
+import org.jala.edu.order.application.usecase.orders.StartCheckoutUseCase;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -51,4 +54,19 @@ public class OrderModuleConfiguration {
     public RemoveProductFromCartUseCase removeProductFromCartUseCase(CartRepositoryPort carts) {
         return new RemoveProductFromCartUseCase(carts);
     }
+
+    @Bean
+    public CartVerifier cartVerifier(CatalogService catalog) {
+        return new CartVerifier(catalog);
+    }
+    @Bean
+    public StartCheckoutUseCase startCheckoutUseCase(
+            UserService users,
+            CartRepositoryPort carts,
+            CartVerifier cartVerifier,
+            OrderRepositoryPort orderRepository
+    ) {
+        return new StartCheckoutUseCase(users, carts, cartVerifier, orderRepository);
+    }
+
 }

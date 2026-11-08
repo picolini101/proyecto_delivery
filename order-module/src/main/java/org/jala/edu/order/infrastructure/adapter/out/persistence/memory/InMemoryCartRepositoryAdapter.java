@@ -1,6 +1,7 @@
 package org.jala.edu.order.infrastructure.adapter.out.persistence.memory;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -48,5 +49,10 @@ public class InMemoryCartRepositoryAdapter implements CartRepositoryPort {
     public Cart save(Cart cart) {
         carts.put(cart.getCustomerId(), cart);
         return cart;
+    }
+
+    @Override
+    public Optional<Cart> findByCustomerId(UUID customerId) {
+        return Optional.ofNullable(carts.get(customerId));
     }
 }
