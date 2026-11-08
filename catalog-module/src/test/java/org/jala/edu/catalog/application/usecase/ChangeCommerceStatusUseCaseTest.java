@@ -12,20 +12,27 @@ import org.jala.edu.catalog.domain.model.Commerce;
 import org.jala.edu.catalog.domain.model.CommerceId;
 import org.jala.edu.catalog.domain.model.CommerceStatus;
 import org.jala.edu.catalog.infrastructure.adapter.out.persistence.memory.InMemoryCommerceRepositoryAdapter;
+import org.jala.edu.catalog.infrastructure.adapter.out.persistence.memory.InMemoryProductRepositoryAdapter;
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.core.infrastructure.contract.FallbackUserService;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.api.Test;
+import java.math.BigDecimal;
+import org.jala.edu.catalog.domain.model.Product;
+import org.jala.edu.catalog.domain.model.ProductStatus;
 
 class ChangeCommerceStatusUseCaseTest {
 
     private final InMemoryCommerceRepositoryAdapter repository =
             new InMemoryCommerceRepositoryAdapter();
 
+    private final InMemoryProductRepositoryAdapter productRepository =      // NUEVO
+            new InMemoryProductRepositoryAdapter();
+
     private final ChangeCommerceStatusUseCase changeStatus =
-            new ChangeCommerceStatusUseCase(repository, new FallbackUserService());
+            new ChangeCommerceStatusUseCase( repository, productRepository, new FallbackUserService());
 
     static Stream<UUID> authorizedUsers() {
         return Stream.of(SampleUsers.ADMIN, SampleUsers.MERCHANT);
@@ -52,6 +59,7 @@ class ChangeCommerceStatusUseCaseTest {
     void activatesADisabledCommerce(UUID requesterId) {
         Commerce commerce = CatalogFixtures.disabledCommerce("My Commerce");
         repository.save(commerce);
+        addProduct(commerce, 5);
 
         changeStatus.execute(new ChangeCommerceStatusCommand(
                 requesterId, commerce.getId().value(), CommerceStatus.ACTIVE));
@@ -94,5 +102,77 @@ class ChangeCommerceStatusUseCaseTest {
         assertThat(thrown).isInstanceOf(DomainException.class)
                 .hasMessage("Commerce status cannot be null");
         assertThat(commerce.getStatus()).isEqualTo(CommerceStatus.ACTIVE);
+    }
+
+    @Test
+    void rejectsActivationWithoutProducts() {
+        Commerce commerce = repository.save(CatalogFixtures.disabledCommerce("Empty"));
+
+        assertActivationRejected(commerce);
+    }
+
+    @Test
+    void rejectsActivationWhenAllProductsAreOutOfStock() {
+        Commerce commerce = repository.save(CatalogFixtures.disabledCommerce("Sold out"));
+        addProduct(commerce, 0); // stock 0
+        addProduct(commerce, 5).updateStatus(ProductStatus.OUT_OF_STOCK); // estado Agotado
+
+        assertActivationRejected(commerce);
+    }
+
+    @Test
+    void rejectsActivationWhenAllProductsAreDisabled() {
+        Commerce commerce = repository.save(CatalogFixtures.disabledCommerce("Disabled products"));
+        addProduct(commerce, 5).disable();
+
+        assertActivationRejected(commerce);
+    }
+
+    @Test
+    void activatesWhenAtLeastOneProductIsAvailable() {
+        Commerce commerce = repository.save(CatalogFixtures.disabledCommerce("Mixed"));
+        addProduct(commerce, 0);
+        addProduct(commerce, 3);
+
+        changeStatus.execute(new ChangeCommerceStatusCommand(
+                SampleUsers.ADMIN, commerce.getId().value(), CommerceStatus.ACTIVE));
+
+        assertThat(commerce.getStatus()).isEqualTo(CommerceStatus.ACTIVE);
+    }
+
+    @Test
+    void disablesAnEmptyCommerceWithoutRestriction() {
+        Commerce commerce = repository.save(CatalogFixtures.activeCommerce("Empty active"));
+
+        changeStatus.execute(new ChangeCommerceStatusCommand(
+                SampleUsers.ADMIN, commerce.getId().value(), CommerceStatus.DISABLED));
+
+        assertThat(commerce.getStatus()).isEqualTo(CommerceStatus.DISABLED);
+    }
+
+    @Test
+    void ignoresAvailableProductsOfOtherCommerces() {
+        Commerce commerce = repository.save(CatalogFixtures.disabledCommerce("Mine"));
+        Commerce other = repository.save(CatalogFixtures.activeCommerce("Other"));
+        addProduct(other, 5);
+
+        assertActivationRejected(commerce);
+    }
+
+    private void assertActivationRejected(Commerce commerce) {
+        Throwable thrown = catchThrowable(() -> changeStatus.execute(
+                new ChangeCommerceStatusCommand(
+                        SampleUsers.ADMIN, commerce.getId().value(), CommerceStatus.ACTIVE)));
+
+        assertThat(thrown).isInstanceOf(DomainException.class)
+                .hasMessage(ChangeCommerceStatusUseCase.NO_AVAILABLE_PRODUCT_MESSAGE);
+        assertThat(commerce.getStatus()).isEqualTo(CommerceStatus.DISABLED);
+    }
+
+    private Product addProduct(Commerce owner, int stock) {
+        Product product = Product.register(
+                owner.getId().value(), "Pizza", "Food", new BigDecimal("50.00"));
+        product.adjustStock(stock);
+        return productRepository.save(product);
     }
 }
