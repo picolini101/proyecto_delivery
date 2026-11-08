@@ -1,4 +1,5 @@
 package org.jala.edu.order.application.port.out;
+import java.util.Optional;
 import java.util.UUID;
 import org.jala.edu.order.domain.model.Cart;
 
@@ -26,4 +27,6 @@ public interface CartRepositoryPort {
      * @return el mismo carrito, ya guardado
      */
     Cart save(Cart cart);
+
+    Optional<Cart> findByCustomerId(UUID customerId);
 }

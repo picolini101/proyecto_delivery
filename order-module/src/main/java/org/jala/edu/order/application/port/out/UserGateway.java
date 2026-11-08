@@ -1,4 +1,7 @@
 package org.jala.edu.order.application.port.out;
 
-public class UserGateway {
+import java.util.UUID;
+
+public interface UserGateway {
+    boolean isAuthorizedCustomer(UUID customerId);
 }
