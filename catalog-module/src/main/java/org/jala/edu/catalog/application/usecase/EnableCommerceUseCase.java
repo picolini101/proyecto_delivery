@@ -24,6 +24,7 @@ public class EnableCommerceUseCase
     private final CommerceRepositoryPort commerceRepository;
     private final ProductRepositoryPort productRepository;
     private final CatalogAccessPolicy accessPolicy;
+    private final CommerceActivationPolicy activationPolicy;
 
     public EnableCommerceUseCase(
             CommerceRepositoryPort commerceRepository,
@@ -32,6 +33,7 @@ public class EnableCommerceUseCase
         this.commerceRepository = commerceRepository;
         this.productRepository = productRepository;
         this.accessPolicy = new CatalogAccessPolicy(userService);
+        this.activationPolicy = new CommerceActivationPolicy(productRepository);
     }
 
     @Override
@@ -46,7 +48,7 @@ public class EnableCommerceUseCase
             return EnableCommerceResult.ALREADY_ENABLED;
         }
 
-        requireAvailableProduct(command);
+        activationPolicy.requireAvailableProduct(command.commerceId());
 
         commerce.activate();
         commerceRepository.save(commerce);

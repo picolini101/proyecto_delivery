@@ -19,6 +19,7 @@ public class ChangeCommerceStatusUseCase
     private final CommerceRepositoryPort commerceRepository;
     private final CatalogAccessPolicy accessPolicy;
     private final ProductRepositoryPort productRepository;
+    private final CommerceActivationPolicy activationPolicy;
 
     static final String NO_AVAILABLE_PRODUCT_MESSAGE =
             "No se puede habilitar el comercio se necesita al menos un producto disponible";
@@ -30,6 +31,7 @@ public class ChangeCommerceStatusUseCase
         this.commerceRepository = commerceRepository;
         this.productRepository = productRepository;
         this.accessPolicy = new CatalogAccessPolicy(userService);
+        this.activationPolicy = new CommerceActivationPolicy(productRepository);
     }
 
     @Override
@@ -45,7 +47,7 @@ public class ChangeCommerceStatusUseCase
                 .orElseThrow(() -> new CommerceNotFoundException(id));
 
         if (command.status() == CommerceStatus.ACTIVE) {
-            requireAvailableProduct(command.commerceId());
+            activationPolicy.requireAvailableProduct(command.commerceId());
             commerce.activate();
         } else {
             commerce.disable();

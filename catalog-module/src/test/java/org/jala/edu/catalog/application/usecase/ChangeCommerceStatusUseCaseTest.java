@@ -165,7 +165,7 @@ class ChangeCommerceStatusUseCaseTest {
                         SampleUsers.ADMIN, commerce.getId().value(), CommerceStatus.ACTIVE)));
 
         assertThat(thrown).isInstanceOf(DomainException.class)
-                .hasMessage(ChangeCommerceStatusUseCase.NO_AVAILABLE_PRODUCT_MESSAGE);
+          .hasMessage(CommerceActivationPolicy.NO_AVAILABLE_PRODUCT_MESSAGE);
         assertThat(commerce.getStatus()).isEqualTo(CommerceStatus.DISABLED);
     }
 
