@@ -9,6 +9,7 @@ import org.jala.edu.catalog.domain.model.ProductStatus;
 import org.jala.edu.core.infrastructure.config.ConditionalOnInMemoryPersistence;
 import org.jala.edu.core.infrastructure.persistence.memory.InMemoryCrudRepository;
 import org.springframework.stereotype.Component;
+import java.util.stream.Stream;
 
 /**
  * Almacena productos en la memoria. Activo cuando {@code delivery.persistence.type=memory};
@@ -28,21 +29,14 @@ public class InMemoryProductRepositoryAdapter extends InMemoryCrudRepository<Pro
                 .filter(product -> product.getCommerceId().equals(commerceId))
                 .toList();
     }
-
     @Override
-    public List<Product> findPageOfVisibleProductsByCommerceId(UUID commerceId, int offset, int limit) {
-        return findByCommerceId(commerceId).stream()
-                .filter(product -> product.getStatus() != ProductStatus.DISABLED)
-                .skip(offset)
-                .limit(limit)
-                .toList();
+    public long countVisibleProductsByCommerceId(UUID commerceId) {
+        return countVisibleProductsByCommerceId(commerceId, null);
     }
 
     @Override
-    public long countVisibleProductsByCommerceId(UUID commerceId) {
-        return findByCommerceId(commerceId).stream()
-                .filter(product -> product.getStatus() != ProductStatus.DISABLED)
-                .count();
+    public long countVisibleProductsByCommerceId(UUID commerceId, String searchText) {
+        return visibleProducts(commerceId, searchText).count();
     }
 
     @Override
@@ -52,4 +46,24 @@ public class InMemoryProductRepositoryAdapter extends InMemoryCrudRepository<Pro
                 .filter(product -> product.getStock() > 0)
                 .count();
     }
+    private Stream<Product> visibleProducts(UUID commerceId, String searchText) {
+        return findByCommerceId(commerceId).stream()
+                .filter(product -> product.getStatus() != ProductStatus.DISABLED)
+                .filter(product -> product.matches(searchText));
+    }
+
+    @Override
+    public List<Product> findPageOfVisibleProductsByCommerceId(
+            UUID commerceId, String searchText, int offset, int limit) {
+        return visibleProducts(commerceId, searchText)
+                .skip(offset)
+                .limit(limit)
+                .toList();
+    }
+
+    @Override
+    public List<Product> findPageOfVisibleProductsByCommerceId(UUID commerceId, int offset, int limit) {
+        return findPageOfVisibleProductsByCommerceId(commerceId, null, offset, limit);
+    }
+
 }
