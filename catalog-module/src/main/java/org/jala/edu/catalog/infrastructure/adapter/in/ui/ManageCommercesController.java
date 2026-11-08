@@ -21,6 +21,10 @@ import org.jala.edu.core.infrastructure.ui.ErrorMessages;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import javafx.scene.control.Alert;
+import org.jala.edu.catalog.application.port.in.ChangeCommerceStatusCommand;
+import org.jala.edu.catalog.application.usecase.ChangeCommerceStatusUseCase;
+import org.jala.edu.catalog.domain.model.CommerceStatus;
 
 /**
  * Adaptador de entrada JavaFX para que el administrador vea los comercios y habilite uno
@@ -34,6 +38,7 @@ public class ManageCommercesController {
     private final ListCommercesUseCase listCommercesUseCase;
     private final EnableCommerceUseCase enableCommerceUseCase;
     private final CurrentUserService currentUserService;
+    private final ChangeCommerceStatusUseCase changeCommerceStatusUseCase;
 
     @FXML
     private TableView<CommerceSummary> commercesTable;
@@ -60,6 +65,9 @@ public class ManageCommercesController {
     private Label messageLabel;
 
     @FXML
+    private Button disableButton;
+
+    @FXML
     void initialize() {
         bind(nameColumn, CommerceSummary::name);
         bind(addressColumn, CommerceSummary::address);
@@ -68,6 +76,8 @@ public class ManageCommercesController {
 
         // El botón Habilitar solo se activa cuando hay un comercio seleccionado
         enableButton.disableProperty()
+                .bind(commercesTable.getSelectionModel().selectedItemProperty().isNull());
+        disableButton.disableProperty()
                 .bind(commercesTable.getSelectionModel().selectedItemProperty().isNull());
 
         reload(null, "info");
@@ -98,8 +108,30 @@ public class ManageCommercesController {
                         reload("Commerce " + selected.name() + " is already enabled.", "info");
                     }
                 },
+                error -> {
+                    String message = ErrorMessages.of(error, "enable the commerce");
+                    MessageLabels.show(messageLabel, message, "error");
+                    new Alert(Alert.AlertType.WARNING, message).showAndWait();
+                }
+                );
+    }
+
+    /** Deshabilita el comercio seleccionado */
+    @FXML
+    void onDisable() {
+        CommerceSummary selected = commercesTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            return;
+        }
+
+        BackgroundTasks.run(
+                () -> changeCommerceStatusUseCase.execute(new ChangeCommerceStatusCommand(
+                        currentUserService.currentUser().id(),
+                        selected.id(),
+                        CommerceStatus.DISABLED)),
+                id -> reload("Commerce " + selected.name() + " disabled.", "success"),
                 error -> MessageLabels.show(messageLabel,
-                        ErrorMessages.of(error, "enable the commerce"), "error"));
+                        ErrorMessages.of(error, "disable the commerce"), "error"));
     }
 
     /** Carga los comercios; luego muestra {@code message}, o el conteo si es {@code null}. */

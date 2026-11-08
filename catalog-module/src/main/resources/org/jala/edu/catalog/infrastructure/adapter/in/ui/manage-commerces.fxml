@@ -20,6 +20,7 @@
         <Label fx:id="messageLabel" styleClass="message"/>
         <Button fx:id="refreshButton" text="Refresh" onAction="#onRefresh"/>
         <Button fx:id="enableButton" styleClass="primary" text="Enable" onAction="#onEnable"/>
+        <Button fx:id="disableButton" text="Disable" onAction="#onDisable"/>
     </HBox>
 
     <TableView fx:id="commercesTable" VBox.vgrow="ALWAYS">
