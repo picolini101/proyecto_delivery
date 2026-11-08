@@ -1,6 +1,7 @@
 package org.jala.edu.catalog.infrastructure.config;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.UUID;
 import org.jala.edu.catalog.application.port.out.CommerceRepositoryPort;
@@ -53,6 +54,18 @@ public class SampleCommerceInitializer implements InitializingBean {
             empanada.updateStatus(ProductStatus.OUT_OF_STOCK);
             productRepository.save(empanada);
         }
+
+        for (int i = 1; i <= 17; i++) {
+    UUID productId = UUID.nameUUIDFromBytes(
+            ("sample-product-" + i).getBytes(StandardCharsets.UTF_8));
+
+    saveProductIfMissing(
+            productId,
+            "Producto de prueba " + i,
+            new BigDecimal("15.00"),
+            10,
+            now);
+}
     }
 
     private void saveCommerceIfMissing(Instant now) {

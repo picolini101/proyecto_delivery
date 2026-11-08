@@ -10,4 +10,7 @@ public interface ProductRepositoryPort extends CrudRepositoryPort<Product, Produ
 
     /** Productos que pertenecen al comercio indicado. */
     List<Product> findByCommerceId(UUID commerceId);
+    List<Product> findPageOfVisibleProductsByCommerceId(UUID commerceId, int offset, int limit);
+    long countVisibleProductsByCommerceId(UUID commerceId);
+    long countAvailableProductsByCommerceId(UUID commerceId);
 }

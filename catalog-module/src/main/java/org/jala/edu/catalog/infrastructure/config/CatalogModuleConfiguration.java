@@ -12,9 +12,9 @@ import org.jala.edu.catalog.application.usecase.RegisterCommerceUseCase;
 import org.jala.edu.catalog.application.usecase.UpdateProductStatusUseCase;
 import org.jala.edu.catalog.application.usecase.UpdateProductUseCase;
 import org.jala.edu.core.contract.UserService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
 /**
  * Registra los casos de uso del catálogo como beans. Los casos de uso son clases simples
  * (sin anotaciones de Spring), por eso se construyen aquí con sus puertos.
@@ -60,8 +60,12 @@ public class CatalogModuleConfiguration {
     @Bean
     public ListAvailableProductsUseCase listAvailableProductsUseCase(
             ProductRepositoryPort productRepositoryPort,
-            CommerceRepositoryPort commerceRepositoryPort) {
-        return new ListAvailableProductsUseCase(productRepositoryPort, commerceRepositoryPort);
+            CommerceRepositoryPort commerceRepositoryPort,
+            @Value("${catalog.pagination.page-size:10}") int pageSize) {
+        return new ListAvailableProductsUseCase(
+                productRepositoryPort,
+                commerceRepositoryPort,
+                pageSize);
     }
 
     @Bean

@@ -1,14 +1,16 @@
 package org.jala.edu.catalog.application.usecase;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.groups.Tuple.tuple;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.UUID;
 import org.jala.edu.catalog.CatalogFixtures;
 import org.jala.edu.catalog.application.dto.CatalogProduct;
+import org.jala.edu.catalog.application.dto.CatalogProductPage;
 import org.jala.edu.catalog.application.port.in.ListAvailableProductsQuery;
+import org.jala.edu.catalog.domain.exception.PageNotFoundException;
 import org.jala.edu.catalog.domain.model.Commerce;
 import org.jala.edu.catalog.domain.model.Product;
 import org.jala.edu.catalog.domain.model.ProductStatus;
@@ -19,13 +21,16 @@ import org.junit.jupiter.api.Test;
 
 class ListAvailableProductsUseCaseTest {
 
+    private static final int PAGE_SIZE = 2;
+
     private final InMemoryProductRepositoryAdapter productRepository =
             new InMemoryProductRepositoryAdapter();
     private final InMemoryCommerceRepositoryAdapter commerceRepository =
             new InMemoryCommerceRepositoryAdapter();
 
     private final ListAvailableProductsUseCase useCase =
-            new ListAvailableProductsUseCase(productRepository, commerceRepository);
+            new ListAvailableProductsUseCase(
+                    productRepository, commerceRepository, PAGE_SIZE);
 
     private Commerce commerce;
 
@@ -34,49 +39,48 @@ class ListAvailableProductsUseCaseTest {
         commerce = commerceRepository.save(CatalogFixtures.activeCommerce("Test Commerce"));
     }
 
-    //  comercio con productos disponibles -> se muestran
     @Test
     void showsTheAvailableProductsOfTheCommerce() {
         saveProduct(commerce, "Pizza", "Food", "50.00", 10);
         saveProduct(commerce, "Soda", "Drinks", "5.00", 3);
 
-        List<CatalogProduct> result = query(commerce);
+        CatalogProductPage result = query(commerce, 1);
 
-        assertThat(result).extracting(CatalogProduct::name).containsExactly("Pizza", "Soda");
-        assertThat(result).allMatch(CatalogProduct::available);
+        assertThat(result.products())
+                .extracting(CatalogProduct::name)
+                .containsExactly("Pizza", "Soda");
+        assertThat(result.products()).allMatch(CatalogProduct::available);
     }
 
-    //  cada producto expone nombre, categoria y precio
     @Test
     void exposesNameCategoryAndPriceOfEachProduct() {
         saveProduct(commerce, "Pizza", "Food", "50.00", 10);
 
-        CatalogProduct product = query(commerce).getFirst();
+        CatalogProduct product = query(commerce, 1).products().getFirst();
 
         assertThat(product.name()).isEqualTo("Pizza");
         assertThat(product.category()).isEqualTo("Food");
         assertThat(product.price()).isEqualByComparingTo("50.00");
     }
 
-    //  precio vigente (refleja la ultima actualizacion)
     @Test
     void showsTheCurrentPriceAfterAnUpdate() {
         Product product = saveProduct(commerce, "Pizza", "Food", "50.00", 10);
         product.update("Pizza", "Food", new BigDecimal("65.00"));
         productRepository.save(product);
 
-        assertThat(query(commerce).getFirst().price()).isEqualByComparingTo("65.00");
+        assertThat(query(commerce, 1).products().getFirst().price())
+                .isEqualByComparingTo("65.00");
     }
 
-    //  los agotados se muestran como agotados, no como disponibles
     @Test
     void showsAProductWithZeroStockAsSoldOut() {
         saveProduct(commerce, "Pizza", "Food", "50.00", 0);
 
-        List<CatalogProduct> result = query(commerce);
+        CatalogProductPage result = query(commerce, 1);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.getFirst().available()).isFalse();
+        assertThat(result.products()).hasSize(1);
+        assertThat(result.products().getFirst().available()).isFalse();
     }
 
     @Test
@@ -85,10 +89,10 @@ class ListAvailableProductsUseCaseTest {
         product.updateStatus(ProductStatus.OUT_OF_STOCK);
         productRepository.save(product);
 
-        List<CatalogProduct> result = query(commerce);
+        CatalogProductPage result = query(commerce, 1);
 
-        assertThat(result).hasSize(1);
-        assertThat(result.getFirst().available()).isFalse();
+        assertThat(result.products()).hasSize(1);
+        assertThat(result.products().getFirst().available()).isFalse();
     }
 
     @Test
@@ -96,7 +100,7 @@ class ListAvailableProductsUseCaseTest {
         saveProduct(commerce, "Pizza", "Food", "50.00", 10);
         saveProduct(commerce, "Soda", "Drinks", "5.00", 0);
 
-        assertThat(query(commerce))
+        assertThat(query(commerce, 1).products())
                 .extracting(CatalogProduct::name, CatalogProduct::available)
                 .containsExactly(tuple("Pizza", true), tuple("Soda", false));
     }
@@ -107,7 +111,7 @@ class ListAvailableProductsUseCaseTest {
         product.disable();
         productRepository.save(product);
 
-        assertThat(query(commerce)).isEmpty();
+        assertThat(query(commerce, 1).products()).isEmpty();
     }
 
     @Test
@@ -116,7 +120,9 @@ class ListAvailableProductsUseCaseTest {
         saveProduct(commerce, "Pizza", "Food", "50.00", 10);
         saveProduct(other, "Burger", "Food", "30.00", 10);
 
-        assertThat(query(commerce)).extracting(CatalogProduct::name).containsExactly("Pizza");
+        assertThat(query(commerce, 1).products())
+                .extracting(CatalogProduct::name)
+                .containsExactly("Pizza");
     }
 
     @Test
@@ -125,25 +131,108 @@ class ListAvailableProductsUseCaseTest {
         commerce.disable();
         commerceRepository.save(commerce);
 
-        assertThat(query(commerce)).isEmpty();
+        assertThat(query(commerce, 1).products()).isEmpty();
     }
 
     @Test
     void showsNothingWhenTheCommerceDoesNotExist() {
-        assertThat(useCase.execute(new ListAvailableProductsQuery(UUID.randomUUID()))).isEmpty();
+        CatalogProductPage result = useCase.execute(
+                new ListAvailableProductsQuery(UUID.randomUUID(), 1));
+
+        assertThat(result.products()).isEmpty();
     }
 
     @Test
-    void returnsAnEmptyListWhenTheCommerceHasNoProducts() {
-        assertThat(query(commerce)).isEmpty();
+    void returnsAnEmptyPageWhenTheCommerceHasNoProducts() {
+        CatalogProductPage result = query(commerce, 1);
+
+        assertThat(result.products()).isEmpty();
+        assertThat(result.totalProducts()).isZero();
+        assertThat(result.totalPages()).isZero();
     }
 
-    private List<CatalogProduct> query(Commerce target) {
-        return useCase.execute(new ListAvailableProductsQuery(target.getId().value()));
+    @Test
+    void returnsTheFirstPageOfProducts() {
+        saveProduct(commerce, "Pizza", "Food", "50.00", 10);
+        saveProduct(commerce, "Soda", "Drinks", "5.00", 10);
+        saveProduct(commerce, "Burger", "Food", "30.00", 10);
+
+        CatalogProductPage result = query(commerce, 1);
+
+        assertThat(result.products())
+                .extracting(CatalogProduct::name)
+                .containsExactly("Pizza", "Soda");
+        assertThat(result.currentPage()).isEqualTo(1);
+        assertThat(result.pageSize()).isEqualTo(PAGE_SIZE);
+        assertThat(result.totalProducts()).isEqualTo(3);
+        assertThat(result.totalPages()).isEqualTo(2);
+        assertThat(result.totalAvailableProducts()).isEqualTo(3);
     }
 
-    private Product saveProduct(Commerce owner, String name, String category, String price, int stock) {
-        Product product = Product.register(owner.getId().value(), name, category, new BigDecimal(price));
+    @Test
+    void returnsTheNextPageOfProducts() {
+        saveProduct(commerce, "Pizza", "Food", "50.00", 10);
+        saveProduct(commerce, "Soda", "Drinks", "5.00", 10);
+        saveProduct(commerce, "Burger", "Food", "30.00", 10);
+
+        CatalogProductPage result = query(commerce, 2);
+
+        assertThat(result.products())
+                .extracting(CatalogProduct::name)
+                .containsExactly("Burger");
+        assertThat(result.currentPage()).isEqualTo(2);
+        assertThat(result.totalAvailableProducts()).isEqualTo(3);
+    }
+
+    @Test
+    void showsAllProductsWhenTheyFitInOnePage() {
+        saveProduct(commerce, "Pizza", "Food", "50.00", 10);
+        saveProduct(commerce, "Soda", "Drinks", "5.00", 10);
+
+        CatalogProductPage result = query(commerce, 1);
+
+        assertThat(result.products()).hasSize(2);
+        assertThat(result.totalPages()).isEqualTo(1);
+    }
+
+    @Test
+    void doesNotCountDisabledProductsInPagination() {
+        saveProduct(commerce, "Pizza", "Food", "50.00", 10);
+
+        Product disabled = saveProduct(commerce, "Soda", "Drinks", "5.00", 10);
+        disabled.disable();
+        productRepository.save(disabled);
+
+        saveProduct(commerce, "Burger", "Food", "30.00", 10);
+
+        CatalogProductPage result = query(commerce, 1);
+
+        assertThat(result.products())
+                .extracting(CatalogProduct::name)
+                .containsExactly("Pizza", "Burger");
+        assertThat(result.totalProducts()).isEqualTo(2);
+        assertThat(result.totalPages()).isEqualTo(1);
+    }
+
+    @Test
+    void throwsExceptionWhenRequestedPageDoesNotExist() {
+        saveProduct(commerce, "Pizza", "Food", "50.00", 10);
+        saveProduct(commerce, "Soda", "Drinks", "5.00", 10);
+        saveProduct(commerce, "Burger", "Food", "30.00", 10);
+
+        assertThatThrownBy(() -> query(commerce, 3))
+                .isInstanceOf(PageNotFoundException.class);
+    }
+
+    private CatalogProductPage query(Commerce target, int page) {
+        return useCase.execute(
+                new ListAvailableProductsQuery(target.getId().value(), page));
+    }
+
+    private Product saveProduct(
+            Commerce owner, String name, String category, String price, int stock) {
+        Product product = Product.register(
+                owner.getId().value(), name, category, new BigDecimal(price));
         product.adjustStock(stock);
         return productRepository.save(product);
     }

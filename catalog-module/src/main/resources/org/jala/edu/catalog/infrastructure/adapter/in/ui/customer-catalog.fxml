@@ -23,7 +23,22 @@
         <Button fx:id="refreshButton" text="Refresh" onAction="#onRefresh"/>
     </HBox>
 
-    <ScrollPane styleClass="catalog-scroll" fitToWidth="true" VBox.vgrow="ALWAYS">
+    <ScrollPane fx:id="catalogScrollPane"
+            styleClass="catalog-scroll"
+            fitToWidth="true"
+            VBox.vgrow="ALWAYS">
         <FlowPane fx:id="productsPane" styleClass="catalog-grid" hgap="16" vgap="16"/>
     </ScrollPane>
+
+    <HBox fx:id="paginationControls" styleClass="pagination-controls"
+          alignment="CENTER" spacing="16">
+        <Button fx:id="previousPageButton"
+                text="Previous"
+                onAction="#onPreviousPage"/>
+        <Label fx:id="pageLabel" text="Page 1 of 1"/>
+        <Button fx:id="nextPageButton"
+                text="Next"
+                onAction="#onNextPage"/>
+    </HBox>
+
 </VBox>
