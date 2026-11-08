@@ -27,6 +27,10 @@ import org.jala.edu.core.infrastructure.ui.ErrorMessages;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import java.util.Objects;
+import javafx.animation.PauseTransition;
+import javafx.scene.control.TextField;
+import javafx.util.Duration;
 
 /**
  * Adaptador de entrada JavaFX de solo lectura para que el cliente consulte el catálogo de un comercio.
@@ -55,6 +59,12 @@ public class CustomerCatalogController {
     private int totalPages;
     private int currentPageSize = 10;
     private List<CatalogProduct> currentProducts = List.of();
+
+    private static final Duration SEARCH_DELAY = Duration.millis(300);
+    private final PauseTransition searchDelay = new PauseTransition(SEARCH_DELAY);
+
+    @FXML
+    private TextField searchField;
 
     @FXML
     private ComboBox<CommerceSummary> commerceSelector;
@@ -99,6 +109,13 @@ public class CustomerCatalogController {
             currentPage = 1;
             reload();
         });
+
+        searchDelay.setOnFinished(event -> {
+            currentPage = 1;
+            reload();
+        });
+        searchField.textProperty().addListener(
+                (observable, previous, text) -> searchDelay.playFromStart());
 
         updatePagination(0);
         loadActiveCommerces();
@@ -158,17 +175,23 @@ public class CustomerCatalogController {
         nextPageButton.setDisable(true);
 
         int requestedPage = currentPage;
+        String searchText = searchField.getText();
 
         BackgroundTasks.run(
                 () -> listAvailableProducts.execute(
-                        new ListAvailableProductsQuery(commerce.id(), requestedPage)),
+                        new ListAvailableProductsQuery(commerce.id(), requestedPage, searchText)),
                 page -> {
+                    if (!Objects.equals(searchText, searchField.getText())) {
+                        return;
+                    }
                     showProducts(page.products());
 
                     totalPages = page.totalPages();
                     updatePagination(totalPages);
 
-                    if (page.totalAvailableProducts() == 0) {
+                    if (page.products().isEmpty() && !searchText.isBlank()) {
+                        showMessage("No products match your search.", "info");
+                    } else if (page.totalAvailableProducts() == 0) {
                         showMessage("No products are currently available.", "info");
                     } else {
                         showMessage(count(page.totalProducts()), "info");
