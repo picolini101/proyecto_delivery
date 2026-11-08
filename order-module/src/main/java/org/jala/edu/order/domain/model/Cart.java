@@ -129,4 +129,9 @@ public class Cart {
         }
         items.remove(item);
     }
+
+    public void clear() {
+        this.items.clear();
+    }
+
 }
