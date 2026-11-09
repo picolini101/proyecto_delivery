@@ -221,7 +221,7 @@ public class NewCartController {
 
     private void saveAddressForOrder(UUID orderId, DeliveryAddress address) {
         InputAddressCommand command = new InputAddressCommand(
-                orderId, address.city(), address.avenue(), address.houseNumber());
+                orderId, currentUserService.currentUser().id(), address.city(), address.avenue(), address.houseNumber());
         BackgroundTasks.run(
                 () -> inputAddress.execute(command),
                 ignored -> showMessage("Dirección de entrega guardada", "success"),

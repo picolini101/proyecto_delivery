@@ -9,6 +9,7 @@ import org.jala.edu.order.application.dto.OrderSummary;
 import org.jala.edu.order.application.port.in.InputAddressCommand;
 import org.jala.edu.order.application.port.out.OrderRepositoryPort;
 import org.jala.edu.order.domain.exception.OrderNotFoundException;
+import org.jala.edu.order.domain.exception.UnauthorizedCustomerException;
 import org.jala.edu.order.domain.model.CustomerId;
 import org.jala.edu.order.domain.model.DeliveryAddress;
 import org.jala.edu.order.domain.model.Money;
@@ -45,7 +46,7 @@ class InputAddressUseCaseTest {
     @DisplayName("Guarda la dirección validada asociada al pedido")
     void shouldSaveAddressForOrder() {
         InputAddressCommand command = new InputAddressCommand(
-                order.getId().value(), "  La Paz  ", "  Avenida Arce  ", "  123  ");
+                order.getId().value(), order.getCustomerId().value(), "  La Paz  ", "  Avenida Arce  ", "  123  ");
 
         OrderSummary summary = useCase.execute(command);
 
@@ -59,7 +60,7 @@ class InputAddressUseCaseTest {
     @DisplayName("Rechaza la dirección cuando un campo obligatorio está vacío")
     void shouldRejectAddressWithBlankRequiredField() {
         InputAddressCommand command = new InputAddressCommand(
-                order.getId().value(), "La Paz", "   ", "123");
+                order.getId().value(), order.getCustomerId().value(), "La Paz", "   ", "123");
 
         assertThatThrownBy(() -> useCase.execute(command))
                 .isInstanceOf(DomainException.class)
@@ -71,9 +72,20 @@ class InputAddressUseCaseTest {
     @DisplayName("Falla cuando el pedido indicado no existe")
     void shouldFailWhenOrderDoesNotExist() {
         InputAddressCommand command = new InputAddressCommand(
-                UUID.randomUUID(), "La Paz", "Avenida Arce", "123");
+                UUID.randomUUID(), order.getCustomerId().value(), "La Paz", "Avenida Arce", "123");
 
         assertThatThrownBy(() -> useCase.execute(command))
                 .isInstanceOf(OrderNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("Rechaza cambiar la dirección de un pedido ajeno")
+    void shouldRejectAddressForOrderOwnedByAnotherCustomer() {
+        InputAddressCommand command = new InputAddressCommand(
+                order.getId().value(), UUID.randomUUID(), "La Paz", "Avenida Arce", "123");
+
+        assertThatThrownBy(() -> useCase.execute(command))
+                .isInstanceOf(UnauthorizedCustomerException.class);
+        assertThat(order.getDeliveryAddress()).isNull();
     }
 }
