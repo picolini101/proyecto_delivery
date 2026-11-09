@@ -8,15 +8,15 @@
 
 # Members: @DaenAlex @HeynerRico @Ale_sm
 [Team C - catalog]
-/catalog-module/ @Ale_sm @Dev-jcgi
+/catalog-module/ @DaenAlex @Dev-jcgi
 
 # Members: @DevisF @FelixUrquidi101 @SentinelaLPZ @elmerq225
 [Team B - order]
-/order-module/ @DevisF @Dev-jcgi
+/order-module/ @SentinelaLPZ @Dev-jcgi
 
 # Members: @Julian.Sanchez0126 @joseCardona.jala @maria_perez_jala @andres_vz66
 [Team A - delivery]
-/delivery-module/ @Julian.Sanchez0126 @Dev-jcgi
+/delivery-module/ @maria_perez_jala @Dev-jcgi
 
 # Members: @Sterbenn0126 @Estrella05 @JefersonC-Jala
 [Team D - payment]
