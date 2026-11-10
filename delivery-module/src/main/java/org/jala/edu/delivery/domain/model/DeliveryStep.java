@@ -8,5 +8,6 @@ public enum DeliveryStep {
     ON_THE_WAY,
     PICKED_UP,
     DELIVERED,
-    CANCELLED
+    CANCELLED,
+    DELEGATED
 }

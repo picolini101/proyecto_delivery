@@ -49,6 +49,16 @@ public class FallbackOrderService implements OrderService {
         advance(orderId, Step.ON_THE_WAY, Step.DELIVERED);
     }
 
+    @Override
+    public void cancel(UUID orderId) {
+        advance(orderId, Step.ON_THE_WAY, Step.CANCELLED);
+    }
+
+    @Override
+    public void release(UUID orderId) {
+        advance(orderId, Step.ON_THE_WAY, Step.READY);
+    }
+
     private void addReadyOrder(String id, String address) {
         UUID orderId = UUID.fromString(id);
         orders.put(orderId, new ReadyOrder(orderId, address, SHIPPING_COST));
@@ -68,6 +78,7 @@ public class FallbackOrderService implements OrderService {
         READY,
         ASSIGNED,
         ON_THE_WAY,
-        DELIVERED
+        DELIVERED,
+        CANCELLED
     }
 }

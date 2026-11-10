@@ -25,4 +25,14 @@ public interface OrderService {
      * On the way → Delivered.
      */
     void markDelivered(UUID orderId);
+
+    /**
+     * On the way → Cancelled. The order leaves the delivery flow.
+     */
+    void cancel(UUID orderId);
+
+    /**
+     * On the way → Ready for delivery, so another courier can take it.
+     */
+    void release(UUID orderId);
 }

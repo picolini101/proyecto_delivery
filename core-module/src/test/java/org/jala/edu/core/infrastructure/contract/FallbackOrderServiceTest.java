@@ -55,6 +55,32 @@ class FallbackOrderServiceTest {
     }
 
     @Test
+    void cancelsAnOrderThatIsOnTheWay() {
+        // Arrange
+        UUID orderId = orderOnTheWay();
+
+        // Act
+        orderService.cancel(orderId);
+
+        // Assert
+        assertThat(orderService.findReadyForDelivery()).extracting(ReadyOrder::orderId).doesNotContain(orderId);
+        assertThat(catchThrowable(() -> orderService.markDelivered(orderId))).isInstanceOf(ConflictException.class);
+    }
+
+    @Test
+    void releasesAnOrderThatIsOnTheWaySoAnotherCourierCanTakeIt() {
+        // Arrange
+        UUID orderId = orderOnTheWay();
+
+        // Act
+        orderService.release(orderId);
+
+        // Assert
+        assertThat(orderService.findReadyForDelivery()).extracting(ReadyOrder::orderId).contains(orderId);
+        orderService.assign(orderId, UUID.randomUUID());
+    }
+
+    @Test
     void throwsWhenTheOrderDoesNotExist() {
         // Arrange
         UUID unknown = UUID.randomUUID();
@@ -68,5 +94,12 @@ class FallbackOrderServiceTest {
 
     private UUID firstReadyOrder() {
         return orderService.findReadyForDelivery().getFirst().orderId();
+    }
+
+    private UUID orderOnTheWay() {
+        UUID orderId = firstReadyOrder();
+        orderService.assign(orderId, UUID.randomUUID());
+        orderService.markOnTheWay(orderId);
+        return orderId;
     }
 }
