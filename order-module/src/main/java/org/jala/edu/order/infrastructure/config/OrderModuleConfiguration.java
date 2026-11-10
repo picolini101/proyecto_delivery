@@ -1,9 +1,11 @@
 package org.jala.edu.order.infrastructure.config;
 
 import org.jala.edu.core.contract.CatalogService;
+import org.jala.edu.core.contract.PaymentService;
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.order.application.port.out.CartRepositoryPort;
 import org.jala.edu.order.application.port.out.OrderRepositoryPort;
+import org.jala.edu.order.application.port.out.PaymentGatewayPort;
 import org.jala.edu.order.application.service.CartVerifier;
 import org.jala.edu.order.application.usecase.AddProductToCartUseCase;
 import org.jala.edu.order.application.usecase.DecreaseCartItemQuantityUseCase;
@@ -12,7 +14,9 @@ import org.jala.edu.order.application.usecase.IncreaseCartItemQuantityUseCase;
 import org.jala.edu.order.application.usecase.ListCatalogProductsUseCase;
 import org.jala.edu.order.application.usecase.orders.InputAddressUseCase;
 import org.jala.edu.order.application.usecase.RemoveProductFromCartUseCase;
+import org.jala.edu.order.application.usecase.orders.AuthorizePaymentUseCase;
 import org.jala.edu.order.application.usecase.orders.StartCheckoutUseCase;
+import org.jala.edu.order.infrastructure.adapter.out.payment.PaymentServiceAdapter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -70,9 +74,28 @@ public class OrderModuleConfiguration {
         return new StartCheckoutUseCase(users, carts, cartVerifier, orderRepository);
     }
 
+
+    /**
+     * Adaptador del puerto de pagos (INT-002): traduce el contrato {@link PaymentService} del core.
+     */
+    @Bean
+    public PaymentGatewayPort paymentGatewayPort(PaymentService paymentService) {
+        return new PaymentServiceAdapter(paymentService);
+    }
+
+    /**
+     * Caso de uso HU-10: autorizar el pago de un pedido por el monto total.
+     */
+    @Bean
+    public AuthorizePaymentUseCase authorizePaymentUseCase(UserService users, OrderRepositoryPort orderRepository,
+                                                           PaymentGatewayPort paymentGateway) {
+        return new AuthorizePaymentUseCase(users, orderRepository, paymentGateway);
+    }
+
     @Bean
     public InputAddressUseCase inputAddressUseCase(OrderRepositoryPort orders) {
         return new InputAddressUseCase(orders);
+
     }
 
 }
