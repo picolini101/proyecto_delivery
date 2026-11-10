@@ -47,7 +47,8 @@ class DeliveryUiConfigurationTest {
             DeliveryViews.MAIN,
             DeliveryViews.HISTORY,
             DeliveryViews.COURIER_REGISTRATION,
-            DeliveryViews.READY_ORDERS
+            DeliveryViews.READY_ORDERS,
+            DeliveryViews.SHIPMENT
     })
     void everyDeliveryViewExistsOnTheClasspath(String fxmlPath) {
         // Arrange
@@ -73,5 +74,24 @@ class DeliveryUiConfigurationTest {
         assertThat(fxml).contains("Tomar Pedido");
         assertThat(fxml).contains("Dirección");
         assertThat(fxml).contains("Costo de envío");
+        assertThat(fxml).contains("En camino");
+    }
+
+    @Test
+    void shipmentPanelDeclaresTheProgressControlsAndTheEmptyState() throws Exception {
+        // Arrange
+        URL view = getClass().getResource(DeliveryViews.SHIPMENT);
+
+        // Act
+        String fxml = new String(view.openStream().readAllBytes(), StandardCharsets.UTF_8);
+
+        // Assert
+        assertThat(fxml).contains("No hay un envío en curso");
+        assertThat(fxml).contains("En camino");
+        assertThat(fxml).contains("Retirado");
+        assertThat(fxml).contains("Entregado");
+        assertThat(fxml).contains("Código de confirmación");
+        assertThat(fxml).contains("Cancelar");
+        assertThat(fxml).contains("Delegar");
     }
 }

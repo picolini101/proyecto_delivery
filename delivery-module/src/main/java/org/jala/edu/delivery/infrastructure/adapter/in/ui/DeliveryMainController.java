@@ -23,6 +23,11 @@ public class DeliveryMainController {
     }
 
     @FXML
+    void onShipment() {
+        navigator.show(DeliveryViews.SHIPMENT);
+    }
+
+    @FXML
     void onDeliveryHistory() {
         navigator.show(DeliveryViews.HISTORY);
     }

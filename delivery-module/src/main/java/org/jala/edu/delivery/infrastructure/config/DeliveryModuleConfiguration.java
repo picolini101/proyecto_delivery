@@ -16,6 +16,7 @@ import org.jala.edu.delivery.application.port.out.DeliveryHistoryPort;
 import org.jala.edu.delivery.application.usecase.CancelDeliveryUseCase;
 import org.jala.edu.delivery.application.usecase.ConfirmDeliveryUseCase;
 import org.jala.edu.delivery.application.usecase.DelegateDeliveryUseCase;
+import org.jala.edu.delivery.application.usecase.FindActiveDeliveryUseCase;
 import org.jala.edu.delivery.application.usecase.GetDeliveryHistoryUseCase;
 import org.jala.edu.delivery.application.usecase.ListCouriersUseCase;
 import org.jala.edu.delivery.application.usecase.ListReadyOrdersUseCase;
@@ -146,6 +147,13 @@ public class DeliveryModuleConfiguration {
                                                             CurrentUserService currentUserService,
                                                             ActiveDeliveryPort activeDeliveries) {
         return new DelegateDeliveryUseCase(orderService, userService, currentUserService, activeDeliveries);
+    }
+
+    @Bean
+    public FindActiveDeliveryUseCase findActiveDeliveryUseCase(UserService userService,
+                                                                CurrentUserService currentUserService,
+                                                                ActiveDeliveryPort activeDeliveries) {
+        return new FindActiveDeliveryUseCase(userService, currentUserService, activeDeliveries);
     }
 
     private static CompletedDelivery sampleDelivery(String orderId, String amount, String locality, LocalDate deliveredOn) {

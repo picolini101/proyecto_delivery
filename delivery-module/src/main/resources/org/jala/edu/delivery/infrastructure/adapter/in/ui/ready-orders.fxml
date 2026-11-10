@@ -19,6 +19,7 @@
         <Region HBox.hgrow="ALWAYS"/>
         <Label fx:id="messageLabel" styleClass="message"/>
         <Button fx:id="takeButton" styleClass="primary" text="Tomar Pedido" onAction="#onTake"/>
+        <Button fx:id="startButton" text="En camino" onAction="#onStart"/>
         <Button fx:id="refreshButton" text="Actualizar" onAction="#onRefresh"/>
     </HBox>
 
