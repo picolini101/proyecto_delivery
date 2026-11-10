@@ -12,4 +12,6 @@ public interface ActiveDeliveryPort {
     Optional<ActiveDelivery> findInProgressByCourier(UUID courierId);
 
     void add(ActiveDelivery delivery);
+
+    void update(ActiveDelivery delivery);
 }

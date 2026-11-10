@@ -16,6 +16,7 @@ import org.jala.edu.delivery.application.port.out.DeliveryHistoryPort;
 import org.jala.edu.delivery.application.usecase.GetDeliveryHistoryUseCase;
 import org.jala.edu.delivery.application.usecase.ListCouriersUseCase;
 import org.jala.edu.delivery.application.usecase.ListReadyOrdersUseCase;
+import org.jala.edu.delivery.application.usecase.PickUpDeliveryUseCase;
 import org.jala.edu.delivery.application.usecase.RegisterCourierUseCase;
 import org.jala.edu.delivery.application.usecase.StartDeliveryUseCase;
 import org.jala.edu.delivery.application.usecase.TomarPedidoUseCase;
@@ -114,6 +115,13 @@ public class DeliveryModuleConfiguration {
                                                       ConfirmationCodeGenerator confirmationCodes) {
         return new StartDeliveryUseCase(orderService, userService, currentUserService, activeDeliveries,
                 confirmationCodes);
+    }
+
+    @Bean
+    public PickUpDeliveryUseCase pickUpDeliveryUseCase(UserService userService,
+                                                        CurrentUserService currentUserService,
+                                                        ActiveDeliveryPort activeDeliveries) {
+        return new PickUpDeliveryUseCase(userService, currentUserService, activeDeliveries);
     }
 
     private static CompletedDelivery sampleDelivery(String orderId, String amount, String locality, LocalDate deliveredOn) {

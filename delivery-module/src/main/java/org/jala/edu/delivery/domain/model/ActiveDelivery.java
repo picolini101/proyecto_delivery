@@ -18,4 +18,8 @@ public record ActiveDelivery(UUID orderId, UUID courierId, DeliveryStep step, Co
     public boolean isInProgress() {
         return step == DeliveryStep.ON_THE_WAY || step == DeliveryStep.PICKED_UP;
     }
+
+    public ActiveDelivery withStep(DeliveryStep next) {
+        return new ActiveDelivery(orderId, courierId, next, confirmationCode);
+    }
 }
