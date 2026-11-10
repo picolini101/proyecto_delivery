@@ -91,7 +91,6 @@ class FindCustomerShipmentUseCaseTest {
 
     private UUID startFirstOrder() {
         UUID orderId = orders.findReadyForDelivery().getFirst().orderId();
-        orders.assign(orderId, SampleUsers.COURIER);
         startDelivery.execute(new StartDeliveryCommand(orderId));
         return orderId;
     }

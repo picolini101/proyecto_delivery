@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.util.UUID;
+import org.jala.edu.core.contract.ReadyOrder;
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.contract.UserRole;
 import org.jala.edu.core.domain.exception.ConflictException;
@@ -27,10 +28,9 @@ class StartDeliveryUseCaseTest {
             new FallbackCurrentUserService(UserRole.COURIER), activeDeliveries, () -> code);
 
     @Test
-    void startsAnAssignedOrderAsOnTheWayAndKeepsTheConfirmationCode() {
+    void startsAReadyOrderAsOnTheWayAndKeepsTheConfirmationCode() {
         // Arrange
         UUID orderId = firstReadyOrder();
-        orders.assign(orderId, SampleUsers.COURIER);
 
         // Act
         ActiveDelivery delivery = startDelivery.execute(new StartDeliveryCommand(orderId));
@@ -49,10 +49,8 @@ class StartDeliveryUseCaseTest {
     void rejectsASecondDeliveryWhileOneIsInProgress() {
         // Arrange
         UUID first = firstReadyOrder();
-        orders.assign(first, SampleUsers.COURIER);
         startDelivery.execute(new StartDeliveryCommand(first));
         UUID second = orders.findReadyForDelivery().getFirst().orderId();
-        orders.assign(second, SampleUsers.COURIER);
 
         // Act
         Throwable thrown = catchThrowable(() -> startDelivery.execute(new StartDeliveryCommand(second)));
@@ -60,13 +58,14 @@ class StartDeliveryUseCaseTest {
         // Assert
         assertThat(thrown).isInstanceOf(ConflictException.class)
                 .hasMessage("The courier already has a delivery in progress");
-        orders.markOnTheWay(second);
+        assertThat(orders.findReadyForDelivery()).extracting(ReadyOrder::orderId).contains(second);
     }
 
     @Test
-    void rejectsAnOrderThatWasNotAssignedAndStoresNothing() {
+    void rejectsAnOrderAnotherCourierAlreadyTook() {
         // Arrange
         UUID orderId = firstReadyOrder();
+        orders.assign(orderId, UUID.randomUUID());
 
         // Act
         Throwable thrown = catchThrowable(() -> startDelivery.execute(new StartDeliveryCommand(orderId)));
@@ -80,7 +79,6 @@ class StartDeliveryUseCaseTest {
     void rejectsAUserWhoIsNotAnActiveCourier() {
         // Arrange
         UUID orderId = firstReadyOrder();
-        orders.assign(orderId, SampleUsers.CUSTOMER);
         StartDeliveryUseCase asCustomer = new StartDeliveryUseCase(orders, new FallbackUserService(),
                 new FallbackCurrentUserService(UserRole.CUSTOMER), activeDeliveries, () -> code);
 

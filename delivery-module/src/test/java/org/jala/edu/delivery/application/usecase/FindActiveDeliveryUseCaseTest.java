@@ -33,7 +33,6 @@ class FindActiveDeliveryUseCaseTest {
     void returnsTheShipmentInProgress() {
         // Arrange
         UUID orderId = orders.findReadyForDelivery().getFirst().orderId();
-        orders.assign(orderId, SampleUsers.COURIER);
         startDelivery.execute(new StartDeliveryCommand(orderId));
 
         // Act

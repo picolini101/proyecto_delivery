@@ -15,8 +15,8 @@ import org.jala.edu.delivery.domain.model.ActiveDelivery;
 import org.jala.edu.delivery.domain.model.DeliveryStep;
 
 /**
- * Moves an assigned order to on the way and keeps it as the courier's shipment in progress.
- * The confirmation code is stored now and checked when the courier finishes the delivery.
+ * Takes a ready order for the signed-in courier, moves it to on the way and keeps it as the
+ * shipment in progress. The confirmation code is stored now and checked when the courier finishes.
  */
 public class StartDeliveryUseCase implements UseCase<StartDeliveryCommand, ActiveDelivery> {
 
@@ -46,6 +46,7 @@ public class StartDeliveryUseCase implements UseCase<StartDeliveryCommand, Activ
             throw new ConflictException("The courier already has a delivery in progress");
         }
         UUID customerId = orderService.customerOf(command.orderId());
+        orderService.assign(command.orderId(), courierId);
         orderService.markOnTheWay(command.orderId());
         ActiveDelivery delivery = new ActiveDelivery(command.orderId(), courierId, customerId,
                 DeliveryStep.ON_THE_WAY, confirmationCodes.next());
