@@ -1,6 +1,7 @@
 package org.jala.edu.order.infrastructure.adapter.in.ui;
 
 import java.util.List;
+import java.util.UUID;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -23,9 +24,14 @@ import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
 import org.jala.edu.core.infrastructure.ui.ErrorMessages;
 import org.jala.edu.core.infrastructure.ui.Navigator;
+import org.jala.edu.core.infrastructure.ui.SpringFxmlLoader;
+import org.jala.edu.core.infrastructure.ui.Dialogs;
+import org.jala.edu.order.application.port.in.InputAddressCommand;
 import org.jala.edu.order.application.port.in.StartCheckoutCommand;
 import org.jala.edu.order.application.usecase.*;
+import org.jala.edu.order.application.usecase.orders.InputAddressUseCase;
 import org.jala.edu.order.application.usecase.orders.StartCheckoutUseCase;
+import org.jala.edu.order.domain.model.DeliveryAddress;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -89,6 +95,10 @@ public class NewCartController {
     private final RemoveProductFromCartUseCase removeProductFromCart;
 
     private final StartCheckoutUseCase startCheckout;
+    private final InputAddressUseCase inputAddress;
+    private final SpringFxmlLoader fxmlLoader;
+    private DeliveryAddress deliveryAddress;
+    private UUID lastOrderId;
 
     // Los campos con @FXML son elementos de new-cart.fxml; JavaFX los conecta solos por el nombre (fx:id).
 
@@ -114,6 +124,8 @@ public class NewCartController {
     @FXML private Button showCartButton;
     @FXML private Button tableAddProductButton;
     @FXML private Button emptyAddProductButton;
+    @FXML private Button addAddressButton;
+    @FXML private Label deliveryAddressLabel;
 
     /** Etiqueta para mostrar mensajes de exito o error. */
     @FXML
@@ -132,6 +144,7 @@ public class NewCartController {
      */
     @FXML
     void initialize() {
+        checkoutButton.setDisable(true);
         configureTable();
         BackgroundTasks.run(
                 () -> listCatalogProducts.execute(),
@@ -164,22 +177,55 @@ public class NewCartController {
 
     @FXML
     void onStartCheckout() {
+        if (deliveryAddress == null) {
+            checkoutButton.setDisable(true);
+            return;
+        }
         checkoutButton.setDisable(true);
         StartCheckoutCommand command = new StartCheckoutCommand(currentUserService.currentUser().id());
 
         BackgroundTasks.run(
                 () -> startCheckout.execute(command),
                 orderSummary -> {
+                    lastOrderId = orderSummary.orderId();
                     showMessage("¡Pedido #" + orderSummary.orderId().toString().substring(0, 8)
                             + " iniciado con éxito en estado " + orderSummary.status() + "!", "success");
                     refreshCart();
-                    checkoutButton.setDisable(false);
+                    checkoutButton.setDisable(deliveryAddress == null);
+                    if (deliveryAddress != null) {
+                        saveAddressForOrder(lastOrderId, deliveryAddress);
+                    }
                 },
                 error -> {
                     showError(error, "iniciar la compra");
-                    checkoutButton.setDisable(false);
+                    checkoutButton.setDisable(deliveryAddress == null);
                 }
         );
+    }
+
+    @FXML
+    void onAddAddress() {
+        SpringFxmlLoader.View<InputAddressController> view = fxmlLoader.loadView(OrderViews.ADDRESS);
+        view.controller().prepare(deliveryAddress, this::addressConfirmed);
+        Dialogs.showModal(addAddressButton, "Ingrese la Dirección de Entrega", view.root());
+    }
+
+    private void addressConfirmed(DeliveryAddress address) {
+        deliveryAddress = address;
+        deliveryAddressLabel.setText(address.toString());
+        checkoutButton.setDisable(false);
+        if (lastOrderId != null) {
+            saveAddressForOrder(lastOrderId, address);
+        }
+    }
+
+    private void saveAddressForOrder(UUID orderId, DeliveryAddress address) {
+        InputAddressCommand command = new InputAddressCommand(
+                orderId, currentUserService.currentUser().id(), address.city(), address.avenue(), address.houseNumber());
+        BackgroundTasks.run(
+                () -> inputAddress.execute(command),
+                ignored -> showMessage("Dirección de entrega guardada", "success"),
+                error -> showError(error, "guardar la dirección de entrega"));
     }
 
     private void configureTable() {
