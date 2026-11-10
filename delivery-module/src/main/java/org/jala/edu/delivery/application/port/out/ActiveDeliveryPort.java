@@ -11,6 +11,11 @@ public interface ActiveDeliveryPort {
 
     Optional<ActiveDelivery> findInProgressByCourier(UUID courierId);
 
+    /**
+     * The customer's shipment in progress, or the latest one when none is still open.
+     */
+    Optional<ActiveDelivery> findLatestByCustomer(UUID customerId);
+
     void add(ActiveDelivery delivery);
 
     void update(ActiveDelivery delivery);

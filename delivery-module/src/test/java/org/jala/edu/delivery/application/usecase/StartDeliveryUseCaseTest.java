@@ -38,6 +38,7 @@ class StartDeliveryUseCaseTest {
         // Assert
         assertThat(delivery.orderId()).isEqualTo(orderId);
         assertThat(delivery.courierId()).isEqualTo(SampleUsers.COURIER);
+        assertThat(delivery.customerId()).isEqualTo(SampleUsers.CUSTOMER);
         assertThat(delivery.step()).isEqualTo(DeliveryStep.ON_THE_WAY);
         assertThat(delivery.confirmationCode()).isEqualTo(code);
         assertThat(activeDeliveries.findInProgressByCourier(SampleUsers.COURIER)).contains(delivery);

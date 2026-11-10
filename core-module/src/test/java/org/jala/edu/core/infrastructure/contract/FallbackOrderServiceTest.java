@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import java.util.List;
 import java.util.UUID;
 import org.jala.edu.core.contract.ReadyOrder;
+import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.domain.exception.ConflictException;
 import org.jala.edu.core.domain.exception.NotFoundException;
 import org.junit.jupiter.api.Test;
@@ -81,6 +82,18 @@ class FallbackOrderServiceTest {
     }
 
     @Test
+    void sampleOrdersBelongToTheSampleCustomer() {
+        // Arrange
+        UUID orderId = firstReadyOrder();
+
+        // Act
+        UUID customerId = orderService.customerOf(orderId);
+
+        // Assert
+        assertThat(customerId).isEqualTo(SampleUsers.CUSTOMER);
+    }
+
+    @Test
     void throwsWhenTheOrderDoesNotExist() {
         // Arrange
         UUID unknown = UUID.randomUUID();
@@ -90,6 +103,7 @@ class FallbackOrderServiceTest {
 
         // Assert
         assertThat(thrown).isInstanceOf(NotFoundException.class);
+        assertThat(catchThrowable(() -> orderService.customerOf(unknown))).isInstanceOf(NotFoundException.class);
     }
 
     private UUID firstReadyOrder() {

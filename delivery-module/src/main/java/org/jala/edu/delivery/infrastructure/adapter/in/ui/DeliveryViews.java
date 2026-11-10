@@ -24,6 +24,9 @@ public final class DeliveryViews {
     /** Shipment in progress, with the sequential delivery controls. */
     public static final String SHIPMENT = BASE + "shipment-progress.fxml";
 
+    /** Customer's read-only view of the same shipment. */
+    public static final String CUSTOMER_SHIPMENT = BASE + "customer-shipment.fxml";
+
     private DeliveryViews() {
     }
 

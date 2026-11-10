@@ -12,6 +12,11 @@ public interface OrderService {
     List<ReadyOrder> findReadyForDelivery();
 
     /**
+     * Customer who placed the order. An unknown order id throws {@code NotFoundException}.
+     */
+    UUID customerOf(UUID orderId);
+
+    /**
      * Ready for delivery → Assigned. Fails if another courier already took the order.
      */
     void assign(UUID orderId, UUID courierId);

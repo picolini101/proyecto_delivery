@@ -48,7 +48,8 @@ class DeliveryUiConfigurationTest {
             DeliveryViews.HISTORY,
             DeliveryViews.COURIER_REGISTRATION,
             DeliveryViews.READY_ORDERS,
-            DeliveryViews.SHIPMENT
+            DeliveryViews.SHIPMENT,
+            DeliveryViews.CUSTOMER_SHIPMENT
     })
     void everyDeliveryViewExistsOnTheClasspath(String fxmlPath) {
         // Arrange
@@ -93,5 +94,31 @@ class DeliveryUiConfigurationTest {
         assertThat(fxml).contains("Código de confirmación");
         assertThat(fxml).contains("Cancelar");
         assertThat(fxml).contains("Delegar");
+    }
+
+    @Test
+    void customerShipmentButtonOpensTheCustomerView() {
+        // Act
+        NavigationItem item = configuration.customerShipmentNavigationItem();
+        URL view = DeliveryViews.class.getResource(item.fxmlPath());
+
+        // Assert
+        assertThat(item.title()).isEqualTo("My shipment");
+        assertThat(item.fxmlPath()).isEqualTo(DeliveryViews.CUSTOMER_SHIPMENT);
+        assertThat(view).isNotNull();
+    }
+
+    @Test
+    void customerShipmentDeclaresTheProgressAndTheConfirmationCode() throws Exception {
+        // Arrange
+        URL view = getClass().getResource(DeliveryViews.CUSTOMER_SHIPMENT);
+
+        // Act
+        String fxml = new String(view.openStream().readAllBytes(), StandardCharsets.UTF_8);
+
+        // Assert
+        assertThat(fxml).contains("No hay un envío en curso");
+        assertThat(fxml).contains("Código de confirmación");
+        assertThat(fxml).contains("Actualizar");
     }
 }

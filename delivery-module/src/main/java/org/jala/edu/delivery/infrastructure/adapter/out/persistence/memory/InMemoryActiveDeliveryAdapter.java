@@ -1,5 +1,6 @@
 package org.jala.edu.delivery.infrastructure.adapter.out.persistence.memory;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -20,6 +21,21 @@ public class InMemoryActiveDeliveryAdapter implements ActiveDeliveryPort {
                 .filter(delivery -> delivery.courierId().equals(courierId))
                 .filter(ActiveDelivery::isInProgress)
                 .findFirst();
+    }
+
+    @Override
+    public Optional<ActiveDelivery> findLatestByCustomer(UUID customerId) {
+        List<ActiveDelivery> own = deliveries.stream()
+                .filter(delivery -> delivery.customerId().equals(customerId))
+                .toList();
+        Optional<ActiveDelivery> inProgress = own.stream().filter(ActiveDelivery::isInProgress).findFirst();
+        if (inProgress.isPresent()) {
+            return inProgress;
+        }
+        if (own.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(own.get(own.size() - 1));
     }
 
     @Override

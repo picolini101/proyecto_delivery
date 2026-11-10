@@ -7,6 +7,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jala.edu.core.contract.OrderService;
 import org.jala.edu.core.contract.ReadyOrder;
+import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.domain.exception.ConflictException;
 import org.jala.edu.core.domain.exception.NotFoundException;
 
@@ -19,6 +20,7 @@ public class FallbackOrderService implements OrderService {
     private static final BigDecimal SHIPPING_COST = new BigDecimal("10.00");
 
     private final Map<UUID, ReadyOrder> orders = new ConcurrentHashMap<>();
+    private final Map<UUID, UUID> customers = new ConcurrentHashMap<>();
     private final Map<UUID, Step> steps = new ConcurrentHashMap<>();
 
     public FallbackOrderService() {
@@ -32,6 +34,14 @@ public class FallbackOrderService implements OrderService {
         return orders.values().stream()
                 .filter(order -> steps.get(order.orderId()) == Step.READY)
                 .toList();
+    }
+
+    @Override
+    public UUID customerOf(UUID orderId) {
+        if (!customers.containsKey(orderId)) {
+            throw new NotFoundException("Order not found: " + orderId);
+        }
+        return customers.get(orderId);
     }
 
     @Override
@@ -62,6 +72,7 @@ public class FallbackOrderService implements OrderService {
     private void addReadyOrder(String id, String address) {
         UUID orderId = UUID.fromString(id);
         orders.put(orderId, new ReadyOrder(orderId, address, SHIPPING_COST));
+        customers.put(orderId, SampleUsers.CUSTOMER);
         steps.put(orderId, Step.READY);
     }
 

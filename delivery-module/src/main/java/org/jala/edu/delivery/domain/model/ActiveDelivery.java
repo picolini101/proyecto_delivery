@@ -6,11 +6,13 @@ import java.util.UUID;
 /**
  * A shipment a courier has started and has not closed yet.
  */
-public record ActiveDelivery(UUID orderId, UUID courierId, DeliveryStep step, ConfirmationCode confirmationCode) {
+public record ActiveDelivery(UUID orderId, UUID courierId, UUID customerId, DeliveryStep step,
+                             ConfirmationCode confirmationCode) {
 
     public ActiveDelivery {
         Objects.requireNonNull(orderId, "Order id is required");
         Objects.requireNonNull(courierId, "Courier id is required");
+        Objects.requireNonNull(customerId, "Customer id is required");
         Objects.requireNonNull(step, "Delivery step is required");
         Objects.requireNonNull(confirmationCode, "Confirmation code is required");
     }
@@ -20,6 +22,6 @@ public record ActiveDelivery(UUID orderId, UUID courierId, DeliveryStep step, Co
     }
 
     public ActiveDelivery withStep(DeliveryStep next) {
-        return new ActiveDelivery(orderId, courierId, next, confirmationCode);
+        return new ActiveDelivery(orderId, courierId, customerId, next, confirmationCode);
     }
 }

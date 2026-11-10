@@ -45,9 +45,10 @@ public class StartDeliveryUseCase implements UseCase<StartDeliveryCommand, Activ
         if (activeDeliveries.findInProgressByCourier(courierId).isPresent()) {
             throw new ConflictException("The courier already has a delivery in progress");
         }
+        UUID customerId = orderService.customerOf(command.orderId());
         orderService.markOnTheWay(command.orderId());
-        ActiveDelivery delivery = new ActiveDelivery(command.orderId(), courierId, DeliveryStep.ON_THE_WAY,
-                confirmationCodes.next());
+        ActiveDelivery delivery = new ActiveDelivery(command.orderId(), courierId, customerId,
+                DeliveryStep.ON_THE_WAY, confirmationCodes.next());
         activeDeliveries.add(delivery);
         return delivery;
     }
