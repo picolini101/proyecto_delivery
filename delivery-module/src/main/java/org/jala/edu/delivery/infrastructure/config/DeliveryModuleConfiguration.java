@@ -8,6 +8,8 @@ import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.core.contract.OrderService;
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.contract.UserService;
+import org.jala.edu.delivery.application.port.out.ActiveDeliveryPort;
+import org.jala.edu.delivery.application.port.out.ConfirmationCodeGenerator;
 import org.jala.edu.delivery.application.port.out.CourierAvailabilityPort;
 import org.jala.edu.delivery.application.port.out.CourierRepositoryPort;
 import org.jala.edu.delivery.application.port.out.DeliveryHistoryPort;
@@ -15,8 +17,11 @@ import org.jala.edu.delivery.application.usecase.GetDeliveryHistoryUseCase;
 import org.jala.edu.delivery.application.usecase.ListCouriersUseCase;
 import org.jala.edu.delivery.application.usecase.ListReadyOrdersUseCase;
 import org.jala.edu.delivery.application.usecase.RegisterCourierUseCase;
+import org.jala.edu.delivery.application.usecase.StartDeliveryUseCase;
 import org.jala.edu.delivery.application.usecase.TomarPedidoUseCase;
 import org.jala.edu.delivery.application.usecase.ValidateCourierEligibilityUseCase;
+import org.jala.edu.delivery.infrastructure.adapter.out.code.RandomConfirmationCodeGenerator;
+import org.jala.edu.delivery.infrastructure.adapter.out.persistence.memory.InMemoryActiveDeliveryAdapter;
 import org.jala.edu.delivery.domain.model.CompletedDelivery;
 import org.jala.edu.delivery.infrastructure.adapter.out.persistence.memory.InMemoryCourierAvailabilityAdapter;
 import org.jala.edu.delivery.infrastructure.adapter.out.persistence.memory.InMemoryDeliveryHistoryAdapter;
@@ -90,6 +95,25 @@ public class DeliveryModuleConfiguration {
                                                   CourierAvailabilityPort availability,
                                                   CurrentUserService currentUserService) {
         return new TomarPedidoUseCase(orderService, validateEligibility, availability, currentUserService);
+    }
+
+    @Bean
+    public ActiveDeliveryPort activeDeliveryPort() {
+        return new InMemoryActiveDeliveryAdapter();
+    }
+
+    @Bean
+    public ConfirmationCodeGenerator confirmationCodeGenerator() {
+        return new RandomConfirmationCodeGenerator();
+    }
+
+    @Bean
+    public StartDeliveryUseCase startDeliveryUseCase(OrderService orderService, UserService userService,
+                                                      CurrentUserService currentUserService,
+                                                      ActiveDeliveryPort activeDeliveries,
+                                                      ConfirmationCodeGenerator confirmationCodes) {
+        return new StartDeliveryUseCase(orderService, userService, currentUserService, activeDeliveries,
+                confirmationCodes);
     }
 
     private static CompletedDelivery sampleDelivery(String orderId, String amount, String locality, LocalDate deliveredOn) {
