@@ -16,14 +16,22 @@ class FallbackOrderServiceTest {
     private final FallbackOrderService orderService = new FallbackOrderService();
 
     @Test
-    void startsWithThreeReadyOrders() {
+    void startsWithTheSampleReadyOrders() {
         // Arrange (fresh service)
 
         // Act
         List<ReadyOrder> ready = orderService.findReadyForDelivery();
 
         // Assert
-        assertThat(ready).hasSize(3);
+        assertThat(ready).extracting(ReadyOrder::deliveryAddress).containsExactlyInAnyOrder(
+                "Av. Siempre Viva 742",
+                "Calle Falsa 123",
+                "Plaza Principal 1",
+                "Carrera 7 # 45-10",
+                "Calle 80 # 12-34",
+                "Av. Las Palmas 50",
+                "Diagonal 15 # 90-20",
+                "Carrera 15 # 100-21");
     }
 
     @Test

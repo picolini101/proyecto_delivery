@@ -12,7 +12,7 @@ import org.jala.edu.core.domain.exception.ConflictException;
 import org.jala.edu.core.domain.exception.NotFoundException;
 
 /**
- * Stand-in {@link OrderService} that starts with three orders ready for delivery and enforces the delivery steps
+ * Stand-in {@link OrderService} that starts with sample orders ready for delivery and enforces the delivery steps
  * in memory. State is lost when the application stops.
  */
 public class FallbackOrderService implements OrderService {
@@ -27,6 +27,11 @@ public class FallbackOrderService implements OrderService {
         addReadyOrder("00000000-0000-0000-0000-000000000201", "Av. Siempre Viva 742");
         addReadyOrder("00000000-0000-0000-0000-000000000202", "Calle Falsa 123");
         addReadyOrder("00000000-0000-0000-0000-000000000203", "Plaza Principal 1");
+        addReadyOrder("00000000-0000-0000-0000-000000000204", "Carrera 7 # 45-10");
+        addReadyOrder("00000000-0000-0000-0000-000000000205", "Calle 80 # 12-34");
+        addReadyOrder("00000000-0000-0000-0000-000000000206", "Av. Las Palmas 50");
+        addReadyOrder("00000000-0000-0000-0000-000000000207", "Diagonal 15 # 90-20");
+        addReadyOrder("00000000-0000-0000-0000-000000000208", "Carrera 15 # 100-21");
     }
 
     @Override
