@@ -33,19 +33,19 @@ public class PaymentMethodRepositoryAdapter implements PaymentMethodRepositoryPo
 
     @Override
     public Optional<PaymentMethod> findById(UUID id) {
-        return springDataRepository.findById(id).map(this::toDomain);
+        return springDataRepository.findById(id.toString()).map(this::toDomain);
     }
 
     @Override
     public List<PaymentMethod> findByUserId(UUID userId) {
-        return springDataRepository.findByUserId(userId).stream()
+        return springDataRepository.findByUserIdOrderByCreatedAtAsc(userId.toString()).stream()
                 .map(this::toDomain)
                 .collect(Collectors.toList());
     }
 
     @Override
     public Optional<PaymentMethod> findLastRegisteredByUserId(UUID userId) {
-        return springDataRepository.findByUserId(userId).stream()
+        return springDataRepository.findByUserIdOrderByCreatedAtAsc(userId.toString()).stream()
                 .filter(PaymentMethodEntity::isLastRegistered)
                 .findFirst()
                 .map(this::toDomain);
@@ -53,7 +53,7 @@ public class PaymentMethodRepositoryAdapter implements PaymentMethodRepositoryPo
 
     @Override
     public void clearLastRegisteredFlag(UUID userId) {
-        List<PaymentMethodEntity> list = springDataRepository.findByUserId(userId);
+        List<PaymentMethodEntity> list = springDataRepository.findByUserIdOrderByCreatedAtAsc(userId.toString());
         for (PaymentMethodEntity entity : list) {
             if (entity.isLastRegistered()) {
                 entity.setLastRegistered(false);
@@ -64,26 +64,23 @@ public class PaymentMethodRepositoryAdapter implements PaymentMethodRepositoryPo
 
     private PaymentMethodEntity toEntity(PaymentMethod domain) {
         return new PaymentMethodEntity(
-                domain.getId(),
-                domain.getUserId(),
+                domain.getId().toString(),
+                domain.getUserId().toString(),
                 domain.getAlias().getValue(),
                 domain.getType().name(),
                 domain.getMaskedNumber(),
                 domain.isLastRegistered(),
-                domain.isActive(),
-                null
-        );
+                domain.isActive());
     }
 
     private PaymentMethod toDomain(PaymentMethodEntity entity) {
         return new PaymentMethod(
-                entity.getId(),
-                entity.getUserId(),
+                UUID.fromString(entity.getId()),
+                UUID.fromString(entity.getUserId()),
                 new Alias(entity.getAlias()),
                 PaymentType.valueOf(entity.getType()),
                 entity.getMaskedNumber(),
                 entity.isLastRegistered(),
-                entity.isActive()
-        );
+                entity.isActive());
     }
 }

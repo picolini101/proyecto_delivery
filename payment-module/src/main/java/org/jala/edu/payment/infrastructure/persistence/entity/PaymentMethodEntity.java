@@ -1,18 +1,20 @@
 package org.jala.edu.payment.infrastructure.persistence.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
-import java.util.UUID;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 @Entity
 @Table(name = "pay_payment_methods")
 public class PaymentMethodEntity {
 
     @Id
-    private UUID id;
+    @Column(length = 36, nullable = false, updatable = false)
+    private String id;
 
-    @Column(name = "user_id", nullable = false)
-    private UUID userId;
+    @Column(name = "user_id", length = 36, nullable = false)
+    private String userId;
 
     @Column(name = "alias", nullable = false)
     private String alias;
@@ -29,12 +31,30 @@ public class PaymentMethodEntity {
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
 
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
+
+    @PrePersist
+    void onCreate() {
+        Instant now = Instant.now().truncatedTo(ChronoUnit.MICROS);
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    void onUpdate() {
+        this.updatedAt = Instant.now().truncatedTo(ChronoUnit.MICROS);
+    }
 
     public PaymentMethodEntity() {}
 
-    public PaymentMethodEntity(UUID id, UUID userId, String alias, String type, String maskedNumber, boolean isLastRegistered, boolean isActive, LocalDateTime createdAt) {
+    public PaymentMethodEntity(String id, String userId, String alias, String type, String maskedNumber,
+                               boolean isLastRegistered, boolean isActive) {
         this.id = id;
         this.userId = userId;
         this.alias = alias;
@@ -45,11 +65,11 @@ public class PaymentMethodEntity {
         this.createdAt = createdAt;
     }
 
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public UUID getUserId() { return userId; }
-    public void setUserId(UUID userId) { this.userId = userId; }
+    public String getUserId() { return userId; }
+    public void setUserId(String userId) { this.userId = userId; }
 
     public String getAlias() { return alias; }
     public void setAlias(String alias) { this.alias = alias; }
@@ -66,6 +86,7 @@ public class PaymentMethodEntity {
     public boolean isActive() { return isActive; }
     public void setActive(boolean active) { this.isActive = active; }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public Instant getCreatedAt() { return createdAt; }
+
+    public Instant getUpdatedAt() { return updatedAt; }
 }
