@@ -54,9 +54,12 @@ public class ProcessPaymentUseCase {
 
         if (!userService.isActiveWithRole(
                 command.userId(), UserRole.CUSTOMER)) {
-            return reject(command, "Usuario no autorizado para realizar pagos");
+            return new PaymentResult(
+                    "",
+                    false,
+                    "Usuario no autorizado para realizar pagos"
+            );
         }
-
         if (command.paymentMethodId() == null) {
             return reject(command, "El metodo de pago es obligatorio");
         }
