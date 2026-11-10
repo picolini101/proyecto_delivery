@@ -4,6 +4,7 @@ CREATE TABLE pay_payment_methods (
     alias VARCHAR(100) NOT NULL,
     type VARCHAR(50) NOT NULL,
     masked_number VARCHAR(20) NOT NULL,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
     is_last_registered BOOLEAN NOT NULL DEFAULT FALSE,
     created_at DATETIME(6) NOT NULL,
     updated_at DATETIME(6) NOT NULL,
