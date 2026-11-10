@@ -13,6 +13,7 @@ import org.jala.edu.delivery.application.port.out.ConfirmationCodeGenerator;
 import org.jala.edu.delivery.application.port.out.CourierAvailabilityPort;
 import org.jala.edu.delivery.application.port.out.CourierRepositoryPort;
 import org.jala.edu.delivery.application.port.out.DeliveryHistoryPort;
+import org.jala.edu.delivery.application.usecase.ConfirmDeliveryUseCase;
 import org.jala.edu.delivery.application.usecase.GetDeliveryHistoryUseCase;
 import org.jala.edu.delivery.application.usecase.ListCouriersUseCase;
 import org.jala.edu.delivery.application.usecase.ListReadyOrdersUseCase;
@@ -122,6 +123,13 @@ public class DeliveryModuleConfiguration {
                                                         CurrentUserService currentUserService,
                                                         ActiveDeliveryPort activeDeliveries) {
         return new PickUpDeliveryUseCase(userService, currentUserService, activeDeliveries);
+    }
+
+    @Bean
+    public ConfirmDeliveryUseCase confirmDeliveryUseCase(OrderService orderService, UserService userService,
+                                                          CurrentUserService currentUserService,
+                                                          ActiveDeliveryPort activeDeliveries) {
+        return new ConfirmDeliveryUseCase(orderService, userService, currentUserService, activeDeliveries);
     }
 
     private static CompletedDelivery sampleDelivery(String orderId, String amount, String locality, LocalDate deliveredOn) {
