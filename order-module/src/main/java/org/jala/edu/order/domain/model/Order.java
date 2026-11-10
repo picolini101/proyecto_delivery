@@ -18,7 +18,7 @@ public class Order extends BaseModel<OrderId> {
     private final List<OrderLine> lines;
     private final Money subtotal;
     private OrderStatus status;
-    private String deliveryAddress;
+    private DeliveryAddress deliveryAddress;
     private Money shippingCost;
     private Money total;
 
@@ -55,5 +55,11 @@ public class Order extends BaseModel<OrderId> {
 
     public List<OrderLine> getLines() {
         return Collections.unmodifiableList(lines);
+    }
+
+    /** Associates a validated delivery address with this order. */
+    public void inputDeliveryAddress(DeliveryAddress address) {
+        this.deliveryAddress = Objects.requireNonNull(address, "La dirección de entrega es obligatoria");
+        touch();
     }
 }

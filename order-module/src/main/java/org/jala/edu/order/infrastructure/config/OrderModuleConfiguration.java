@@ -12,6 +12,7 @@ import org.jala.edu.order.application.usecase.DecreaseCartItemQuantityUseCase;
 import org.jala.edu.order.application.usecase.GetCartSummaryUseCase;
 import org.jala.edu.order.application.usecase.IncreaseCartItemQuantityUseCase;
 import org.jala.edu.order.application.usecase.ListCatalogProductsUseCase;
+import org.jala.edu.order.application.usecase.orders.InputAddressUseCase;
 import org.jala.edu.order.application.usecase.RemoveProductFromCartUseCase;
 import org.jala.edu.order.application.usecase.orders.AuthorizePaymentUseCase;
 import org.jala.edu.order.application.usecase.orders.StartCheckoutUseCase;
@@ -73,6 +74,7 @@ public class OrderModuleConfiguration {
         return new StartCheckoutUseCase(users, carts, cartVerifier, orderRepository);
     }
 
+
     /**
      * Adaptador del puerto de pagos (INT-002): traduce el contrato {@link PaymentService} del core.
      */
@@ -88,6 +90,12 @@ public class OrderModuleConfiguration {
     public AuthorizePaymentUseCase authorizePaymentUseCase(UserService users, OrderRepositoryPort orderRepository,
                                                            PaymentGatewayPort paymentGateway) {
         return new AuthorizePaymentUseCase(users, orderRepository, paymentGateway);
+    }
+
+    @Bean
+    public InputAddressUseCase inputAddressUseCase(OrderRepositoryPort orders) {
+        return new InputAddressUseCase(orders);
+
     }
 
 }
