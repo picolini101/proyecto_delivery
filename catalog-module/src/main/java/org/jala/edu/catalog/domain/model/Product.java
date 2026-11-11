@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.ToString;
 import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.core.domain.model.BaseModel;
+import java.util.Locale;
 
 /**
  * Todas las reglas de negocio relativas a un producto válido residen aquí.
@@ -148,6 +149,19 @@ public class Product extends BaseModel<ProductId> {
      */
     public boolean isPurchasable() {
         return isAvailable() && stock > 0;
+    }
+
+    /*
+     Coincidencia de búsqueda del catálogo un texto vacío coincide con todo
+     */
+
+    public boolean matches(String text) {
+        if (text == null || text.isBlank()) {
+            return true;
+        }
+        String needle = text.strip().toLowerCase(Locale.ROOT);
+        return name.toLowerCase(Locale.ROOT).contains(needle)
+                || category.toLowerCase(Locale.ROOT).contains(needle);
     }
 
     private static String requireText(String value, String field) {

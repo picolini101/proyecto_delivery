@@ -13,4 +13,11 @@ public interface ProductRepositoryPort extends CrudRepositoryPort<Product, Produ
     List<Product> findPageOfVisibleProductsByCommerceId(UUID commerceId, int offset, int limit);
     long countVisibleProductsByCommerceId(UUID commerceId);
     long countAvailableProductsByCommerceId(UUID commerceId);
+
+    /// Página de productos visibles del comercio que coinciden con el texto (vacío = todos)
+    List<Product> findPageOfVisibleProductsByCommerceId(
+            UUID commerceId, String searchText, int offset, int limit);
+
+    /// Cantidad de productos visibles del comercio que coinciden con el texto (vacío = todos)
+    long countVisibleProductsByCommerceId(UUID commerceId, String searchText);
 }

@@ -58,7 +58,7 @@ public class ListAvailableProductsUseCase
         }
 
         long totalProducts = productRepository.countVisibleProductsByCommerceId(
-                query.commerceId());
+                query.commerceId(), query.searchText());
 
         long totalAvailableProducts =
             productRepository.countAvailableProductsByCommerceId(query.commerceId());
@@ -77,7 +77,7 @@ public class ListAvailableProductsUseCase
 
         List<CatalogProduct> products = productRepository
                 .findPageOfVisibleProductsByCommerceId(
-                        query.commerceId(), offset, pageSize)
+                        query.commerceId(), query.searchText(), offset, pageSize)
                 .stream()
                 .map(ListAvailableProductsUseCase::toDto)
                 .toList();

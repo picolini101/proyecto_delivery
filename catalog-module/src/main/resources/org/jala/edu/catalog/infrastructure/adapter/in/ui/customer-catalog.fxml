@@ -8,6 +8,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.TextField?>
 
 <!-- Catálogo de un comercio visto por el cliente: tarjetas con imagen, nombre, categoría y precio (solo lectura) -->
 <VBox styleClass="page"
@@ -18,6 +19,7 @@
     <HBox styleClass="toolbar">
         <Label styleClass="page-title" text="Catalog"/>
         <ComboBox fx:id="commerceSelector" promptText="Select a commerce"/>
+        <TextField fx:id="searchField" promptText="Search by name or category" prefColumnCount="20"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Label fx:id="messageLabel" styleClass="message"/>
         <Button fx:id="refreshButton" text="Refresh" onAction="#onRefresh"/>

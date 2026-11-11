@@ -32,6 +32,11 @@ class ListAvailableProductsUseCaseTest {
             new ListAvailableProductsUseCase(
                     productRepository, commerceRepository, PAGE_SIZE);
 
+    private CatalogProductPage search(Commerce target, int page, String text) {
+        return useCase.execute(
+                new ListAvailableProductsQuery(target.getId().value(), page, text));
+    }
+
     private Commerce commerce;
 
     @BeforeEach
@@ -235,5 +240,110 @@ class ListAvailableProductsUseCaseTest {
                 owner.getId().value(), name, category, new BigDecimal(price));
         product.adjustStock(stock);
         return productRepository.save(product);
+    }
+
+    @Test
+    void filtersByProductName() {
+        saveProduct(commerce, "Pizza", "Food", "50.00", 10);
+        saveProduct(commerce, "Soda", "Drinks", "5.00", 10);
+
+        assertThat(search(commerce, 1, "piz").products())
+                .extracting(CatalogProduct::name)
+                .containsExactly("Pizza");
+    }
+
+    @Test
+    void filtersByCategory() {
+        saveProduct(commerce, "Pizza", "Food", "50.00", 10);
+        saveProduct(commerce, "Soda", "Drinks", "5.00", 10);
+        saveProduct(commerce, "Burger", "Food", "30.00", 10);
+
+        assertThat(search(commerce, 1, "food").products())
+                .extracting(CatalogProduct::name)
+                .containsExactly("Pizza", "Burger");
+    }
+
+    @Test
+    void ignoresCaseWhenSearching() {
+        saveProduct(commerce, "Pizza", "Food", "50.00", 10);
+
+        assertThat(search(commerce, 1, "PIZZA").products()).hasSize(1);
+    }
+
+    @Test
+    void showsTheWholeCatalogWhenTheTextIsBlank() {
+        saveProduct(commerce, "Pizza", "Food", "50.00", 10);
+        saveProduct(commerce, "Soda", "Drinks", "5.00", 10);
+
+        assertThat(search(commerce, 1, "  ").products()).hasSize(2);
+        assertThat(search(commerce, 1, null).products()).hasSize(2);
+    }
+
+    @Test
+    void returnsAnEmptyPageWhenNothingMatches() {
+        saveProduct(commerce, "Pizza", "Food", "50.00", 10);
+
+        CatalogProductPage result = search(commerce, 1, "sushi");
+
+        assertThat(result.products()).isEmpty();
+        assertThat(result.totalProducts()).isZero();
+        assertThat(result.totalPages()).isZero();
+    }
+
+    @Test
+    void filtersTheWholeCatalogBeforePaginating() {
+        saveProduct(commerce, "Pizza Margarita", "Food", "50.00", 10);
+        saveProduct(commerce, "Pizza Hawaiana", "Food", "55.00", 10);
+        saveProduct(commerce, "Pizza Pepperoni", "Food", "60.00", 10);
+        saveProduct(commerce, "Soda", "Drinks", "5.00", 10);
+        saveProduct(commerce, "Agua", "Drinks", "3.00", 10);
+
+        CatalogProductPage page2 = search(commerce, 2, "pizza");
+
+        assertThat(page2.products())
+                .extracting(CatalogProduct::name)
+                .containsExactly("Pizza Pepperoni");
+        assertThat(page2.totalProducts()).isEqualTo(3);
+        assertThat(page2.totalPages()).isEqualTo(2);
+    }
+
+    @Test
+    void keepsSoldOutProductsThatMatch() {
+        saveProduct(commerce, "Pizza", "Food", "50.00", 0);
+
+        CatalogProductPage result = search(commerce, 1, "pizza");
+
+        assertThat(result.products()).hasSize(1);
+        assertThat(result.products().getFirst().available()).isFalse();
+    }
+
+    @Test
+    void hidesDisabledProductsEvenWhenTheyMatch() {
+        Product product = saveProduct(commerce, "Pizza", "Food", "50.00", 10);
+        product.disable();
+        productRepository.save(product);
+
+        assertThat(search(commerce, 1, "pizza").products()).isEmpty();
+    }
+
+    @Test
+    void onlySearchesInTheRequestedCommerce() {
+        Commerce other = commerceRepository.save(CatalogFixtures.activeCommerce("Other Commerce"));
+        saveProduct(commerce, "Pizza", "Food", "50.00", 10);
+        saveProduct(other, "Pizza Napolitana", "Food", "60.00", 10);
+
+        assertThat(search(commerce, 1, "pizza").products())
+                .extracting(CatalogProduct::name)
+                .containsExactly("Pizza");
+    }
+
+    @Test
+    void throwsExceptionWhenThePageIsBeyondTheFilteredResults() {
+        saveProduct(commerce, "Pizza", "Food", "50.00", 10);
+        saveProduct(commerce, "Soda", "Drinks", "5.00", 10);
+        saveProduct(commerce, "Burger", "Food", "30.00", 10);
+
+        assertThatThrownBy(() -> search(commerce, 2, "pizza"))
+                .isInstanceOf(PageNotFoundException.class);
     }
 }
