@@ -28,7 +28,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 class EnableCommerceUseCaseTest {
 
     private static final String NO_PRODUCT_MESSAGE =
-            "A commerce needs at least one available product to be enabled";
+            "No se puede habilitar el comercio se necesita al menos un producto disponible";
 
     private final InMemoryCommerceRepositoryAdapter commerceRepository =
             new InMemoryCommerceRepositoryAdapter();
