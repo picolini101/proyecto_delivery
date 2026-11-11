@@ -9,6 +9,7 @@ import java.util.function.Function;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -17,11 +18,13 @@ import javafx.scene.layout.HBox;
 import lombok.RequiredArgsConstructor;
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
+import org.jala.edu.core.infrastructure.ui.EnumLabelConverter;
 import org.jala.edu.core.infrastructure.ui.ErrorMessages;
 import org.jala.edu.delivery.application.port.in.GetDeliveryHistoryQuery;
 import org.jala.edu.delivery.application.usecase.GetDeliveryHistoryUseCase;
 import org.jala.edu.delivery.domain.model.CompletedDelivery;
 import org.jala.edu.delivery.domain.model.DeliveryHistory;
+import org.jala.edu.delivery.domain.model.DeliverySortOrder;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -45,6 +48,9 @@ public class DeliveryHistoryController {
 
     @FXML
     private TextField courierIdField;
+
+    @FXML
+    private ComboBox<DeliverySortOrder> sortOrderBox;
 
     @FXML
     private Button consultButton;
@@ -80,6 +86,11 @@ public class DeliveryHistoryController {
         courierIdField.setText(SampleUsers.COURIER.toString());
         consultButton.disableProperty().bind(isBlank(courierIdField));
 
+        sortOrderBox.setConverter(new EnumLabelConverter<>(DeliverySortOrder.class));
+        sortOrderBox.getItems().setAll(DeliverySortOrder.values());
+        sortOrderBox.setValue(DeliverySortOrder.MOST_RECENT);
+        sortOrderBox.valueProperty().addListener((observable, previous, current) -> onConsult());
+
         showTotal(BigDecimal.ZERO);
         onConsult();
     }
@@ -94,9 +105,10 @@ public class DeliveryHistoryController {
             return;
         }
 
+        GetDeliveryHistoryQuery query = new GetDeliveryHistoryQuery(courierId, sortOrderBox.getValue());
         searchBar.setDisable(true);
         BackgroundTasks.run(
-                () -> getDeliveryHistoryUseCase.execute(new GetDeliveryHistoryQuery(courierId)),
+                () -> getDeliveryHistoryUseCase.execute(query),
                 history -> {
                     show(history);
                     searchBar.setDisable(false);
