@@ -1,6 +1,5 @@
 package org.jala.edu.delivery.application.usecase;
 
-import java.util.Comparator;
 import java.util.List;
 import org.jala.edu.core.application.usecase.UseCase;
 import org.jala.edu.core.contract.UserRole;
@@ -22,7 +21,8 @@ public class GetDeliveryHistoryUseCase implements UseCase<GetDeliveryHistoryQuer
     }
 
     /**
-     * Returns the courier's finished deliveries, most recent first. A courier without deliveries gets an empty history.
+     * Returns the courier's finished deliveries in the order the query asks for (most recent first by default). A
+     * courier without deliveries gets an empty history.
      *
      * @throws NotAuthorizedException if the user is not an active courier
      */
@@ -32,7 +32,7 @@ public class GetDeliveryHistoryUseCase implements UseCase<GetDeliveryHistoryQuer
             throw new NotAuthorizedException(query.courierId());
         }
         List<CompletedDelivery> deliveries = deliveryHistory.findByCourierId(query.courierId()).stream()
-                .sorted(Comparator.comparing(CompletedDelivery::deliveredOn).reversed())
+                .sorted(query.sortOrder().comparator())
                 .toList();
         return new DeliveryHistory(deliveries);
     }
