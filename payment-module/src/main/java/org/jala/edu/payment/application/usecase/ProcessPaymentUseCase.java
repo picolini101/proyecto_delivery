@@ -72,6 +72,7 @@ public class ProcessPaymentUseCase {
         String reference = paymentTransactionPort.recordApproved(
                 command.orderId(),
                 command.userId(),
+                command.paymentMethodId(),
                 amount
         );
 
@@ -86,6 +87,7 @@ public class ProcessPaymentUseCase {
             paymentTransactionPort.recordRejected(
                     command.orderId(),
                     command.userId(),
+                    command.paymentMethodId(),
                     command.amount(),
                     reason
             );

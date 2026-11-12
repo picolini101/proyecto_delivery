@@ -60,8 +60,12 @@ class ProcessPaymentUseCaseTest {
         PaymentResult result = useCase.execute(command);
 
         assertFalse(result.approved());
+
         verify(transactionPort).recordRejected(
-                isNull(), eq(userId), any(BigDecimal.class),
+                isNull(),
+                eq(userId),
+                eq(paymentMethodId),
+                any(BigDecimal.class),
                 eq("El pedido es obligatorio"));
     }
 
@@ -75,8 +79,12 @@ class ProcessPaymentUseCaseTest {
         PaymentResult result = useCase.execute(command);
 
         assertFalse(result.approved());
+
         verify(transactionPort).recordRejected(
-                eq(orderId), eq(userId), eq(BigDecimal.ZERO),
+                eq(orderId),
+                eq(userId),
+                eq(paymentMethodId),
+                eq(BigDecimal.ZERO),
                 eq("El monto debe ser mayor a cero"));
     }
 
@@ -90,7 +98,8 @@ class ProcessPaymentUseCaseTest {
         PaymentResult result = useCase.execute(command);
 
         assertFalse(result.approved());
-        assertEquals("El monto excede el limite permitido",
+        assertEquals(
+                "El monto excede el limite permitido",
                 result.reason());
     }
 
@@ -107,8 +116,11 @@ class ProcessPaymentUseCaseTest {
         PaymentResult result = useCase.execute(command);
 
         assertFalse(result.approved());
-        assertEquals("Usuario no autorizado para realizar pagos",
+        assertEquals(
+                "Usuario no autorizado para realizar pagos",
                 result.reason());
+
+        verifyNoInteractions(transactionPort);
     }
 
     @Test
@@ -124,8 +136,10 @@ class ProcessPaymentUseCaseTest {
         PaymentResult result = useCase.execute(command);
 
         assertFalse(result.approved());
-        assertEquals("El metodo de pago es obligatorio",
+        assertEquals(
+                "El metodo de pago es obligatorio",
                 result.reason());
+
         verifyNoInteractions(methodPort);
     }
 
@@ -145,11 +159,12 @@ class ProcessPaymentUseCaseTest {
         PaymentResult result = useCase.execute(command);
 
         assertFalse(result.approved());
-        assertEquals("Metodo de pago invalido o inactivo",
+        assertEquals(
+                "Metodo de pago invalido o inactivo",
                 result.reason());
 
         verify(transactionPort, never()).recordApproved(
-                any(), any(), any());
+                any(), any(), any(), any());
     }
 
     @Test
@@ -161,7 +176,10 @@ class ProcessPaymentUseCaseTest {
                 userId, paymentMethodId)).thenReturn(true);
 
         when(transactionPort.recordApproved(
-                eq(orderId), eq(userId), any(BigDecimal.class)))
+                eq(orderId),
+                eq(userId),
+                eq(paymentMethodId),
+                any(BigDecimal.class)))
                 .thenReturn("PAY-001");
 
         ProcessPaymentCommand command =
@@ -175,9 +193,12 @@ class ProcessPaymentUseCaseTest {
         assertEquals("PAY-001", result.paymentReference());
 
         verify(transactionPort).recordApproved(
-                eq(orderId), eq(userId), any(BigDecimal.class));
+                eq(orderId),
+                eq(userId),
+                eq(paymentMethodId),
+                any(BigDecimal.class));
 
         verify(transactionPort, never()).recordRejected(
-                any(), any(), any(), anyString());
+                any(), any(), any(), any(), anyString());
     }
 }
