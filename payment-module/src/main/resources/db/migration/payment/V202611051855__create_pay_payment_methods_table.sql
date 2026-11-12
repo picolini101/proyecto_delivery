@@ -1,5 +1,5 @@
 CREATE TABLE pay_payment_methods (
-    id VARCHAR(36) NOT NULL PRIMARY KEY,
+    id VARCHAR(36) NOT NULL,
     user_id VARCHAR(36) NOT NULL,
     alias VARCHAR(100) NOT NULL,
     type VARCHAR(50) NOT NULL,
