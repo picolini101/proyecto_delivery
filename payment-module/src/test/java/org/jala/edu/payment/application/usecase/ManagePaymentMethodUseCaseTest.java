@@ -6,6 +6,7 @@ import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.payment.application.port.in.RegisterPaymentMethodCommand;
 import org.jala.edu.payment.application.port.out.PaymentMethodRepositoryPort;
 import org.jala.edu.payment.domain.model.PaymentMethod;
+import org.jala.edu.payment.domain.model.Alias;
 import org.jala.edu.payment.domain.model.PaymentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -44,17 +45,17 @@ class ManagePaymentMethodUseCaseTest {
     @Test
     @DisplayName("CA1 & CA2: Debe registrar un método de pago correctamente cuando el usuario está autorizado")
     void shouldRegisterPaymentMethodSuccessfully() {
-        // Arrange
+        // Preparación.
         RegisterPaymentMethodCommand command = new RegisterPaymentMethodCommand(
                 userId, "Mi Tarjeta Principal", "TARJETA", "4532123456789012"
         );
         when(userService.isActiveWithRole(userId, UserRole.CUSTOMER)).thenReturn(true);
         when(repository.save(any(PaymentMethod.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // Act
+        // Ejuecución.
         PaymentMethod result = useCase.registerPaymentMethod(command);
 
-        // Assert
+        // Verificación.
         assertNotNull(result);
         assertEquals(userId, result.getUserId());
         assertEquals("Mi Tarjeta Principal", result.getAlias().getValue());
@@ -71,13 +72,13 @@ class ManagePaymentMethodUseCaseTest {
     @Test
     @DisplayName("CA4: Debe lanzar DomainException cuando el usuario no está activo o no tiene rol CUSTOMER")
     void shouldThrowExceptionWhenUserIsNotAuthorized() {
-        // Arrange
+        // Preparación.
         RegisterPaymentMethodCommand command = new RegisterPaymentMethodCommand(
                 userId, "Alias Valido", "TARJETA", "1234"
         );
         when(userService.isActiveWithRole(userId, UserRole.CUSTOMER)).thenReturn(false);
 
-        // Act & Assert
+        // Ejecución y Verificación.
         DomainException exception = assertThrows(DomainException.class, () ->
                 useCase.registerPaymentMethod(command)
         );
@@ -89,13 +90,13 @@ class ManagePaymentMethodUseCaseTest {
     @Test
     @DisplayName("CA3: Debe lanzar DomainException cuando el tipo de pago es inválido")
     void shouldThrowExceptionWhenPaymentTypeIsInvalid() {
-        // Arrange
+        // Preparación.
         RegisterPaymentMethodCommand command = new RegisterPaymentMethodCommand(
                 userId, "Alias Valido", "PAYPAL_INVALIDO", "1234"
         );
         when(userService.isActiveWithRole(userId, UserRole.CUSTOMER)).thenReturn(true);
 
-        // Act & Assert
+        // Ejecución y Verificación.
         DomainException exception = assertThrows(DomainException.class, () ->
                 useCase.registerPaymentMethod(command)
         );
@@ -107,13 +108,13 @@ class ManagePaymentMethodUseCaseTest {
     @Test
     @DisplayName("CA3: Debe lanzar DomainException cuando el alias es nulo o vacío")
     void shouldThrowExceptionWhenAliasIsEmpty() {
-        // Arrange
+        // Preparación.
         RegisterPaymentMethodCommand command = new RegisterPaymentMethodCommand(
                 userId, "  ", "TRANSFERENCIA", "1234"
         );
         when(userService.isActiveWithRole(userId, UserRole.CUSTOMER)).thenReturn(true);
 
-        // Act & Assert
+        // Ejecución y Verificación.
         assertThrows(DomainException.class, () -> useCase.registerPaymentMethod(command));
         verify(repository, never()).save(any());
     }
@@ -121,15 +122,46 @@ class ManagePaymentMethodUseCaseTest {
     @Test
     @DisplayName("CA4: Debe listar métodos de pago cuando el usuario es CUSTOMER autorizado")
     void shouldListPaymentMethodsSuccessfully() {
-        // Arrange
+        // Preparación.
         when(userService.isActiveWithRole(userId, UserRole.CUSTOMER)).thenReturn(true);
         when(repository.findByUserId(userId)).thenReturn(List.of());
 
-        // Act
+        // Ejecución.
         List<PaymentMethod> result = useCase.listPaymentMethods(userId);
 
-        // Assert
+        // Verificación.
         assertNotNull(result);
         verify(repository).findByUserId(userId);
+    }
+
+    @Test
+    @DisplayName("CA1: Debe lanzar DomainException cuando el alias ya existe para el usuario")
+    void shouldThrowExceptionWhenAliasIsDuplicated() {
+        // Preparación.
+        PaymentMethod existing = PaymentMethod.createNew(
+                userId, new Alias("Mi Tarjeta"), PaymentType.TARJETA, "1111");
+        RegisterPaymentMethodCommand command = new RegisterPaymentMethodCommand(
+                userId, "mi tarjeta", "TRANSFERENCIA", "2222");
+        when(userService.isActiveWithRole(userId, UserRole.CUSTOMER)).thenReturn(true);
+        when(repository.findByUserId(userId)).thenReturn(List.of(existing));
+
+        // Ejecución y Validación.
+        DomainException exception = assertThrows(DomainException.class,
+                () -> useCase.registerPaymentMethod(command));
+
+        assertEquals("Ya tienes un método de pago con ese alias", exception.getMessage());
+        verify(repository, never()).clearLastRegisteredFlag(any());
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("CA4: Debe lanzar DomainException al listar si el usuario no está autorizado")
+    void shouldThrowExceptionWhenListingWithUnauthorizedUser() {
+        // Preparación.
+        when(userService.isActiveWithRole(userId, UserRole.CUSTOMER)).thenReturn(false);
+
+        // Ejecución y Validación
+        assertThrows(DomainException.class, () -> useCase.listPaymentMethods(userId));
+        verify(repository, never()).findByUserId(any());
     }
 }
