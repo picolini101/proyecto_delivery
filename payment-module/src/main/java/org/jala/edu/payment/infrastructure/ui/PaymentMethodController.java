@@ -10,6 +10,8 @@ import org.jala.edu.payment.domain.model.PaymentMethod;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.jala.edu.core.contract.CurrentUser;
+import java.util.Optional;
 
 import java.util.UUID;
 
@@ -42,9 +44,12 @@ public class PaymentMethodController {
     private void handleSave() {
         try {
             // El usuario se lee al pulsar el botón, no en una constante ni en el constructor
-            UUID userId = currentUserService.currentUser().id();
+            Optional<UUID> userId = sessionUserId();
+            if (userId.isEmpty()) {
+                return;
+            }
             RegisterPaymentMethodCommand command = new RegisterPaymentMethodCommand(
-                    userId,
+                    userId.get(),
                     aliasField.getText(),
                     typeComboBox.getValue(),
                     numberField.getText()
@@ -62,8 +67,11 @@ public class PaymentMethodController {
     private void loadPaymentMethods() {
         paymentListView.getItems().clear();
         try {
-            UUID userId = currentUserService.currentUser().id();
-            for (PaymentMethod pm : useCase.listPaymentMethods(userId)) {
+            Optional<UUID> userId = sessionUserId();
+            if (userId.isEmpty()) {
+                return;
+            }
+            for (PaymentMethod pm : useCase.listPaymentMethods(userId.get())) {
                 String item = pm.getAlias().getValue() + " (" + pm.getType() + ") - " + pm.getMaskedNumber();
                 if (pm.isLastRegistered()) {
                     item += " [Último Registrado]";
@@ -80,5 +88,14 @@ public class PaymentMethodController {
     private void clearFields() {
         aliasField.clear();
         numberField.clear();
+    }
+
+    // Devuelve el id del usuario en sesión; si no hay sesión, lo informa en pantalla y devuelve vacío
+    private Optional<UUID> sessionUserId() {
+        Optional<UUID> userId = currentUserService.findCurrentUser().map(CurrentUser::id);
+        if (userId.isEmpty()) {
+            statusLabel.setText("Error: No hay una sesión activa. Inicia sesión de nuevo.");
+        }
+        return userId;
     }
 }
