@@ -45,6 +45,13 @@ public class ManagePaymentMethodUseCase {
 
         Alias alias = new Alias(command.getAlias());
 
+        // CA1: el alias debe ser único entre los métodos del usuario (sin distinguir mayúsculas)
+        boolean aliasTaken = repository.findByUserId(command.getUserId()).stream()
+                .anyMatch(existing -> existing.getAlias().getValue().equalsIgnoreCase(alias.getValue()));
+        if (aliasTaken) {
+            throw new DomainException("Ya tienes un método de pago con ese alias");
+        }
+
         // CA2 (D-04): Desmarcar el flag previo
         repository.clearLastRegisteredFlag(command.getUserId());
 
