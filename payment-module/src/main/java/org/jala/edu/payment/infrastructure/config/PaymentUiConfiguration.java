@@ -13,8 +13,7 @@ import org.springframework.core.annotation.Order;
 
 public class PaymentUiConfiguration {
 
-    public static final String MAIN_VIEW = "/org/jala/edu/payment/infrastructure/adapter/in/ui/payment-main.fxml";
-
+    public static final String MAIN_VIEW = "/org/jala/edu/payment/infrastructure/adapter/in/ui/payment-home.fxml";
     @Bean
     @Order(500)
     public NavigationItem paymentNavigationItem() {
