@@ -8,6 +8,7 @@ import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.core.contract.OrderService;
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.contract.UserService;
+import org.jala.edu.delivery.application.port.out.CourierAvailabilityPort;
 import org.jala.edu.delivery.application.port.out.CourierRepositoryPort;
 import org.jala.edu.delivery.application.port.out.DeliveryHistoryPort;
 import org.jala.edu.delivery.application.usecase.GetDeliveryHistoryUseCase;
@@ -15,7 +16,9 @@ import org.jala.edu.delivery.application.usecase.ListCouriersUseCase;
 import org.jala.edu.delivery.application.usecase.ListReadyOrdersUseCase;
 import org.jala.edu.delivery.application.usecase.RegisterCourierUseCase;
 import org.jala.edu.delivery.application.usecase.TomarPedidoUseCase;
+import org.jala.edu.delivery.application.usecase.ValidateCourierEligibilityUseCase;
 import org.jala.edu.delivery.domain.model.CompletedDelivery;
+import org.jala.edu.delivery.infrastructure.adapter.out.persistence.memory.InMemoryCourierAvailabilityAdapter;
 import org.jala.edu.delivery.infrastructure.adapter.out.persistence.memory.InMemoryDeliveryHistoryAdapter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -67,10 +70,26 @@ public class DeliveryModuleConfiguration {
         return new ListReadyOrdersUseCase(orderService, userService, currentUserService);
     }
 
+    /**
+     * Availability only has an in-memory adapter, so there is nothing to switch between. Every courier starts available.
+     */
     @Bean
-    public TomarPedidoUseCase tomarPedidoUseCase(OrderService orderService, UserService userService,
+    public CourierAvailabilityPort courierAvailabilityPort() {
+        return new InMemoryCourierAvailabilityAdapter();
+    }
+
+    @Bean
+    public ValidateCourierEligibilityUseCase validateCourierEligibilityUseCase(UserService userService,
+                                                                               CourierAvailabilityPort availability) {
+        return new ValidateCourierEligibilityUseCase(userService, availability);
+    }
+
+    @Bean
+    public TomarPedidoUseCase tomarPedidoUseCase(OrderService orderService,
+                                                  ValidateCourierEligibilityUseCase validateEligibility,
+                                                  CourierAvailabilityPort availability,
                                                   CurrentUserService currentUserService) {
-        return new TomarPedidoUseCase(orderService, userService, currentUserService);
+        return new TomarPedidoUseCase(orderService, validateEligibility, availability, currentUserService);
     }
 
     private static CompletedDelivery sampleDelivery(String orderId, String amount, String locality, LocalDate deliveredOn) {
