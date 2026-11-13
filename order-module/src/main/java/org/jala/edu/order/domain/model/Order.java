@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.ToString;
 import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.core.domain.model.BaseModel;
+import org.jala.edu.order.domain.exception.InvalidStateTransitionException;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -60,6 +61,27 @@ public class Order extends BaseModel<OrderId> {
     /** Associates a validated delivery address with this order. */
     public void inputDeliveryAddress(DeliveryAddress address) {
         this.deliveryAddress = Objects.requireNonNull(address, "La dirección de entrega es obligatoria");
+        touch();
+    }
+
+    public void transitionTo(OrderStatus newStatus, String reason) {
+        if (this.status.isFinal()) {
+            throw new InvalidStateTransitionException(
+                    "No se puede cambiar el estado de un pedido finalizado (" + this.status + ")."
+            );
+        }
+        // Criterio 2: Si la transición no está permitida por la tabla, rechazar
+        if (!this.status.canTransitionTo(newStatus)) {
+            throw new InvalidStateTransitionException(
+                    "Transición inválida: no se permite pasar de " + this.status + " a " + newStatus + "."
+            );
+        }
+        if (newStatus == OrderStatus.CANCELLED) {
+            if (reason == null || reason.trim().isEmpty()) {
+                throw new DomainException("El motivo de cancelación es obligatorio.");
+            }
+        }
+        this.status = newStatus;
         touch();
     }
 }
