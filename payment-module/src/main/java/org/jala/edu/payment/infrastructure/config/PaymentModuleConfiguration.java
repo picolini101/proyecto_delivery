@@ -25,4 +25,9 @@ public class PaymentModuleConfiguration {
             PaymentTransactionRepositoryPort transactionRepository, UserService userService) {
         return new ManagePaymentHistoryUseCase(transactionRepository, userService);
     }
+
+    @Bean
+    public SamplePaymentMethodsLoader samplePaymentMethodsLoader(PaymentMethodRepositoryPort repository) {
+        return new SamplePaymentMethodsLoader(repository);
+    }
 }
