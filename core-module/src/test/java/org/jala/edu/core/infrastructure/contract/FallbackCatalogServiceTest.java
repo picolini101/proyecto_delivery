@@ -85,6 +85,30 @@ class FallbackCatalogServiceTest {
     }
 
     @Test
+    void listsOnlyTheProductsWithStock() {
+        // Arrange (fresh service: pizza with stock, empanada sold out)
+
+        // Act
+        List<ProductInfo> available = catalogService.findAvailableProducts();
+
+        // Assert
+        assertThat(available).extracting(ProductInfo::productId).containsExactly(SampleCatalog.PIZZA);
+        assertThat(available.get(0).commerceId()).isEqualTo(SampleCatalog.COMMERCE);
+    }
+
+    @Test
+    void aProductLeavesTheListWhenItsStockRunsOut() {
+        // Arrange
+        catalogService.reserveStock(SampleCatalog.PIZZA, SampleCatalog.PIZZA_STOCK);
+
+        // Act
+        List<ProductInfo> available = catalogService.findAvailableProducts();
+
+        // Assert
+        assertThat(available).isEmpty();
+    }
+
+    @Test
     void servesTheSampleCatalogData() {
         // Arrange
         UUID pizza = SampleCatalog.PIZZA;
