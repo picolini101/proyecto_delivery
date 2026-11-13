@@ -1,5 +1,6 @@
 package org.jala.edu.core.infrastructure.contract;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,6 +42,14 @@ public class FallbackCatalogService implements CatalogService {
     @Override
     public Optional<ProductInfo> findProduct(UUID productId) {
         return Optional.ofNullable(PRODUCTS.get(productId));
+    }
+
+    @Override
+    public List<ProductInfo> findAvailableProducts() {
+        return PRODUCTS.values().stream()
+                .filter(product -> isAvailable(product.productId(), 1))
+                .sorted(Comparator.comparing(ProductInfo::name))
+                .toList();
     }
 
     @Override

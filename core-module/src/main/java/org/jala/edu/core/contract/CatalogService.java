@@ -5,9 +5,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Product lookup and stock offered by {@code catalog-module}; {@code order-module} uses it to build and confirm
- * orders and to show each commerce its own orders. The stock operations throw {@code NotFoundException} for an
- * unknown product id.
+ * Product lookup and stock offered by {@code catalog-module}; {@code order-module} uses it to list the products a
+ * customer can add to the cart, to build and confirm orders and to show each commerce its own orders. The stock
+ * operations throw {@code NotFoundException} for an unknown product id.
  */
 public interface CatalogService {
 
@@ -15,6 +15,18 @@ public interface CatalogService {
      * @return the product's commerce, name and current price, or empty if no product has that id
      */
     Optional<ProductInfo> findProduct(UUID productId);
+
+    /**
+     * The products a customer can add to the cart: those available in an active commerce with stock left, as in
+     * {@link #isAvailable(UUID, int)} with quantity 1. Each one carries its commerce, name and current price.
+     * The default returns no products, so an implementation written before this method keeps compiling until it
+     * overrides it.
+     *
+     * @return the available products, empty if there are none
+     */
+    default List<ProductInfo> findAvailableProducts() {
+        return List.of();
+    }
 
     /**
      * A product is available when it is marked available, its commerce is active and its stock covers the quantity.
