@@ -22,6 +22,7 @@ import org.jala.edu.core.domain.exception.ConflictException;
 import org.jala.edu.core.domain.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import java.util.List;
 
 class CatalogServiceAdapterTest {
 
@@ -210,5 +211,100 @@ class CatalogServiceAdapterTest {
         assertThat(catalogService.findCommerceIdsByMerchant(SampleUsers.MERCHANT))
                 .containsExactly(SampleCatalog.COMMERCE);
         assertThat(catalogService.findCommerceIdsByMerchant(UUID.randomUUID())).isEmpty();
+    }
+
+
+    @Test
+    void listsAnAvailableProductWithItsCommerceNameAndPrice() {
+        // Act
+        List<ProductInfo> result = catalogService.findAvailableProducts();
+
+        // Assert
+        assertThat(result).hasSize(1);
+        ProductInfo listed = result.get(0);
+        assertThat(listed.productId()).isEqualTo(product.getId().value());
+        assertThat(listed.commerceId()).isEqualTo(SampleCatalog.COMMERCE);
+        assertThat(listed.name()).isEqualTo("Pizza");
+        assertThat(listed.price()).isEqualByComparingTo("50.00");
+    }
+
+    @Test
+    void doesNotListASoldOutProduct() {
+        // Arrange
+        product.adjustStock(0);
+        repository.save(product);
+
+        // Act
+        List<ProductInfo> result = catalogService.findAvailableProducts();
+
+        // Assert
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void doesNotListADisabledProduct() {
+        // Arrange
+        product.disable();
+        repository.save(product);
+
+        // Act
+        List<ProductInfo> result = catalogService.findAvailableProducts();
+
+        // Assert
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void doesNotListTheProductsOfAnInactiveCommerce() {
+        // Arrange
+        Commerce commerce = commerceRepository.findById(
+                new CommerceId(product.getCommerceId())).orElseThrow();
+        commerce.disable();
+        commerceRepository.save(commerce);
+
+        // Act
+        List<ProductInfo> result = catalogService.findAvailableProducts();
+
+        // Assert
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void listsEveryProductEvenWhenTheyDoNotFitInOnePage() {
+        // Arrange: the page size is 10 and there is already 1 product (Pizza)
+        for (int i = 1; i <= 14; i++) {
+            Product extra = Product.register(
+                    SampleCatalog.COMMERCE, "Product " + i, "Food", new BigDecimal("10.00"));
+            extra.adjustStock(5);
+            repository.save(extra);
+        }
+
+        // Act
+        List<ProductInfo> result = catalogService.findAvailableProducts();
+
+        // Assert
+        assertThat(result).hasSize(15);
+        assertThat(result).extracting(ProductInfo::productId).doesNotHaveDuplicates();
+    }
+
+    @Test
+    void keepsEachProductWithItsOwnCommerce() {
+        // Arrange
+        Commerce other = CatalogFixtures.activeCommerce("Other Commerce");
+        commerceRepository.save(other);
+        Product burger = Product.register(
+                other.getId().value(), "Burger", "Food", new BigDecimal("30.00"));
+        burger.adjustStock(3);
+        repository.save(burger);
+
+        // Act
+        List<ProductInfo> result = catalogService.findAvailableProducts();
+
+        // Assert
+        assertThat(result).hasSize(2);
+        assertThat(result).filteredOn(p -> p.name().equals("Pizza"))
+                .extracting(ProductInfo::commerceId).containsExactly(SampleCatalog.COMMERCE);
+        assertThat(result).filteredOn(p -> p.name().equals("Burger"))
+                .extracting(ProductInfo::commerceId).containsExactly(other.getId().value());
     }
 }
