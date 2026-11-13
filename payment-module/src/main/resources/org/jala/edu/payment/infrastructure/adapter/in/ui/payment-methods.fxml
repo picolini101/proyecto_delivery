@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<!-- Vista principal del módulo de pagos conectada con PaymentMethodController -->
+<VBox spacing="15" styleClass="page"
+      xmlns="http://javafx.com/javafx/25"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.jala.edu.payment.infrastructure.ui.PaymentMethodController">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <!-- Título y descripción -->
+    <Label styleClass="page-title" text="Gestión de Métodos de Pago" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+    <Label styleClass="subtitle" wrapText="true" text="Registra y consulta tus métodos de pago (Tarjeta o Transferencia)."/>
+
+    <!-- Formulario para agregar nuevo método de pago -->
+    <HBox spacing="10">
+        <TextField fx:id="aliasField" promptText="Alias (ej. Mi Tarjeta)"/>
+        <ComboBox fx:id="typeComboBox" promptText="Tipo de Pago"/>
+        <TextField fx:id="numberField" promptText="Número de Tarjeta/Cuenta"/>
+        <Button text="Guardar" onAction="#handleSave"/>
+    </HBox>
+
+    <!-- Etiqueta para mensajes de confirmación o error -->
+    <Label fx:id="statusLabel" text="" style="-fx-text-fill: green;"/>
+
+    <!-- Lista para mostrar los métodos de pago guardados -->
+    <ListView fx:id="paymentListView" prefHeight="250"/>
+
+</VBox>
