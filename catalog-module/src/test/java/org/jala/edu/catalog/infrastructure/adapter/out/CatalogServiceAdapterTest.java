@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 import org.jala.edu.catalog.CatalogFixtures;
+import org.jala.edu.catalog.application.usecase.ListAvailableProductsUseCase;
 import org.jala.edu.catalog.domain.model.Commerce;
 import org.jala.edu.catalog.domain.model.CommerceId;
 import org.jala.edu.catalog.domain.model.CommerceStatus;
@@ -30,10 +31,13 @@ class CatalogServiceAdapterTest {
     private final InMemoryCommerceRepositoryAdapter commerceRepository =
             new InMemoryCommerceRepositoryAdapter();
 
+    private Product product;
 
     private final CatalogServiceAdapter catalogService =
-            new CatalogServiceAdapter(repository, commerceRepository);
-    private Product product;
+            new CatalogServiceAdapter(
+                    repository,
+                    commerceRepository,
+                    new ListAvailableProductsUseCase(repository, commerceRepository, 10));
 
     @BeforeEach
     void setUp() {

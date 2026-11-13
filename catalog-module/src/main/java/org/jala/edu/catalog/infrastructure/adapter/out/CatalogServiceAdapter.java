@@ -14,6 +14,11 @@ import org.jala.edu.core.domain.exception.NotFoundException;
 import org.springframework.stereotype.Component;
 import org.jala.edu.catalog.application.port.out.CommerceRepositoryPort;
 import org.jala.edu.catalog.domain.model.CommerceId;
+import java.util.ArrayList;
+import org.jala.edu.catalog.application.dto.CatalogProduct;
+import org.jala.edu.catalog.application.dto.CatalogProductPage;
+import org.jala.edu.catalog.application.port.in.ListAvailableProductsQuery;
+import org.jala.edu.catalog.application.usecase.ListAvailableProductsUseCase;
 
 /**
  * Adaptador que expone las operaciones del catálogo al resto del sistema.
@@ -24,6 +29,7 @@ public class CatalogServiceAdapter implements CatalogService {
 
     private final ProductRepositoryPort productRepository;
     private final CommerceRepositoryPort commerceRepository;
+    private final ListAvailableProductsUseCase listAvailableProducts;
 
     @Override
     public Optional<ProductInfo> findProduct(UUID productId) {
@@ -80,6 +86,30 @@ public class CatalogServiceAdapter implements CatalogService {
                 .filter(commerce -> commerce.getMerchantId().equals(merchantId))
                 .map(commerce -> commerce.getId().value())
                 .toList();
+    }
+
+    @Override
+    public List<ProductInfo> findAvailableProducts() {
+        return commerceRepository.findAll().stream()
+                .flatMap(commerce -> availableProductsOf(commerce.getId().value()).stream())
+                .toList();
+    }
+
+    private List<ProductInfo> availableProductsOf(UUID commerceId) {
+        List<ProductInfo> result = new ArrayList<>();
+        int page = 1;
+        int totalPages;
+        do {
+            CatalogProductPage current =
+                    listAvailableProducts.execute(new ListAvailableProductsQuery(commerceId, page));
+            current.products().stream()
+                    .filter(CatalogProduct::available)
+                    .map(p -> new ProductInfo(p.id(), commerceId, p.name(), p.price()))
+                    .forEach(result::add);
+            totalPages = current.totalPages();
+            page++;
+        } while (page <= totalPages);
+        return result;
     }
 
     private Optional<Product> findDomainProduct(UUID productId) {
