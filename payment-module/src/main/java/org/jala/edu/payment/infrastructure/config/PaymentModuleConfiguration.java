@@ -63,8 +63,12 @@ public class PaymentModuleConfiguration {
 
     // Registro de transacciones
     @Bean
-    public PaymentTransactionPort paymentTransactionPort() {
-        return new SimulatedPaymentTransactionAdapter();
+    public PaymentTransactionPort paymentTransactionPort(
+            ManagePaymentHistoryUseCase historyUseCase,
+            PaymentTransactionRepositoryPort transactionRepository) {
+
+        return new SimulatedPaymentTransactionAdapter(
+                historyUseCase, transactionRepository);
     }
 
     // Carga de metodos de pago de ejemplo

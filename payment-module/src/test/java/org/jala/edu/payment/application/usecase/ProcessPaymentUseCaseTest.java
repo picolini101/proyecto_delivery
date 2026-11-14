@@ -201,4 +201,45 @@ class ProcessPaymentUseCaseTest {
         verify(transactionPort, never()).recordRejected(
                 any(), any(), any(), any(), anyString());
     }
+
+
+    @Test
+    void shouldRejectDuplicatePayment() {
+        when(userService.isActiveWithRole(
+                userId, UserRole.CUSTOMER)).thenReturn(true);
+
+        when(methodPort.isValidPaymentMethod(
+                userId, paymentMethodId)).thenReturn(true);
+
+        when(transactionPort.recordApproved(
+                eq(orderId),
+                eq(userId),
+                eq(paymentMethodId),
+                any(BigDecimal.class)))
+                .thenThrow(new IllegalStateException(
+                        "Intento de cobro duplicado sobre pedido aprobado"));
+
+        ProcessPaymentCommand command =
+                new ProcessPaymentCommand(
+                        orderId, userId, paymentMethodId,
+                        new BigDecimal("100"));
+
+        PaymentResult result = useCase.execute(command);
+
+        assertFalse(result.approved());
+        assertEquals("", result.paymentReference());
+        assertEquals(
+                "Intento de cobro duplicado sobre pedido aprobado",
+                result.reason());
+
+        verify(transactionPort).recordApproved(
+                eq(orderId),
+                eq(userId),
+                eq(paymentMethodId),
+                any(BigDecimal.class));
+
+        verify(transactionPort, never()).recordRejected(
+                any(), any(), any(), any(), anyString());
+    }
+
 }

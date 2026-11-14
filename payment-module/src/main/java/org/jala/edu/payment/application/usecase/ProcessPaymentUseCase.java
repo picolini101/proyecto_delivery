@@ -69,14 +69,19 @@ public class ProcessPaymentUseCase {
                 command.paymentMethodId())) {
             return reject(command, "Metodo de pago invalido o inactivo");
         }
-        String reference = paymentTransactionPort.recordApproved(
-                command.orderId(),
-                command.userId(),
-                command.paymentMethodId(),
-                amount
-        );
+        try {
+            String reference = paymentTransactionPort.recordApproved(
+                    command.orderId(),
+                    command.userId(),
+                    command.paymentMethodId(),
+                    amount
+            );
 
-        return new PaymentResult(reference, true, "");
+            return new PaymentResult(reference, true, "");
+
+        } catch (IllegalStateException exception) {
+            return new PaymentResult("", false, exception.getMessage());
+        }
     }
 
     private PaymentResult reject(
