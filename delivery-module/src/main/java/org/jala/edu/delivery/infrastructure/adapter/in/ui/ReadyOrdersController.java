@@ -15,10 +15,8 @@ import org.jala.edu.core.infrastructure.ui.ErrorMessages;
 import org.jala.edu.core.infrastructure.ui.Navigator;
 import org.jala.edu.delivery.application.port.in.ListReadyOrdersQuery;
 import org.jala.edu.delivery.application.port.in.ReadyOrderSummary;
-import org.jala.edu.delivery.application.port.in.StartDeliveryCommand;
 import org.jala.edu.delivery.application.port.in.TomarPedidoCommand;
 import org.jala.edu.delivery.application.usecase.ListReadyOrdersUseCase;
-import org.jala.edu.delivery.application.usecase.StartDeliveryUseCase;
 import org.jala.edu.delivery.application.usecase.TomarPedidoUseCase;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -35,7 +33,6 @@ public class ReadyOrdersController {
 
     private final ListReadyOrdersUseCase listReadyOrdersUseCase;
     private final TomarPedidoUseCase tomarPedidoUseCase;
-    private final StartDeliveryUseCase startDeliveryUseCase;
     private final Navigator navigator;
 
     @FXML
@@ -54,9 +51,6 @@ public class ReadyOrdersController {
     private Button takeButton;
 
     @FXML
-    private Button startButton;
-
-    @FXML
     private Button refreshButton;
 
     @FXML
@@ -70,7 +64,6 @@ public class ReadyOrdersController {
 
         BooleanBinding noSelection = ordersTable.getSelectionModel().selectedItemProperty().isNull();
         takeButton.disableProperty().bind(noSelection);
-        startButton.disableProperty().bind(noSelection);
         reload(null);
     }
 
@@ -85,22 +78,9 @@ public class ReadyOrdersController {
         refreshButton.setDisable(true);
         BackgroundTasks.run(
                 () -> tomarPedidoUseCase.execute(new TomarPedidoCommand(selected.orderId())),
-                done -> reload("Pedido tomado."),
-                error -> {
-                    showMessage(ErrorMessages.of(error, "take the order"), "error");
-                    refreshButton.setDisable(false);
-                });
-    }
-
-    @FXML
-    void onStart() {
-        ReadyOrderSummary selected = ordersTable.getSelectionModel().getSelectedItem();
-        refreshButton.setDisable(true);
-        BackgroundTasks.run(
-                () -> startDeliveryUseCase.execute(new StartDeliveryCommand(selected.orderId())),
                 done -> navigator.show(DeliveryViews.SHIPMENT),
                 error -> {
-                    showMessage(ErrorMessages.of(error, "start the delivery"), "error");
+                    showMessage(ErrorMessages.of(error, "take the order"), "error");
                     refreshButton.setDisable(false);
                 });
     }

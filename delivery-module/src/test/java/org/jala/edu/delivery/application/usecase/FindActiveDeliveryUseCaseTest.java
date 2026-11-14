@@ -11,7 +11,7 @@ import org.jala.edu.core.infrastructure.contract.FallbackCurrentUserService;
 import org.jala.edu.core.infrastructure.contract.FallbackOrderService;
 import org.jala.edu.core.infrastructure.contract.FallbackUserService;
 import org.jala.edu.delivery.application.port.in.FindActiveDeliveryQuery;
-import org.jala.edu.delivery.application.port.in.StartDeliveryCommand;
+import org.jala.edu.delivery.application.port.in.TomarPedidoCommand;
 import org.jala.edu.delivery.domain.exception.UnauthorizedOperationException;
 import org.jala.edu.delivery.domain.model.ActiveDelivery;
 import org.jala.edu.delivery.domain.model.ConfirmationCode;
@@ -25,7 +25,7 @@ class FindActiveDeliveryUseCaseTest {
     private final InMemoryActiveDeliveryAdapter activeDeliveries = new InMemoryActiveDeliveryAdapter();
     private final FallbackUserService users = new FallbackUserService();
     private final FallbackCurrentUserService courier = new FallbackCurrentUserService(UserRole.COURIER);
-    private final StartDeliveryUseCase startDelivery = new StartDeliveryUseCase(orders, users, courier,
+    private final TomarPedidoUseCase tomarPedido = new TomarPedidoUseCase(orders, users, courier,
             activeDeliveries, () -> new ConfirmationCode("4821"));
     private final FindActiveDeliveryUseCase find = new FindActiveDeliveryUseCase(users, courier, activeDeliveries);
 
@@ -33,7 +33,7 @@ class FindActiveDeliveryUseCaseTest {
     void returnsTheShipmentInProgress() {
         // Arrange
         UUID orderId = orders.findReadyForDelivery().getFirst().orderId();
-        startDelivery.execute(new StartDeliveryCommand(orderId));
+        tomarPedido.execute(new TomarPedidoCommand(orderId));
 
         // Act
         Optional<ActiveDelivery> delivery = find.execute(new FindActiveDeliveryQuery());

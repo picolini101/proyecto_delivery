@@ -75,7 +75,7 @@ class DeliveryUiConfigurationTest {
         assertThat(fxml).contains("Tomar Pedido");
         assertThat(fxml).contains("Dirección");
         assertThat(fxml).contains("Costo de envío");
-        assertThat(fxml).contains("En camino");
+        assertThat(fxml).doesNotContain("startButton");
     }
 
     @Test

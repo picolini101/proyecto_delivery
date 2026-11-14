@@ -12,7 +12,7 @@ import org.jala.edu.core.infrastructure.contract.FallbackCurrentUserService;
 import org.jala.edu.core.infrastructure.contract.FallbackOrderService;
 import org.jala.edu.core.infrastructure.contract.FallbackUserService;
 import org.jala.edu.delivery.application.port.in.PickUpDeliveryCommand;
-import org.jala.edu.delivery.application.port.in.StartDeliveryCommand;
+import org.jala.edu.delivery.application.port.in.TomarPedidoCommand;
 import org.jala.edu.delivery.domain.exception.UnauthorizedOperationException;
 import org.jala.edu.delivery.domain.model.ActiveDelivery;
 import org.jala.edu.delivery.domain.model.ConfirmationCode;
@@ -25,7 +25,7 @@ class PickUpDeliveryUseCaseTest {
     private final FallbackOrderService orders = new FallbackOrderService();
     private final InMemoryActiveDeliveryAdapter activeDeliveries = new InMemoryActiveDeliveryAdapter();
     private final ConfirmationCode code = new ConfirmationCode("4821");
-    private final StartDeliveryUseCase startDelivery = new StartDeliveryUseCase(orders, new FallbackUserService(),
+    private final TomarPedidoUseCase tomarPedido = new TomarPedidoUseCase(orders, new FallbackUserService(),
             new FallbackCurrentUserService(UserRole.COURIER), activeDeliveries, () -> code);
     private final PickUpDeliveryUseCase pickUp = new PickUpDeliveryUseCase(new FallbackUserService(),
             new FallbackCurrentUserService(UserRole.COURIER), activeDeliveries);
@@ -95,7 +95,7 @@ class PickUpDeliveryUseCaseTest {
 
     private UUID startAssignedOrder() {
         UUID orderId = orders.findReadyForDelivery().getFirst().orderId();
-        startDelivery.execute(new StartDeliveryCommand(orderId));
+        tomarPedido.execute(new TomarPedidoCommand(orderId));
         return orderId;
     }
 }

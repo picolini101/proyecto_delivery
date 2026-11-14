@@ -23,7 +23,6 @@ import org.jala.edu.delivery.application.usecase.ListCouriersUseCase;
 import org.jala.edu.delivery.application.usecase.ListReadyOrdersUseCase;
 import org.jala.edu.delivery.application.usecase.PickUpDeliveryUseCase;
 import org.jala.edu.delivery.application.usecase.RegisterCourierUseCase;
-import org.jala.edu.delivery.application.usecase.StartDeliveryUseCase;
 import org.jala.edu.delivery.application.usecase.TomarPedidoUseCase;
 import org.jala.edu.delivery.application.usecase.ValidateCourierEligibilityUseCase;
 import org.jala.edu.delivery.infrastructure.adapter.out.code.RandomConfirmationCodeGenerator;
@@ -96,14 +95,6 @@ public class DeliveryModuleConfiguration {
     }
 
     @Bean
-    public TomarPedidoUseCase tomarPedidoUseCase(OrderService orderService,
-                                                  ValidateCourierEligibilityUseCase validateEligibility,
-                                                  CourierAvailabilityPort availability,
-                                                  CurrentUserService currentUserService) {
-        return new TomarPedidoUseCase(orderService, validateEligibility, availability, currentUserService);
-    }
-
-    @Bean
     public ActiveDeliveryPort activeDeliveryPort() {
         return new InMemoryActiveDeliveryAdapter();
     }
@@ -114,11 +105,11 @@ public class DeliveryModuleConfiguration {
     }
 
     @Bean
-    public StartDeliveryUseCase startDeliveryUseCase(OrderService orderService, UserService userService,
-                                                      CurrentUserService currentUserService,
-                                                      ActiveDeliveryPort activeDeliveries,
-                                                      ConfirmationCodeGenerator confirmationCodes) {
-        return new StartDeliveryUseCase(orderService, userService, currentUserService, activeDeliveries,
+    public TomarPedidoUseCase tomarPedidoUseCase(OrderService orderService, UserService userService,
+                                                  CurrentUserService currentUserService,
+                                                  ActiveDeliveryPort activeDeliveries,
+                                                  ConfirmationCodeGenerator confirmationCodes) {
+        return new TomarPedidoUseCase(orderService, userService, currentUserService, activeDeliveries,
                 confirmationCodes);
     }
 
