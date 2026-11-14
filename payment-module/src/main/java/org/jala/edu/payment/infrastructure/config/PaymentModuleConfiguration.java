@@ -56,9 +56,12 @@ public class PaymentModuleConfiguration {
     }
 
     // Validacion de metodos de pago
+
     @Bean
-    public PaymentMethodValidationPort paymentMethodValidationPort() {
-        return new SimulatedPaymentMethodAdapter();
+    public PaymentMethodValidationPort paymentMethodValidationPort(
+            PaymentMethodRepositoryPort repository) {
+
+        return new SimulatedPaymentMethodAdapter(repository);
     }
 
     // Registro de transacciones
