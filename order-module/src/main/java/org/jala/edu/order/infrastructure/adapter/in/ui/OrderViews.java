@@ -10,6 +10,7 @@ public final class OrderViews {
     public static final String MAIN = BASE + "order-main.fxml";
     public static final String NEW_CART = BASE + "new-cart.fxml";
     public static final String ADDRESS = BASE + "address.fxml";
+    public static final String PAYMENT_RESULT = BASE + "payment-result.fxml";
 
     private OrderViews() {
     }
