@@ -57,7 +57,7 @@ public class ProcessPaymentUseCase {
             return new PaymentResult(
                     "",
                     false,
-                    "Usuario no autorizado para realizar pagos"
+                    "User not authorized for this operation"
             );
         }
         if (command.paymentMethodId() == null) {

@@ -117,7 +117,7 @@ class ProcessPaymentUseCaseTest {
 
         assertFalse(result.approved());
         assertEquals(
-                "Usuario no autorizado para realizar pagos",
+                "User not authorized for this operation",
                 result.reason());
 
         verifyNoInteractions(transactionPort);
