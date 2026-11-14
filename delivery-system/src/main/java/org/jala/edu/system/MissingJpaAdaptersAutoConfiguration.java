@@ -66,4 +66,11 @@ public class MissingJpaAdaptersAutoConfiguration {
         warnInMemory(OrderRepositoryPort.class);
         return new InMemoryOrderRepositoryAdapter();
     }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public org.jala.edu.order.application.port.out.OrderStatusHistoryPort inMemoryOrderStatusHistoryBridge() {
+        warnInMemory(org.jala.edu.order.application.port.out.OrderStatusHistoryPort.class);
+        return new org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryOrderStatusHistoryAdapter();
+    }
 }
