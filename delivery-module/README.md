@@ -41,4 +41,8 @@ Depends on `core-module`, so install that first (`./mvnw install` in its reposit
 
 Installs `org.jala.edu:delivery-module:0.0.1-SNAPSHOT` into `~/.m2` for `delivery-system`. Requires JDK 25.
 
+`./mvnw clean verify` also writes the JaCoCo coverage report to `target/site/jacoco/index.html`. The JavaFX screens
+(`infrastructure/adapter/in/ui`) and the Spring configuration (`infrastructure/config`) are left out of it: the screens
+are checked by hand in `delivery-system` and the configuration only wires the pieces together.
+
 The architecture of the whole system is described in the `delivery-system` repository README.
