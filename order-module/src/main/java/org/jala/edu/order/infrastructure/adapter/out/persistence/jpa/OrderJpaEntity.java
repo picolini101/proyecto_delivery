@@ -9,6 +9,7 @@ import org.jala.edu.order.domain.model.Money;
 import org.jala.edu.order.domain.model.OrderStatus;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -45,6 +46,17 @@ public class OrderJpaEntity extends BaseJpaEntity {
 
     public OrderJpaEntity() {
     }
-    public OrderJpaEntity(String entityId, CustomerId customerId, OrderStatus status, DeliveryAddress deliveryAddress, Money shippingCost, Money total, List<OrderLineJpaEntity> listProductEntity) {
+
+    public OrderJpaEntity(UUID id, UUID customerId, BigDecimal subtotal, String status, String deliveryAddress, BigDecimal shippingCost, BigDecimal total, List<OrderLineJpaEntity> products, Instant createdAt, Instant updatedAt) {
+        super(createdAt, updatedAt);
+        this.id = id;
+        this.customerId = customerId;
+        this.subtotal = subtotal;
+        this.status = status;
+        this.deliveryAddress = deliveryAddress;
+        this.shippingCost = shippingCost;
+        this.total = total;
+        this.products = products;
     }
+
 }

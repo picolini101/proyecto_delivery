@@ -7,6 +7,8 @@ import org.jala.edu.order.domain.model.Money;
 import org.jala.edu.order.domain.model.ProductId;
 import org.jala.edu.order.domain.model.Quantity;
 
+import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 @Getter
 @Entity
@@ -36,10 +38,26 @@ public class OrderLineJpaEntity extends BaseJpaEntity {
     @JoinColumn(name = "order_id")
     private OrderJpaEntity order;
 
-    public OrderLineJpaEntity(ProductId productId, String productName, Money unitPrice, Quantity quantity, Money subtotal, UUID commerceId) {
+    public OrderLineJpaEntity(UUID id,
+                              String productName,
+                              Double unitPrice,
+                              Integer quantity,
+                              UUID merchantId,
+                              Double subtotal,
+                              OrderJpaEntity order,
+                              Instant createdAt,
+                              Instant updatedAt) {
+        super(createdAt, updatedAt);
+        this.id = id;
+        this.productName = productName;
+        this.unitPrice = unitPrice;
+        this.quantity = quantity;
+        this.merchantId = merchantId;
+        this.subtotal = subtotal;
+        this.order = order;
     }
-
     public OrderLineJpaEntity() {
 
     }
+
 }

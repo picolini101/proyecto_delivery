@@ -12,13 +12,16 @@ final class OrderPersistenceMapper implements PersistenceMapper<Order, OrderId, 
 
     @Override
     public OrderJpaEntity toEntity(Order model) {
-        return new OrderJpaEntity(toEntityId(model.getId()),
-                model.getCustomerId(),
-                model.getStatus(),
-                model.getDeliveryAddress(),
-                model.getShippingCost(),
-                model.getTotal(),
-                orderLinePersistenceMapper.toListProductEntity(model.getLines()));
+        return new OrderJpaEntity(model.getId().value(),
+                model.getCustomerId().value(),
+                model.getSubtotal().value(),
+                model.getStatus().toString(),
+                model.getDeliveryAddress().toString(),
+                model.getShippingCost().value(),
+                model.getTotal().value(),
+                orderLinePersistenceMapper.toListProductEntity(model.getLines()),
+                model.getCreatedAt(),
+                model.getUpdatedAt());
     }
 
     @Override

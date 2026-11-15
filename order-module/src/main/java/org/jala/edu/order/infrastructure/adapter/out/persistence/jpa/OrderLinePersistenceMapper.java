@@ -7,15 +7,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OrderLinePersistenceMapper implements PersistenceMapper<OrderLine, OrderLineId, OrderLineJpaEntity, String> {
-
+    OrderJpaRepository orderJpaRepository;
     @Override
     public OrderLineJpaEntity toEntity(OrderLine orderLine) {
-        return new OrderLineJpaEntity(orderLine.getProductId(),
+        return new OrderLineJpaEntity(orderLine.getProductId().value(),
                 orderLine.getProductName(),
-                orderLine.getUnitPrice(),
-                orderLine.getQuantity(),
-                orderLine.getSubtotal(),
-                orderLine.getCommerceId());
+                orderLine.getUnitPrice().value().doubleValue(),
+                orderLine.getQuantity().value(),
+                orderLine.getCommerceId(),
+                orderLine.getSubtotal().value().doubleValue(),
+                orderJpaRepository.findById(orderLine.getOrderId()),
+                orderLine.getCreatedAt(),
+                orderLine.getUpdatedAt());
+
+
     }
 
     @Override
@@ -27,6 +32,7 @@ public class OrderLinePersistenceMapper implements PersistenceMapper<OrderLine, 
                 Money.of(entity.getUnitPrice()),
                 Quantity.of(entity.getQuantity()),
                 Money.of(entity.getSubtotal()),
+                OrderId.of(String.valueOf(entity.getOrder())),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt());
     }

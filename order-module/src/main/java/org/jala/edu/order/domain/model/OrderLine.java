@@ -18,10 +18,11 @@ public class OrderLine extends BaseModel<OrderLineId> {
     private final Money unitPrice;
     private final Quantity quantity;
     private final Money subtotal;
+    private final OrderId orderId;
 
     private OrderLine(OrderLineId id, ProductId productId, UUID commerceId, String productName,
                       Money unitPrice, Quantity quantity, Money subtotal,
-                      Instant createdAt, Instant updatedAt) {
+                      Instant createdAt, Instant updatedAt, OrderId orderId) {
         super(id, createdAt, updatedAt);
         this.productId = Objects.requireNonNull(productId, "ProductId no puede ser nulo");
         this.commerceId = Objects.requireNonNull(commerceId, "CommerceId no puede ser nulo");
@@ -29,19 +30,20 @@ public class OrderLine extends BaseModel<OrderLineId> {
         this.unitPrice = Objects.requireNonNull(unitPrice, "UnitPrice no puede ser nulo");
         this.quantity = Objects.requireNonNull(quantity, "Quantity no puede ser nula");
         this.subtotal = Objects.requireNonNull(subtotal, "Subtotal no puede ser nulo");
+        this.orderId = orderId;
     }
 
     public static OrderLine of(ProductId productId, UUID commerceId, String productName,
-                               Money unitPrice, Quantity quantity) {
+                               Money unitPrice, Quantity quantity, OrderId orderId) {
         Instant now = now();
         return new OrderLine(OrderLineId.newId(), productId, commerceId, productName, unitPrice,
-                quantity, unitPrice.multiply(quantity), now, now);
+                quantity, unitPrice.multiply(quantity), now, now, orderId);
     }
 
     public static OrderLine restore(OrderLineId id, ProductId productId, UUID commerceId, String productName,
-                                    Money unitPrice, Quantity quantity, Money subtotal,
+                                    Money unitPrice, Quantity quantity, Money subtotal, OrderId orderId,
                                     Instant createdAt, Instant updatedAt) {
         return new OrderLine(id, productId, commerceId, productName, unitPrice, quantity,
-                subtotal, createdAt, updatedAt);
+                subtotal, createdAt, updatedAt,orderId );
     }
 }
