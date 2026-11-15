@@ -34,7 +34,10 @@ import org.jala.edu.core.infrastructure.ui.SpringFxmlLoader;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-
+import java.util.Objects;
+import javafx.animation.PauseTransition;
+import javafx.scene.control.TextField;
+import javafx.util.Duration;
 /**
  * Adaptador de entrada JavaFX para listar los productos que el administrador o comerciante gestiona
  * (vista: {@code manage-products.fxml}). Es también el punto de entrada para editar el producto
@@ -55,6 +58,8 @@ public class ManageProductsController {
     private final DeleteProductUseCase deleteProductUseCase;
     private final CurrentUserService currentUserService;
     private final SpringFxmlLoader fxmlLoader;
+    private static final Duration SEARCH_DELAY = Duration.millis(300);
+    private final PauseTransition searchDelay = new PauseTransition(SEARCH_DELAY);
 
     @FXML
     private TableView<ManagedProduct> productsTable;
@@ -97,6 +102,9 @@ public class ManageProductsController {
 
     @FXML
     private Label messageLabel;
+
+    @FXML
+    private TextField searchField;
 
     @FXML
     void initialize() {
@@ -166,6 +174,10 @@ public class ManageProductsController {
             });
             return row;
         });
+
+        searchDelay.setOnFinished(event -> reload(null));
+        searchField.textProperty().addListener(
+                (observable, previous, text) -> searchDelay.playFromStart());
 
         reload(null);
     }
@@ -264,16 +276,25 @@ public class ManageProductsController {
     /**
      * Carga los productos; luego muestra {@code successMessage}, o el conteo si es {@code null}.
      */
+
     private void reload(String successMessage) {
+        String searchText = searchField.getText();
+
         refreshButton.setDisable(true);
         BackgroundTasks.run(
-                () -> listManagedProductsUseCase.execute(new ListManagedProductsQuery()),
+                () -> listManagedProductsUseCase.execute(new ListManagedProductsQuery(searchText)),
                 products -> {
+                    // Si el usuario siguió escribiendo, esta respuesta ya quedó vieja
+                    if (!Objects.equals(searchText, searchField.getText())) {
+                        return;
+                    }
                     productsTable.getItems().setAll(products);
-                    if (successMessage == null) {
-                        showMessage(count(products.size()), "info");
-                    } else {
+                    if (successMessage != null) {
                         showMessage(successMessage, "success");
+                    } else if (products.isEmpty() && !searchText.isBlank()) {
+                        showMessage("No products match your search.", "info");
+                    } else {
+                        showMessage(count(products.size()), "info");
                     }
                     refreshButton.setDisable(false);
                 },

@@ -28,6 +28,7 @@ public class ListManagedProductsUseCase
     @Override
     public List<ManagedProduct> execute(ListManagedProductsQuery query) {
         return productRepository.findAll().stream()
+                .filter(product -> product.matches(query.searchText()))
                 .map(this::toManagedProduct)
                 .toList();
     }
