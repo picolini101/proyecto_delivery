@@ -11,8 +11,10 @@ import org.jala.edu.order.domain.model.ProductId;
 import org.jala.edu.order.domain.model.Quantity;
 import org.springframework.stereotype.Component;
 import java.util.NoSuchElementException;
+import org.jala.edu.core.infrastructure.config.ConditionalOnJpaPersistence;
 
 @Component
+@ConditionalOnJpaPersistence
 public class OrderLinePersistenceMapper
         implements PersistenceMapper<OrderLine, OrderLineId, OrderLineJpaEntity, UUID> {
 

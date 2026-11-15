@@ -2,9 +2,11 @@ package org.jala.edu.order.infrastructure.adapter.out.persistence.jpa;
 
 import org.jala.edu.core.infrastructure.persistence.jpa.PersistenceMapper;
 import org.jala.edu.order.domain.model.*;
+import org.jala.edu.core.infrastructure.config.ConditionalOnJpaPersistence;
 import org.springframework.stereotype.Component;
 
 @Component
+@ConditionalOnJpaPersistence
 final class OrderPersistenceMapper implements PersistenceMapper<Order, OrderId, OrderJpaEntity, java.util.UUID> {
     final OrderLinePersistenceMapper orderLinePersistenceMapper;
 

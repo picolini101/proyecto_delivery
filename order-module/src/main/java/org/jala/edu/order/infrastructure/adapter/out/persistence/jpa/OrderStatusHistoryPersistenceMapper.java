@@ -2,6 +2,7 @@ package org.jala.edu.order.infrastructure.adapter.out.persistence.jpa;
 
 import java.util.UUID;
 import org.jala.edu.core.infrastructure.persistence.jpa.PersistenceMapper;
+import org.jala.edu.core.infrastructure.config.ConditionalOnJpaPersistence;
 import org.jala.edu.order.domain.model.OrderId;
 import org.jala.edu.order.domain.model.OrderStatus;
 import org.jala.edu.order.domain.model.OrderStatusChange;
@@ -9,6 +10,7 @@ import org.jala.edu.order.domain.model.OrderStatusChangeId;
 import org.springframework.stereotype.Component;
 
 @Component
+@ConditionalOnJpaPersistence
 class OrderStatusHistoryPersistenceMapper
         implements PersistenceMapper<OrderStatusChange, OrderStatusChangeId, OrderStatusHistoryJpaEntity, UUID> {
 
