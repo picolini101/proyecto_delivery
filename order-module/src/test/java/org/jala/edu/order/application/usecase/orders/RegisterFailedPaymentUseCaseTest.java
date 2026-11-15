@@ -31,11 +31,20 @@ import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemory
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.jala.edu.core.domain.exception.ConflictException;
+
+
+
 /**
  * Pruebas de {@link RegisterFailedPaymentUseCase} (HU "Registrar el intento de pago fallido").
  * Usa los repositorios en memoria; no hace falta ningun mock porque el pago ya viene resuelto en el intento.
  * Criterio 1: si el pago es rechazado, el pedido pasa a Cancelado con el motivo "Pago rechazado" en el historial.
  * Criterio 2: el intento fallido queda registrado (resultado, fecha y hora) para auditoria.
+ *
+ *  * Regla extra: solo un pago RECHAZADO se registra como fallido; aprobado o servicio caido no cancelan nada.
  */
 class RegisterFailedPaymentUseCaseTest {
 
@@ -72,11 +81,15 @@ class RegisterFailedPaymentUseCaseTest {
         return List.of(OrderLine.of(ProductId.of(SampleCatalog.PIZZA), "Pizza", Money.of(50), Quantity.of(2)));
     }
 
+    /** Arma el comando con la respuesta de pago indicada para el pedido de prueba. */
+    private RegisterFailedPaymentCommand commandWith(PaymentAuthorization authorization) {
+        PaymentAttempt attempt = new PaymentAttempt(order.getId().value(), new BigDecimal("110.00"), authorization);
+        return new RegisterFailedPaymentCommand(attempt, SampleUsers.CUSTOMER);
+    }
+
     /** Arma el comando con un pago RECHAZADO del pedido de prueba. */
     private RegisterFailedPaymentCommand rejectedCommand() {
-        PaymentAttempt attempt = new PaymentAttempt(order.getId().value(), new BigDecimal("110.00"),
-                new PaymentAuthorization.Rejected("REF-2", "Fondos insuficientes"));
-        return new RegisterFailedPaymentCommand(attempt, SampleUsers.CUSTOMER);
+        return commandWith(new PaymentAuthorization.Rejected("REF-2", "Fondos insuficientes"));
     }
 
     /** Criterio 1: el pago rechazado deja el pedido en CANCELLED. */
@@ -134,5 +147,28 @@ class RegisterFailedPaymentUseCaseTest {
         FailedPaymentRecord record = failedPayments.findByOrderId(order.getId()).get(0);
         assertFalse(record.getCreatedAt().isBefore(before));
         assertFalse(record.getCreatedAt().isAfter(after));
+    }
+
+    /** Regla extra: un pago APROBADO no es un fallo; se lanza error y no se cambia ni se registra nada. */
+    @Test
+    void approvedPaymentIsNotRegisteredAsFailed() {
+        RegisterFailedPaymentCommand approved = commandWith(new PaymentAuthorization.Approved("REF-1"));
+
+        assertThrows(ConflictException.class, () -> useCase.execute(approved));
+
+        assertEquals(OrderStatus.CREATED, orders.findById(order.getId()).orElseThrow().getStatus());
+        assertTrue(failedPayments.findByOrderId(order.getId()).isEmpty());
+    }
+
+    /** Regla extra: si el servicio de pagos no responde no se sabe si el pago fallo; el pedido no se cancela. */
+    @Test
+    void unavailableServiceIsNotRegisteredAsFailed() {
+        RegisterFailedPaymentCommand unavailable =
+                commandWith(new PaymentAuthorization.Unavailable("El servicio de pagos no esta disponible"));
+
+        assertThrows(ConflictException.class, () -> useCase.execute(unavailable));
+
+        assertEquals(OrderStatus.CREATED, orders.findById(order.getId()).orElseThrow().getStatus());
+        assertTrue(failedPayments.findByOrderId(order.getId()).isEmpty());
     }
 }
