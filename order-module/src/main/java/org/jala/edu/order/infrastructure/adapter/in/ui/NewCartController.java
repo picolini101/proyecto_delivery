@@ -21,14 +21,17 @@ import javafx.scene.control.ScrollPane;
 import lombok.RequiredArgsConstructor;
 import org.jala.edu.core.contract.ProductInfo;
 import org.jala.edu.core.contract.CurrentUserService;
+import org.jala.edu.core.contract.SamplePaymentMethods;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
 import org.jala.edu.core.infrastructure.ui.ErrorMessages;
 import org.jala.edu.core.infrastructure.ui.Navigator;
 import org.jala.edu.core.infrastructure.ui.SpringFxmlLoader;
 import org.jala.edu.core.infrastructure.ui.Dialogs;
+import org.jala.edu.order.application.port.in.AuthorizePaymentCommand;
 import org.jala.edu.order.application.port.in.InputAddressCommand;
 import org.jala.edu.order.application.port.in.StartCheckoutCommand;
 import org.jala.edu.order.application.usecase.*;
+import org.jala.edu.order.application.usecase.orders.AuthorizePaymentUseCase;
 import org.jala.edu.order.application.usecase.orders.InputAddressUseCase;
 import org.jala.edu.order.application.usecase.orders.StartCheckoutUseCase;
 import org.jala.edu.order.domain.model.DeliveryAddress;
@@ -96,6 +99,12 @@ public class NewCartController {
 
     private final StartCheckoutUseCase startCheckout;
     private final InputAddressUseCase inputAddress;
+
+    /** pide al servicio de pagos que autorice el monto total del pedido. */
+    private final AuthorizePaymentUseCase authorizePayment;
+
+    /** Decide los textos de la ventana de respuesta de pago. Al tener valor inicial, Lombok no lo pide en el constructor. */
+    private final PaymentResultPresenter paymentPresenter = new PaymentResultPresenter();
     private final SpringFxmlLoader fxmlLoader;
     private DeliveryAddress deliveryAddress;
     private UUID lastOrderId;
@@ -188,19 +197,45 @@ public class NewCartController {
                 () -> startCheckout.execute(command),
                 orderSummary -> {
                     lastOrderId = orderSummary.orderId();
-                    showMessage("¡Pedido #" + orderSummary.orderId().toString().substring(0, 8)
-                            + " iniciado con éxito en estado " + orderSummary.status() + "!", "success");
                     refreshCart();
                     checkoutButton.setDisable(deliveryAddress == null);
                     if (deliveryAddress != null) {
                         saveAddressForOrder(lastOrderId, deliveryAddress);
                     }
+                    // con el pedido creado, se pide la autorizacion del pago y se muestra el resultado
+                    requestPayment();
                 },
                 error -> {
                     showError(error, "iniciar la compra");
                     checkoutButton.setDisable(deliveryAddress == null);
                 }
         );
+    }
+
+    /**
+     * Pide la autorizacion del pago del ultimo pedido creado, en segundo plano, y muestra el resultado
+     * (aprobado, rechazado o problema temporal) en una ventana. Tambien lo usa el boton "Reintentar pago".
+     * Mientras no exista una pantalla para elegir el metodo de pago, se usa la tarjeta de prueba del cliente.
+     */
+    private void requestPayment() {
+        AuthorizePaymentCommand command = new AuthorizePaymentCommand(
+                lastOrderId, currentUserService.currentUser().id(), SamplePaymentMethods.CUSTOMER_CARD);
+        BackgroundTasks.run(
+                () -> authorizePayment.execute(command),
+                attempt -> showPaymentResult(paymentPresenter.present(attempt)),
+                error -> showPaymentResult(paymentPresenter.presentFailure(error)));
+    }
+
+    /**
+     * Abre la ventana de respuesta de pago. Si el pago fue aprobado, el boton principal ("Continuar") lleva a la
+     * pantalla de pedidos. Si no, el cliente sigue en esta pantalla y el boton principal reintenta el pago.
+     *
+     * @param result lo que debe mostrarse
+     */
+    private void showPaymentResult(PaymentResultView result) {
+        SpringFxmlLoader.View<PaymentResultController> view = fxmlLoader.loadView(OrderViews.PAYMENT_RESULT);
+        view.controller().prepare(result, result.isSuccess() ? () -> navigator.show(OrderViews.MAIN) : this::requestPayment);
+        Dialogs.showModal(checkoutButton, result.title(), view.root());
     }
 
     @FXML
