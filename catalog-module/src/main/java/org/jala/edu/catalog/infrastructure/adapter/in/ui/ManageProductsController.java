@@ -1,5 +1,6 @@
 package org.jala.edu.catalog.infrastructure.adapter.in.ui;
 
+import java.util.UUID;
 import java.util.function.Function;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -24,6 +25,7 @@ import org.jala.edu.catalog.application.usecase.DeleteProductUseCase;
 import org.jala.edu.catalog.application.usecase.ListManagedProductsUseCase;
 import org.jala.edu.catalog.application.usecase.UpdateProductStatusUseCase;
 import org.jala.edu.catalog.domain.model.ProductStatus;
+import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
 import org.jala.edu.core.infrastructure.ui.Dialogs;
 import org.jala.edu.core.infrastructure.ui.DisplayFormat;
@@ -51,6 +53,7 @@ public class ManageProductsController {
     private final ListManagedProductsUseCase listManagedProductsUseCase;
     private final UpdateProductStatusUseCase updateProductStatusUseCase;
     private final DeleteProductUseCase deleteProductUseCase;
+    private final CurrentUserService currentUserService;
     private final SpringFxmlLoader fxmlLoader;
 
     @FXML
@@ -221,7 +224,7 @@ public class ManageProductsController {
 
     /**
      * Elimina el producto seleccionado tras pedir confirmación. Si el administrador cancela,
-     * no se ejecuta nada y el producto no se modifica.
+     * no se ejecuta nada y el producto no se modifica. El solicitante es el usuario con sesión iniciada.
      */
     @FXML
     void onDelete() {
@@ -240,14 +243,14 @@ public class ManageProductsController {
             return;
         }
 
-        DeleteProductCommand command = new DeleteProductCommand(
-                CatalogSession.CURRENT_USER,
-                selected.product().getId().value());
+        UUID productId = selected.product().getId().value();
 
         deleting.set(true);
 
+        // El usuario actual se consulta dentro de la tarea: si no hay sesión, el error llega al mensaje
         BackgroundTasks.run(
-                () -> deleteProductUseCase.execute(command),
+                () -> deleteProductUseCase.execute(
+                        new DeleteProductCommand(currentUserService.currentUser().id(), productId)),
                 result -> {
                     deleting.set(false);
                     reload(deleteMessage(result));
