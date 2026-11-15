@@ -11,7 +11,7 @@ import java.util.UUID;
 @Getter
 @Entity
 @Table(name = "products")
-public class ProductLineJpaEntity extends BaseJpaEntity {
+public class OrderLineJpaEntity extends BaseJpaEntity {
 
     @Id
     @Column(name = "product_id")
@@ -36,10 +36,10 @@ public class ProductLineJpaEntity extends BaseJpaEntity {
     @JoinColumn(name = "order_id")
     private OrderJpaEntity order;
 
-    public ProductLineJpaEntity(ProductId productId, String productName, Money unitPrice, Quantity quantity, Money subtotal, UUID commerceId) {
+    public OrderLineJpaEntity(ProductId productId, String productName, Money unitPrice, Quantity quantity, Money subtotal, UUID commerceId) {
     }
 
-    public ProductLineJpaEntity() {
+    public OrderLineJpaEntity() {
 
     }
 }

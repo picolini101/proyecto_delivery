@@ -6,11 +6,11 @@ import org.jala.edu.order.domain.model.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProductPersistenceMapper implements PersistenceMapper<OrderLine, OrderLineId, ProductLineJpaEntity, String> {
+public class OrderLinePersistenceMapper implements PersistenceMapper<OrderLine, OrderLineId, OrderLineJpaEntity, String> {
 
     @Override
-    public ProductLineJpaEntity toEntity(OrderLine orderLine) {
-        return new ProductLineJpaEntity(orderLine.getProductId(),
+    public OrderLineJpaEntity toEntity(OrderLine orderLine) {
+        return new OrderLineJpaEntity(orderLine.getProductId(),
                 orderLine.getProductName(),
                 orderLine.getUnitPrice(),
                 orderLine.getQuantity(),
@@ -19,7 +19,7 @@ public class ProductPersistenceMapper implements PersistenceMapper<OrderLine, Or
     }
 
     @Override
-    public OrderLine toDomain(ProductLineJpaEntity entity) {
+    public OrderLine toDomain(OrderLineJpaEntity entity) {
         return OrderLine.restore(OrderLineId.of(entity.getOrder().getId()),
                 ProductId.of(entity.getId()),
                 entity.getMerchantId(),
@@ -35,16 +35,16 @@ public class ProductPersistenceMapper implements PersistenceMapper<OrderLine, Or
     public String toEntityId(OrderLineId orderLineId) {
         return orderLineId.toString();
     }
-    public List<ProductLineJpaEntity> toListProductEntity(List<OrderLine> products){
-        List<ProductLineJpaEntity> newList=new ArrayList<>();
+    public List<OrderLineJpaEntity> toListProductEntity(List<OrderLine> products){
+        List<OrderLineJpaEntity> newList=new ArrayList<>();
         for(OrderLine orderLine : products){
             newList.add(toEntity(orderLine));
         }
         return newList;
     }
-    public List<OrderLine> toOrderLine(List<ProductLineJpaEntity> products){
+    public List<OrderLine> toOrderLine(List<OrderLineJpaEntity> products){
         List<OrderLine> newList=new ArrayList<>();
-        for(ProductLineJpaEntity orderLineJpa : products){
+        for(OrderLineJpaEntity orderLineJpa : products){
             newList.add(toDomain(orderLineJpa));
         }
         return newList;

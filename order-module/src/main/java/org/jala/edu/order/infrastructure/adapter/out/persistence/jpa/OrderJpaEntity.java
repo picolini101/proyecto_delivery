@@ -40,11 +40,11 @@ public class OrderJpaEntity extends BaseJpaEntity {
     private BigDecimal total;
 
     @OneToMany(mappedBy = "order")
-    private List<ProductLineJpaEntity> products = new ArrayList<>();
+    private List<OrderLineJpaEntity> products = new ArrayList<>();
 
 
     public OrderJpaEntity() {
     }
-    public OrderJpaEntity(String entityId, CustomerId customerId, OrderStatus status, DeliveryAddress deliveryAddress, Money shippingCost, Money total, List<ProductLineJpaEntity> listProductEntity) {
+    public OrderJpaEntity(String entityId, CustomerId customerId, OrderStatus status, DeliveryAddress deliveryAddress, Money shippingCost, Money total, List<OrderLineJpaEntity> listProductEntity) {
     }
 }

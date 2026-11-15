@@ -1,4 +1,4 @@
-CREATE TABLE products_line (
+CREATE TABLE order_line (
         product_id BIGINT PRIMARY KEY,
         product_name VARCHAR(100),
         unit_price DOUBLE,

@@ -3,14 +3,11 @@ package org.jala.edu.order.infrastructure.adapter.out.persistence.jpa;
 import org.jala.edu.core.infrastructure.persistence.jpa.PersistenceMapper;
 import org.jala.edu.order.domain.model.*;
 
-import java.util.ArrayList;
-import java.util.List;
-
 final class OrderPersistenceMapper implements PersistenceMapper<Order, OrderId, OrderJpaEntity, String> {
-    final ProductPersistenceMapper productPersistenceMapper;
+    final OrderLinePersistenceMapper orderLinePersistenceMapper;
 
-    OrderPersistenceMapper(ProductPersistenceMapper productPersistenceMapper) {
-        this.productPersistenceMapper = productPersistenceMapper;
+    OrderPersistenceMapper(OrderLinePersistenceMapper orderLinePersistenceMapper) {
+        this.orderLinePersistenceMapper = orderLinePersistenceMapper;
     }
 
     @Override
@@ -21,14 +18,14 @@ final class OrderPersistenceMapper implements PersistenceMapper<Order, OrderId, 
                 model.getDeliveryAddress(),
                 model.getShippingCost(),
                 model.getTotal(),
-                productPersistenceMapper.toListProductEntity(model.getLines()));
+                orderLinePersistenceMapper.toListProductEntity(model.getLines()));
     }
 
     @Override
     public Order toDomain(OrderJpaEntity entity) {
         return Order.restore(OrderId.of(entity.getId()),
                 CustomerId.of(entity.getCustomerId()),
-                productPersistenceMapper.toOrderLine(entity.getProducts()),
+                orderLinePersistenceMapper.toOrderLine(entity.getProducts()),
                 Money.of(entity.getSubtotal()),
                 OrderStatus.valueOf(entity.getStatus()),
                 entity.getCreatedAt(),
