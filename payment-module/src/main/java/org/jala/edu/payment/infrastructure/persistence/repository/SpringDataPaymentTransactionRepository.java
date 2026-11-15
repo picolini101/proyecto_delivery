@@ -12,5 +12,6 @@ import java.util.List;
 @Repository
 public interface SpringDataPaymentTransactionRepository extends JpaRepository<PaymentTransactionEntity, String> {
     List<PaymentTransactionEntity> findByUserIdOrderByCreatedAtDesc(String userId);
+    List<PaymentTransactionEntity> findByOrderIdOrderByCreatedAtDesc(String orderId);
     boolean existsByOrderIdAndStatus(String orderId, String status);
 }
