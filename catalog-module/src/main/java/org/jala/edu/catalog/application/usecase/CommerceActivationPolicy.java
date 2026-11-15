@@ -19,12 +19,15 @@ class CommerceActivationPolicy {
         this.productRepository = productRepository;
     }
 
-    void requireAvailableProduct(UUID commerceId) {
-        boolean hasAvailableProduct = productRepository.findByCommerceId(commerceId)
+    /** Indica si el comercio tiene al menos un producto Disponible con stock (FUN-004 / FUN-005). */
+    boolean hasAvailableProduct(UUID commerceId) {
+        return productRepository.findByCommerceId(commerceId)
                 .stream()
                 .anyMatch(Product::isPurchasable);
+    }
 
-        if (!hasAvailableProduct) {
+    void requireAvailableProduct(UUID commerceId) {
+        if (!hasAvailableProduct(commerceId)) {
             throw new DomainException(NO_AVAILABLE_PRODUCT_MESSAGE);
         }
     }

@@ -23,6 +23,9 @@ import org.jala.edu.core.domain.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import java.util.List;
+import org.jala.edu.catalog.application.port.in.DeleteProductCommand;
+import org.jala.edu.catalog.application.usecase.DeleteProductUseCase;
+import org.jala.edu.core.infrastructure.contract.FallbackUserService;
 
 class CatalogServiceAdapterTest {
 
@@ -306,5 +309,16 @@ class CatalogServiceAdapterTest {
                 .extracting(ProductInfo::commerceId).containsExactly(SampleCatalog.COMMERCE);
         assertThat(result).filteredOn(p -> p.name().equals("Burger"))
                 .extracting(ProductInfo::commerceId).containsExactly(other.getId().value());
+    }
+    @Test
+    void doesNotReturnAProductDeletedByTheAdministrator() {
+        // Arrange: se elimina el producto con el caso de uso real
+        new DeleteProductUseCase(repository, commerceRepository, new FallbackUserService())
+                .execute(new DeleteProductCommand(SampleUsers.ADMIN, product.getId().value()));
+
+        // Assert: otros módulos lo ven como inexistente / no disponible
+        assertThat(catalogService.findProduct(product.getId().value())).isEmpty();
+        assertThat(catalogService.isAvailable(product.getId().value(), 1)).isFalse();
+        assertThat(catalogService.findAvailableProducts()).isEmpty();
     }
 }

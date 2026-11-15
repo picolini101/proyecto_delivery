@@ -1,5 +1,6 @@
 package org.jala.edu.catalog.infrastructure.adapter.in.ui;
 
+import java.util.UUID;
 import java.util.function.Function;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -15,12 +16,16 @@ import javafx.scene.control.TableView;
 import javafx.scene.input.MouseButton;
 import javafx.util.StringConverter;
 import lombok.RequiredArgsConstructor;
+import org.jala.edu.catalog.application.dto.DeleteProductResult;
 import org.jala.edu.catalog.application.dto.ManagedProduct;
+import org.jala.edu.catalog.application.port.in.DeleteProductCommand;
 import org.jala.edu.catalog.application.port.in.ListManagedProductsQuery;
 import org.jala.edu.catalog.application.port.in.UpdateProductStatusCommand;
+import org.jala.edu.catalog.application.usecase.DeleteProductUseCase;
 import org.jala.edu.catalog.application.usecase.ListManagedProductsUseCase;
 import org.jala.edu.catalog.application.usecase.UpdateProductStatusUseCase;
 import org.jala.edu.catalog.domain.model.ProductStatus;
+import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
 import org.jala.edu.core.infrastructure.ui.Dialogs;
 import org.jala.edu.core.infrastructure.ui.DisplayFormat;
@@ -42,8 +47,13 @@ public class ManageProductsController {
 
     private final BooleanProperty updatingAvailability = new SimpleBooleanProperty(false);
 
+    // Evita pulsar Eliminar dos veces mientras la eliminación está en curso
+    private final BooleanProperty deleting = new SimpleBooleanProperty(false);
+
     private final ListManagedProductsUseCase listManagedProductsUseCase;
     private final UpdateProductStatusUseCase updateProductStatusUseCase;
+    private final DeleteProductUseCase deleteProductUseCase;
+    private final CurrentUserService currentUserService;
     private final SpringFxmlLoader fxmlLoader;
 
     @FXML
@@ -77,6 +87,9 @@ public class ManageProductsController {
     private Button editButton;
 
     @FXML
+    private Button deleteButton;
+
+    @FXML
     private ComboBox<ProductStatus> availabilitySelector;
 
     @FXML
@@ -97,6 +110,10 @@ public class ManageProductsController {
 
         // El botón Editar solo se habilita cuando hay un producto seleccionado
         editButton.disableProperty().bind(productsTable.getSelectionModel().selectedItemProperty().isNull());
+
+        // Eliminar requiere un producto seleccionado y que no haya otra eliminación en curso
+        deleteButton.disableProperty().bind(
+                productsTable.getSelectionModel().selectedItemProperty().isNull().or(deleting));
 
         // El selector solo permite los estados Disponible y Agotado
         availabilitySelector.setItems(FXCollections.observableArrayList(
@@ -206,6 +223,45 @@ public class ManageProductsController {
     }
 
     /**
+     * Elimina el producto seleccionado tras pedir confirmación. Si el administrador cancela,
+     * no se ejecuta nada y el producto no se modifica. El solicitante es el usuario con sesión iniciada.
+     */
+    @FXML
+    void onDelete() {
+        ManagedProduct selected = productsTable.getSelectionModel().getSelectedItem();
+
+        if (selected == null) {
+            return;
+        }
+
+        boolean confirmed = Dialogs.confirm(
+                productsTable,
+                "¿Eliminar el producto " + selected.product().getName() + "?",
+                "También se eliminará su stock. Esta acción no se puede deshacer.");
+
+        if (!confirmed) {
+            return;
+        }
+
+        UUID productId = selected.product().getId().value();
+
+        deleting.set(true);
+
+        // El usuario actual se consulta dentro de la tarea: si no hay sesión, el error llega al mensaje
+        BackgroundTasks.run(
+                () -> deleteProductUseCase.execute(
+                        new DeleteProductCommand(currentUserService.currentUser().id(), productId)),
+                result -> {
+                    deleting.set(false);
+                    reload(deleteMessage(result));
+                },
+                error -> {
+                    deleting.set(false);
+                    showMessage(ErrorMessages.of(error, "eliminar el producto"), "error");
+                });
+    }
+
+    /**
      * Carga los productos; luego muestra {@code successMessage}, o el conteo si es {@code null}.
      */
     private void reload(String successMessage) {
@@ -231,6 +287,13 @@ public class ManageProductsController {
         messageLabel.getStyleClass().removeAll("info", "success", "error");
         messageLabel.getStyleClass().add(styleClass);
         messageLabel.setText(text);
+    }
+
+    // Mensaje de éxito; avisa si el comercio quedó Deshabilitado
+    private static String deleteMessage(DeleteProductResult result) {
+        return result == DeleteProductResult.DELETED_COMMERCE_DISABLED
+                ? "Producto eliminado. El comercio quedó Deshabilitado porque ya no tiene productos disponibles."
+                : "Producto eliminado correctamente.";
     }
 
     private static String count(int size) {
