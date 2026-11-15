@@ -1,9 +1,10 @@
-CREATE TABLE products (
+CREATE TABLE products_line (
         product_id BIGINT PRIMARY KEY,
         product_name VARCHAR(100),
         unit_price DOUBLE,
         quantity INT,
         merchant_id INT,
         order_id INT,
+        subtotal DOUBLE,
         FOREIGN KEY (order_id) REFERENCES orders(order_id)
 );

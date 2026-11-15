@@ -43,11 +43,12 @@ class ChangeOrderStatusUseCaseTest {
     private Order createSampleOrder() {
         OrderLine line = OrderLine.of(
                 ProductId.of(UUID.randomUUID()),
+                UUID.randomUUID(),
                 "Producto Test",
                 Money.of(new BigDecimal("25.00")),
                 Quantity.of(1)
         );
-        Order order = Order.create(CustomerId.of(customerId), List.of(line), line.subtotal());
+        Order order = Order.create(CustomerId.of(customerId), List.of(line), line.getSubtotal());
         return orderRepository.save(order);
     }
 

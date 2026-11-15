@@ -75,6 +75,7 @@ class OrderStatusHistoryPersistenceAdapterTest {
     private static Order createOrder() {
         OrderLine line = OrderLine.of(
                 ProductId.of(UUID.randomUUID()),
+                UUID.randomUUID(),
                 "Tea",
                 Money.of(new BigDecimal("5.00")),
                 Quantity.of(1));

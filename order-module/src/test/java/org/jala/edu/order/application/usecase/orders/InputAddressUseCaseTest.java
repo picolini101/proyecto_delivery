@@ -36,7 +36,7 @@ class InputAddressUseCaseTest {
         useCase = new InputAddressUseCase(orderRepository);
 
         OrderLine line = OrderLine.of(
-                ProductId.of(UUID.randomUUID()), "Producto de prueba", Money.of(new BigDecimal("25.00")),
+                ProductId.of(UUID.randomUUID()), UUID.randomUUID(), "Producto de prueba", Money.of(new BigDecimal("25.00")),
                 Quantity.of(1));
         order = Order.create(new CustomerId(UUID.randomUUID()), java.util.List.of(line), Money.of(25));
         orderRepository.save(order);

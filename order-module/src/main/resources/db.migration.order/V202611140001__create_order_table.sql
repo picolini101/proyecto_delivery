@@ -1,5 +1,6 @@
 CREATE TABLE orders (
     order_id INT PRIMARY KEY,
+    customer_id INT,
     subtotal DECIMAL(20,2),
     status VARCHAR(20) NOT NULL CHECK (status IN (
                                                     'CREATED',

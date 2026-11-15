@@ -124,6 +124,7 @@ class OrderPersistenceAdapterTest {
 
         OrderLine line = OrderLine.of(
                 ProductId.of(UUID.randomUUID()),
+                UUID.randomUUID(),
                 "Coffee",
                 Money.of(new BigDecimal("12.50")),
                 Quantity.of(1)

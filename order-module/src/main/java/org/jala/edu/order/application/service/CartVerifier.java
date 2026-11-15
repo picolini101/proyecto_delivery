@@ -68,7 +68,7 @@ public class CartVerifier {
 
             // Precio vigente: el que devuelve el catalogo ahora, no uno guardado antes
             BigDecimal lineSubtotal = product.price().multiply(BigDecimal.valueOf(item.getQuantity()));
-            lines.add(new CartVerification.Line(item.getProductId(), product.name(), product.price(),
+            lines.add(new CartVerification.Line(item.getProductId(), item.getCommerceId(), product.name(), product.price(),
                     item.getQuantity(), lineSubtotal));
             subtotal = subtotal.add(lineSubtotal);
 

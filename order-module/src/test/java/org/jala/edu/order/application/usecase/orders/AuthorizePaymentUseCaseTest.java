@@ -73,7 +73,8 @@ class AuthorizePaymentUseCaseTest {
 
     /** Una linea de 2 pizzas a 50.00. */
     private List<OrderLine> lines() {
-        return List.of(OrderLine.of(ProductId.of(SampleCatalog.PIZZA), "Pizza", Money.of(50), Quantity.of(2)));
+        return List.of(OrderLine.of(ProductId.of(SampleCatalog.PIZZA), SampleCatalog.COMMERCE, "Pizza",
+                Money.of(50), Quantity.of(2)));
     }
 
     /** Arma el comando para pagar el pedido de prueba como el cliente de ejemplo. */
