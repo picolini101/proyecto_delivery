@@ -4,6 +4,9 @@ import org.jala.edu.core.contract.CatalogService;
 import org.jala.edu.core.contract.PaymentService;
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.order.application.port.out.CartRepositoryPort;
+import org.jala.edu.order.application.port.out.FailedPaymentLogPort;
+import org.jala.edu.order.application.usecase.orders.ListFailedPaymentsUseCase;
+import org.jala.edu.order.application.usecase.orders.RegisterFailedPaymentUseCase;
 import org.jala.edu.order.application.port.out.OrderRepositoryPort;
 import org.jala.edu.order.application.port.out.OrderStatusHistoryPort;
 import org.jala.edu.order.application.port.out.PaymentGatewayPort;
@@ -114,5 +117,18 @@ public class OrderModuleConfiguration {
                                                            OrderStatusHistoryPort statusHistory) {
         return new GetOrderTrackingUseCase(userService, orderRepository, statusHistory);
     }
+
+    @Bean
+    public RegisterFailedPaymentUseCase registerFailedPaymentUseCase(ChangeOrderStatusUseCase changeOrderStatus,
+                                                                     FailedPaymentLogPort failedPayments) {
+        return new RegisterFailedPaymentUseCase(changeOrderStatus, failedPayments);
+    }
+
+    @Bean
+    public ListFailedPaymentsUseCase listFailedPaymentsUseCase(FailedPaymentLogPort failedPayments,
+                                                               OrderStatusHistoryPort history) {
+        return new ListFailedPaymentsUseCase(failedPayments, history);
+    }
+
 }
 
