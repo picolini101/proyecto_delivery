@@ -28,7 +28,11 @@ public class Order extends BaseModel<OrderId> {
                   OrderStatus status, Instant createdAt, Instant updatedAt) {
         super(orderId, createdAt, updatedAt);
         this.customerId = Objects.requireNonNull(customerId, "CustomerId es obligatorio");
-        this.lines = new ArrayList<>(Objects.requireNonNull(lines, "Lines es obligatorio"));
+        Objects.requireNonNull(lines, "Lines es obligatorio");
+        this.lines = new ArrayList<>(lines.size());
+        for (OrderLine line : lines) {
+            this.lines.add(Objects.requireNonNull(line, "OrderLine es obligatoria").withOrderId(orderId));
+        }
         if (lines.isEmpty()) {
             throw new DomainException("No se puede crear un pedido con cero líneas");
         }
@@ -52,6 +56,16 @@ public class Order extends BaseModel<OrderId> {
                                 Instant createdAt,
                                 Instant updatedAt) {
         return new Order(id, customerId, lines, subtotal, status, createdAt, updatedAt);
+    }
+
+    public static Order restore(OrderId id, CustomerId customerId, List<OrderLine> lines, Money subtotal,
+                                OrderStatus status, DeliveryAddress deliveryAddress, Money shippingCost,
+                                Money total, Instant createdAt, Instant updatedAt) {
+        Order order = new Order(id, customerId, lines, subtotal, status, createdAt, updatedAt);
+        order.deliveryAddress = deliveryAddress;
+        order.shippingCost = shippingCost;
+        order.total = total;
+        return order;
     }
 
     public List<OrderLine> getLines() {

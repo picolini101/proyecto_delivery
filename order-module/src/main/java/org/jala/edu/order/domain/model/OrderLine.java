@@ -40,10 +40,20 @@ public class OrderLine extends BaseModel<OrderLineId> {
                 quantity, unitPrice.multiply(quantity), now, now, orderId);
     }
 
+    public static OrderLine of(ProductId productId, UUID commerceId, String productName,
+                               Money unitPrice, Quantity quantity) {
+        return of(productId, commerceId, productName, unitPrice, quantity, null);
+    }
+
     public static OrderLine restore(OrderLineId id, ProductId productId, UUID commerceId, String productName,
                                     Money unitPrice, Quantity quantity, Money subtotal, OrderId orderId,
                                     Instant createdAt, Instant updatedAt) {
         return new OrderLine(id, productId, commerceId, productName, unitPrice, quantity,
                 subtotal, createdAt, updatedAt,orderId );
+    }
+
+    OrderLine withOrderId(OrderId orderId) {
+        return new OrderLine(getId(), productId, commerceId, productName, unitPrice, quantity, subtotal,
+                getCreatedAt(), getUpdatedAt(), Objects.requireNonNull(orderId, "OrderId no puede ser nulo"));
     }
 }

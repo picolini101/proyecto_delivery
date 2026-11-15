@@ -1,58 +1,61 @@
 package org.jala.edu.order.infrastructure.adapter.out.persistence.jpa;
 
-import org.jala.edu.core.infrastructure.persistence.jpa.PersistenceMapper;
-import org.jala.edu.order.domain.model.*;
-
-import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import org.jala.edu.core.infrastructure.persistence.jpa.PersistenceMapper;
+import org.jala.edu.order.domain.model.Money;
+import org.jala.edu.order.domain.model.OrderId;
+import org.jala.edu.order.domain.model.OrderLine;
+import org.jala.edu.order.domain.model.OrderLineId;
+import org.jala.edu.order.domain.model.ProductId;
+import org.jala.edu.order.domain.model.Quantity;
+import org.springframework.stereotype.Component;
+import java.util.NoSuchElementException;
 
-public class OrderLinePersistenceMapper implements PersistenceMapper<OrderLine, OrderLineId, OrderLineJpaEntity, String> {
-    OrderJpaRepository orderJpaRepository;
+@Component
+public class OrderLinePersistenceMapper
+        implements PersistenceMapper<OrderLine, OrderLineId, OrderLineJpaEntity, UUID> {
+
+    private final OrderJpaRepository orderRepository;
+
+    public OrderLinePersistenceMapper(OrderJpaRepository orderRepository) {
+        this.orderRepository = orderRepository;
+    }
+
     @Override
-    public OrderLineJpaEntity toEntity(OrderLine orderLine) {
-        return new OrderLineJpaEntity(orderLine.getProductId().value(),
-                orderLine.getProductName(),
-                orderLine.getUnitPrice().value().doubleValue(),
-                orderLine.getQuantity().value(),
-                orderLine.getCommerceId(),
-                orderLine.getSubtotal().value().doubleValue(),
-                orderJpaRepository.findById(orderLine.getOrderId()),
-                orderLine.getCreatedAt(),
-                orderLine.getUpdatedAt());
+    public OrderLineJpaEntity toEntity(OrderLine line) {
+        if (line.getOrderId() == null) {
+            throw new IllegalArgumentException("OrderLine debe estar asociada a un pedido");
+        }
+        OrderJpaEntity order = orderRepository.findById(line.getOrderId().value())
+                .orElseThrow(() -> new NoSuchElementException("No existe el pedido " + line.getOrderId()));
+        return toEntity(line, order);
+    }
 
+    OrderLineJpaEntity toEntity(OrderLine line, OrderJpaEntity order) {
+        return new OrderLineJpaEntity(line.getId().value(), line.getProductId().value(), line.getProductName(),
+                line.getUnitPrice().value().doubleValue(), line.getQuantity().value(), line.getCommerceId(),
+                line.getSubtotal().value().doubleValue(), order, line.getCreatedAt(), line.getUpdatedAt());
+    }
 
+    List<OrderLineJpaEntity> toEntities(List<OrderLine> lines, OrderJpaEntity order) {
+        return lines.stream().map(line -> toEntity(line, order)).toList();
     }
 
     @Override
     public OrderLine toDomain(OrderLineJpaEntity entity) {
-        return OrderLine.restore(OrderLineId.of(entity.getOrder().getId()),
-                ProductId.of(entity.getId()),
-                entity.getMerchantId(),
-                entity.getProductName(),
-                Money.of(entity.getUnitPrice()),
-                Quantity.of(entity.getQuantity()),
-                Money.of(entity.getSubtotal()),
-                OrderId.of(String.valueOf(entity.getOrder())),
-                entity.getCreatedAt(),
-                entity.getUpdatedAt());
+        return OrderLine.restore(OrderLineId.of(entity.getId()), ProductId.of(entity.getProductId()),
+                entity.getCommerceId(), entity.getProductName(), Money.of(entity.getUnitPrice()),
+                Quantity.of(entity.getQuantity()), Money.of(entity.getSubtotal()),
+                OrderId.of(entity.getOrder().getId()), entity.getCreatedAt(), entity.getUpdatedAt());
+    }
+
+    List<OrderLine> toDomain(List<OrderLineJpaEntity> entities) {
+        return entities.stream().map(this::toDomain).toList();
     }
 
     @Override
-    public String toEntityId(OrderLineId orderLineId) {
-        return orderLineId.toString();
-    }
-    public List<OrderLineJpaEntity> toListProductEntity(List<OrderLine> products){
-        List<OrderLineJpaEntity> newList=new ArrayList<>();
-        for(OrderLine orderLine : products){
-            newList.add(toEntity(orderLine));
-        }
-        return newList;
-    }
-    public List<OrderLine> toOrderLine(List<OrderLineJpaEntity> products){
-        List<OrderLine> newList=new ArrayList<>();
-        for(OrderLineJpaEntity orderLineJpa : products){
-            newList.add(toDomain(orderLineJpa));
-        }
-        return newList;
+    public UUID toEntityId(OrderLineId id) {
+        return id.value();
     }
 }

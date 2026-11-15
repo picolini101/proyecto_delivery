@@ -14,6 +14,9 @@ import org.jala.edu.order.domain.model.OrderStatus;
 import org.jala.edu.order.domain.model.OrderStatusChange;
 import org.jala.edu.order.domain.model.ProductId;
 import org.jala.edu.order.domain.model.Quantity;
+import org.jala.edu.core.application.port.out.TransactionRunner;
+import org.jala.edu.order.application.usecase.orders.ChangeOrderStatusUseCase;
+import org.jala.edu.order.application.port.in.ChangeOrderStatusCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +28,13 @@ import org.springframework.context.annotation.Import;
 
 /** Contrato de persistencia JPA esperado para el historial de estados de pedidos. */
 
-@DataJpaTest(properties = "spring.datasource.url=jdbc:h2:mem:order-status-history;MODE=MySQL;DATABASE_TO_LOWER=TRUE")
+@DataJpaTest(properties = {
+        "spring.datasource.url=jdbc:h2:mem:order-status-history;MODE=MySQL;DATABASE_TO_LOWER=TRUE",
+        "spring.flyway.locations=classpath:db/migration/order"
+})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({OrderPersistenceAdapter.class, OrderStatusHistoryPersistenceAdapter.class})
+@Import({OrderPersistenceAdapter.class, OrderPersistenceMapper.class, OrderLinePersistenceMapper.class,
+        OrderStatusHistoryPersistenceAdapter.class, OrderStatusHistoryPersistenceMapper.class})
 class OrderStatusHistoryPersistenceAdapterTest {
     @Autowired
     private OrderPersistenceAdapter orders;
@@ -71,6 +78,32 @@ class OrderStatusHistoryPersistenceAdapterTest {
         List<OrderStatusChange> result = history.findByOrderId(order.getId());
         // Assert
         assertThat(result).hasSize(1);
+    }
+
+    @Test
+    void confirmsPersistedOrderAndRecordsItsStatusTransition() {
+        // Arrange
+        Order order = orders.save(createOrder());
+        ChangeOrderStatusUseCase useCase = new ChangeOrderStatusUseCase(
+                orders, history, TransactionRunner.direct());
+        ChangeOrderStatusCommand command = new ChangeOrderStatusCommand(order.getId().value(),
+                OrderStatus.CONFIRMED, CHANGED_BY, "Payment authorized");
+
+        // Act
+        useCase.execute(command);
+        entityManager.flush();
+        entityManager.clear();
+
+        // Assert
+        Order savedOrder = orders.findById(order.getId()).orElseThrow();
+        assertThat(savedOrder.getStatus()).isEqualTo(OrderStatus.CONFIRMED);
+        assertThat(history.findByOrderId(order.getId()))
+                .singleElement()
+                .satisfies(change -> {
+                    assertThat(change.getPreviousStatus()).isEqualTo(OrderStatus.CREATED);
+                    assertThat(change.getNewStatus()).isEqualTo(OrderStatus.CONFIRMED);
+                    assertThat(change.getChangedById()).isEqualTo(CHANGED_BY);
+                });
     }
     private static Order createOrder() {
         OrderLine line = OrderLine.of(

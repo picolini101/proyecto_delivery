@@ -27,9 +27,12 @@ import org.springframework.context.annotation.Import;
 
 /** Contrato de persistencia JPA esperado para pedidos. */
 
-@DataJpaTest(properties = "spring.datasource.url=jdbc:h2:mem:orders;MODE=MySQL;DATABASE_TO_LOWER=TRUE")
+@DataJpaTest(properties = {
+        "spring.datasource.url=jdbc:h2:mem:orders;MODE=MySQL;DATABASE_TO_LOWER=TRUE",
+        "spring.flyway.locations=classpath:db/migration/order"
+})
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import(OrderPersistenceAdapter.class)
+@Import({OrderPersistenceAdapter.class, OrderPersistenceMapper.class, OrderLinePersistenceMapper.class})
 class OrderPersistenceAdapterTest {
 
     @Autowired
@@ -117,7 +120,7 @@ class OrderPersistenceAdapterTest {
 
         // Assert
         assertThat(found).hasSize(1);
-        assertThat(found.get(0).getCustomerId()).isEqualTo(CUSTOMER_ID);
+        assertThat(found.get(0).getCustomerId().value()).isEqualTo(CUSTOMER_ID);
     }
 
     private static Order createOrder(UUID customerId) {
