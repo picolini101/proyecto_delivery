@@ -1,9 +1,12 @@
 package org.jala.edu.order.application.usecase.orders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import org.jala.edu.core.application.port.out.TransactionRunner;
@@ -13,13 +16,16 @@ import org.jala.edu.order.application.dto.PaymentAttempt;
 import org.jala.edu.order.application.port.in.RegisterFailedPaymentCommand;
 import org.jala.edu.order.application.port.out.PaymentAuthorization;
 import org.jala.edu.order.domain.model.CustomerId;
+import org.jala.edu.order.domain.model.FailedPaymentRecord;
 import org.jala.edu.order.domain.model.Money;
 import org.jala.edu.order.domain.model.Order;
 import org.jala.edu.order.domain.model.OrderLine;
 import org.jala.edu.order.domain.model.OrderStatus;
 import org.jala.edu.order.domain.model.OrderStatusChange;
+import org.jala.edu.order.domain.model.PaymentAttemptResult;
 import org.jala.edu.order.domain.model.ProductId;
 import org.jala.edu.order.domain.model.Quantity;
+import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryFailedPaymentLogAdapter;
 import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryOrderRepositoryAdapter;
 import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryOrderStatusHistoryAdapter;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,6 +35,7 @@ import org.junit.jupiter.api.Test;
  * Pruebas de {@link RegisterFailedPaymentUseCase} (HU "Registrar el intento de pago fallido").
  * Usa los repositorios en memoria; no hace falta ningun mock porque el pago ya viene resuelto en el intento.
  * Criterio 1: si el pago es rechazado, el pedido pasa a Cancelado con el motivo "Pago rechazado" en el historial.
+ * Criterio 2: el intento fallido queda registrado (resultado, fecha y hora) para auditoria.
  */
 class RegisterFailedPaymentUseCaseTest {
 
@@ -37,6 +44,9 @@ class RegisterFailedPaymentUseCaseTest {
 
     /** Historial de cambios de estado en memoria. */
     private InMemoryOrderStatusHistoryAdapter statusHistory;
+
+    /** Registro de intentos de pago fallidos en memoria (auditoria). */
+    private InMemoryFailedPaymentLogAdapter failedPayments;
 
     /** Caso de uso que se esta probando. */
     private RegisterFailedPaymentUseCase useCase;
@@ -49,9 +59,10 @@ class RegisterFailedPaymentUseCaseTest {
     void setUp() {
         orders = new InMemoryOrderRepositoryAdapter();
         statusHistory = new InMemoryOrderStatusHistoryAdapter();
+        failedPayments = new InMemoryFailedPaymentLogAdapter();
         ChangeOrderStatusUseCase changeOrderStatus =
                 new ChangeOrderStatusUseCase(orders, statusHistory, TransactionRunner.direct());
-        useCase = new RegisterFailedPaymentUseCase(changeOrderStatus);
+        useCase = new RegisterFailedPaymentUseCase(changeOrderStatus, failedPayments);
 
         order = orders.save(Order.create(CustomerId.of(SampleUsers.CUSTOMER), lines(), Money.of(100)));
     }
@@ -96,5 +107,32 @@ class RegisterFailedPaymentUseCaseTest {
 
         Order saved = orders.findById(order.getId()).orElseThrow();
         assertNotEquals(OrderStatus.CONFIRMED, saved.getStatus());
+    }
+
+    /** Criterio 2: se guarda un registro con el resultado y el motivo del rechazo. */
+    @Test
+    void rejectedPaymentRegistersTheFailedAttempt() {
+        useCase.execute(rejectedCommand());
+
+        List<FailedPaymentRecord> records = failedPayments.findByOrderId(order.getId());
+        assertEquals(1, records.size());
+        FailedPaymentRecord record = records.get(0);
+        assertEquals(order.getId(), record.getOrderId());
+        assertEquals(SampleUsers.CUSTOMER, record.getCustomerId());
+        assertEquals(PaymentAttemptResult.REJECTED, record.getResult());
+        assertEquals("Fondos insuficientes", record.getReason());
+    }
+
+    /** Criterio 2: el registro guarda la fecha y la hora en que ocurrio el intento. */
+    @Test
+    void failedAttemptKeepsTheDateAndTime() {
+        Instant before = Instant.now().truncatedTo(ChronoUnit.MICROS);
+
+        useCase.execute(rejectedCommand());
+
+        Instant after = Instant.now();
+        FailedPaymentRecord record = failedPayments.findByOrderId(order.getId()).get(0);
+        assertFalse(record.getCreatedAt().isBefore(before));
+        assertFalse(record.getCreatedAt().isAfter(after));
     }
 }
