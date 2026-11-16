@@ -257,6 +257,24 @@ class ProductTest {
         assertThat(product.isPurchasable()).isFalse();
     }
 
+    @Test
+        void doesNotAllowReactivatingADisabledProduct() {
+            Product product = Product.register(
+                    COMMERCE_ID, "Pizza", "Food", new BigDecimal("50.00"));
+            product.adjustStock(10);
+            product.disable();
+
+            Throwable thrown = catchThrowable(
+                    () -> product.updateStatus(ProductStatus.AVAILABLE));
+
+            assertThat(thrown)
+                    .isInstanceOf(DomainException.class)
+                    .hasMessage("Disabled product cannot be reactivated");
+
+            assertThat(product.getStatus()).isEqualTo(ProductStatus.DISABLED);
+            assertThat(product.getStock()).isEqualTo(10);
+        }
+
     @ParameterizedTest
     @ValueSource(strings = {"pizza", "PIZZA", "izz", "marg", "food", "OO", "  pizza  "})
     void matchesPartiallyByNameOrCategoryIgnoringCase(String text) {
