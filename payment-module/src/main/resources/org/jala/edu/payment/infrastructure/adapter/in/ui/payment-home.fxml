@@ -1,15 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 
-<!-- Vista principal del módulo de pagos: una pestaña por pantalla (#29 métodos de pago, #33 historial) -->
 <TabPane xmlns="http://javafx.com/javafx/25"
          xmlns:fx="http://javafx.com/fxml/1"
          tabClosingPolicy="UNAVAILABLE">
+
     <Tab text="Métodos de pago">
         <fx:include source="payment-methods.fxml"/>
     </Tab>
+
     <Tab text="Historial de pagos">
         <fx:include source="payment-main.fxml"/>
     </Tab>
+
+    <Tab text="Procesar pagos">
+        <fx:include source="process-payment.fxml"/>
+    </Tab>
+
 </TabPane>
