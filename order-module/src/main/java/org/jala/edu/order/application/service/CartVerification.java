@@ -19,12 +19,14 @@ public record CartVerification(List<Line> lines,List<Issue> issues, BigDecimal s
      * Una linea verificada, el producto con el precio vigente del catalogo.
      *
      * @param productId   id del producto
+     * @param commerceId comercio que vende el producto
      * @param productName nombre actual del producto
      * @param unitPrice   precio vigente de una unidad
      * @param quantity    cantidad que hay en el carrito
      * @param lineSubtotal precio vigente por cantidad
      */
-    public record Line(UUID productId, String productName, BigDecimal unitPrice, int quantity, BigDecimal lineSubtotal){}
+    public record Line(UUID productId, UUID commerceId, String productName, BigDecimal unitPrice,
+                       int quantity, BigDecimal lineSubtotal){}
 
     /**
      * Un problema encontrado en un producto del carrito.

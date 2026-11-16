@@ -17,7 +17,7 @@ public record OrderSummary(
 ) {
     public static OrderSummary from(Order order) {
         int itemsCount = order.getLines().stream()
-                .mapToInt(line -> line.quantity().value())
+                .mapToInt(line -> line.getQuantity().value())
                 .sum();
         return new OrderSummary(
                 order.getId().value(),

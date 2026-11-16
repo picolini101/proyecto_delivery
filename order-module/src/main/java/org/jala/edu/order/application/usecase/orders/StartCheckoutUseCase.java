@@ -67,7 +67,7 @@ public class StartCheckoutUseCase implements UseCase<StartCheckoutCommand, Order
             Money unitPrice = Money.of(line.unitPrice());
             // 4. Convertimos el int plano al Value Object Quantity
             Quantity quantity = Quantity.of(line.quantity());
-            OrderLine orderLine = OrderLine.of(productId, productName, unitPrice, quantity);
+            OrderLine orderLine = OrderLine.of(productId, line.commerceId(), productName, unitPrice, quantity);
             orderLines.add(orderLine);
         }
 

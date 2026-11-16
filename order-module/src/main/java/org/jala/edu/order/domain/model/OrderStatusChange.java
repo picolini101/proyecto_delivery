@@ -38,4 +38,23 @@ public class OrderStatusChange extends BaseModel<OrderStatusChangeId> {
                 now()
         );
     }
+
+    public static OrderStatusChange restore(OrderStatusChangeId id, OrderId orderId,
+                                            OrderStatus previousStatus, OrderStatus newStatus,
+                                            UUID changedById, String reason, Instant createdAt,
+                                            Instant updatedAt) {
+        return new OrderStatusChange(id, orderId, previousStatus, newStatus, changedById, reason,
+                createdAt, updatedAt);
+    }
+
+    private OrderStatusChange(OrderStatusChangeId id, OrderId orderId, OrderStatus previousStatus,
+                              OrderStatus newStatus, UUID changedById, String reason,
+                              Instant createdAt, Instant updatedAt) {
+        super(id, createdAt, updatedAt);
+        this.orderId = Objects.requireNonNull(orderId, "OrderId es obligatorio");
+        this.previousStatus = Objects.requireNonNull(previousStatus, "Estado previo es obligatorio");
+        this.newStatus = Objects.requireNonNull(newStatus, "Nuevo estado es obligatorio");
+        this.changedById = Objects.requireNonNull(changedById, "Id del usuario responsable es obligatorio");
+        this.reason = reason;
+    }
 }

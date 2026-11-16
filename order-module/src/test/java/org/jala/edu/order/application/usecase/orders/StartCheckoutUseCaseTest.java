@@ -120,8 +120,9 @@ class StartCheckoutUseCaseTest {
         assertThat(summary.totalItems()).isEqualTo(2);
         assertThat(summary.subtotal()).isEqualByComparingTo("100.00");
 
-        assertThat(orderRepository.findByCustomerId(new org.jala.edu.order.domain.model.CustomerId(customerId)))
-                .hasSize(1);
+        var savedOrder = orderRepository.findByCustomerId(
+                new org.jala.edu.order.domain.model.CustomerId(customerId)).getFirst();
+        assertThat(savedOrder.getLines().getFirst().getCommerceId()).isEqualTo(commerceId);
 
         Cart cartAfter = cartRepository.findByCustomerId(customerId).orElseThrow();
         assertThat(cartAfter.getItems()).isEmpty();

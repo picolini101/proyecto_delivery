@@ -57,6 +57,7 @@ class CartVerifierTest {
 
         assertTrue(result.isValid());
         assertEquals(1, result.lines().size());
+        assertEquals(COMMERCE, result.lines().get(0).commerceId());
         assertEquals(price, result.lines().get(0).unitPrice());
         assertEquals(expected, result.lines().get(0).lineSubtotal());
         assertEquals(expected, result.subtotal());
