@@ -6,7 +6,10 @@ main view and the **Delivery history** screen.
 ## Delivery history
 
 Lets a courier review every delivery they have finished, with its order, locality, delivery date and amount, plus the total
-amount of all of them (most recent first). It is opened from the "Delivery history" button of the Deliveries main view.
+amount of all of them. It is opened from the "Delivery history" button of the Deliveries main view.
+
+- The "Sort by" list chooses the order: most recent (the default), oldest first or highest amount. Each order is a value of
+  `DeliverySortOrder`, which carries its own comparator (Strategy pattern); a new order only needs a new value there.
 
 - Only an active user with the `COURIER` role can see a history (checked through `UserService` from `core-module`); anyone
   else gets "User not authorized for this operation" and nothing is shown.

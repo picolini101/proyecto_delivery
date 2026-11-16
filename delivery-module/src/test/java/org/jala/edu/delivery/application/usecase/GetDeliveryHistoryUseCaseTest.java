@@ -14,6 +14,7 @@ import org.jala.edu.delivery.application.port.out.DeliveryHistoryPort;
 import org.jala.edu.delivery.domain.exception.NotAuthorizedException;
 import org.jala.edu.delivery.domain.model.CompletedDelivery;
 import org.jala.edu.delivery.domain.model.DeliveryHistory;
+import org.jala.edu.delivery.domain.model.DeliverySortOrder;
 import org.jala.edu.delivery.infrastructure.adapter.out.persistence.memory.InMemoryDeliveryHistoryAdapter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,6 +42,40 @@ class GetDeliveryHistoryUseCaseTest {
         // Assert
         assertThat(history.deliveries()).containsExactly(newest, middle, oldest);
         assertThat(history.total()).isEqualByComparingTo("38.25");
+    }
+
+    @Test
+    void returnsTheHistoryInTheRequestedOrder() {
+        // Arrange
+        CompletedDelivery cheap = delivery("8.00", "2026-10-28");
+        CompletedDelivery expensive = delivery("15.75", "2026-10-20");
+        CompletedDelivery middle = delivery("12.50", "2026-10-22");
+        repository.add(cheap);
+        repository.add(expensive);
+        repository.add(middle);
+
+        // Act
+        DeliveryHistory history = getHistory.execute(
+                new GetDeliveryHistoryQuery(SampleUsers.COURIER, DeliverySortOrder.HIGHEST_AMOUNT));
+
+        // Assert
+        assertThat(history.deliveries()).containsExactly(expensive, middle, cheap);
+        assertThat(history.total()).isEqualByComparingTo("36.25");
+    }
+
+    @Test
+    void usesTheMostRecentOrderWhenNoneIsRequested() {
+        // Arrange
+        CompletedDelivery oldest = delivery("10.00", "2026-10-20");
+        CompletedDelivery newest = delivery("15.75", "2026-10-28");
+        repository.add(oldest);
+        repository.add(newest);
+
+        // Act
+        DeliveryHistory history = getHistory.execute(new GetDeliveryHistoryQuery(SampleUsers.COURIER, null));
+
+        // Assert
+        assertThat(history.deliveries()).containsExactly(newest, oldest);
     }
 
     @Test
