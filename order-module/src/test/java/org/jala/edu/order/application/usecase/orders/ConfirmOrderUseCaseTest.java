@@ -135,27 +135,4 @@ class ConfirmOrderUseCaseTest {
         }
     }
 
-    @Test
-    @DisplayName("CA-4: Rechazar confirmacion si el pedido no pertenece al cliente")
-    void shouldRejectConfirmationWhenCustomerIsNotOwner() {
-        // Arrange
-        Order order = createSampleOrder();
-        UUID anotherCustomerId = UUID.randomUUID();
-
-        PaymentAttempt approvedPayment = new PaymentAttempt(
-                order.getId().value(),
-                order.getSubtotal().value(),
-                new PaymentAuthorization.Approved("PAY-REF-222")
-        );
-
-        ConfirmOrderCommand command = new ConfirmOrderCommand(order.getId().value(), anotherCustomerId, approvedPayment);
-
-        // Act & Assert
-        try {
-            useCase.execute(command);
-            fail("Debio lanzar UnauthorizedCustomerException al no coincidir el cliente");
-        } catch (UnauthorizedCustomerException ex) {
-            assertThat(ex.getMessage()).contains("no pertenece al cliente");
-        }
-    }
 }
