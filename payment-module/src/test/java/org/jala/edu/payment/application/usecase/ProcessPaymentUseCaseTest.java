@@ -241,5 +241,33 @@ class ProcessPaymentUseCaseTest {
         verify(transactionPort, never()).recordRejected(
                 any(), any(), any(), any(), anyString());
     }
+    @Test
+    void shouldRejectPaymentWhenTransactionRecordingFailsUnexpectedly() {
+        when(userService.isActiveWithRole(
+                userId, UserRole.CUSTOMER)).thenReturn(true);
+
+        when(methodPort.isValidPaymentMethod(
+                userId, paymentMethodId)).thenReturn(true);
+
+        when(transactionPort.recordApproved(
+                eq(orderId),
+                eq(userId),
+                eq(paymentMethodId),
+                any(BigDecimal.class)))
+                .thenThrow(new RuntimeException("Error inesperado"));
+
+        ProcessPaymentCommand command =
+                new ProcessPaymentCommand(
+                        orderId, userId, paymentMethodId,
+                        new BigDecimal("100"));
+
+        PaymentResult result = useCase.execute(command);
+
+        assertFalse(result.approved());
+        assertEquals("", result.paymentReference());
+        assertEquals(
+                "No se pudo procesar el pago",
+                result.reason());
+    }
 
 }
