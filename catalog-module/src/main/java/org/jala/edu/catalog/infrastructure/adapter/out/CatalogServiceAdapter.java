@@ -56,6 +56,10 @@ public class CatalogServiceAdapter implements CatalogService {
     public void reserveStock(UUID productId, int quantity) {
         Product product = getRequiredProduct(productId);
 
+        if (!product.isAvailable()) {
+            throw new ConflictException("Product is not available");
+        }
+
         if (quantity <= 0 || product.getStock() < quantity) {
             throw new ConflictException("Insufficient stock");
         }

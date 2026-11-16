@@ -21,9 +21,11 @@ import org.jala.edu.catalog.application.dto.ManagedProduct;
 import org.jala.edu.catalog.application.port.in.DeleteProductCommand;
 import org.jala.edu.catalog.application.port.in.ListManagedProductsQuery;
 import org.jala.edu.catalog.application.port.in.UpdateProductStatusCommand;
+import org.jala.edu.catalog.application.port.in.DisableProductCommand;
 import org.jala.edu.catalog.application.usecase.DeleteProductUseCase;
 import org.jala.edu.catalog.application.usecase.ListManagedProductsUseCase;
 import org.jala.edu.catalog.application.usecase.UpdateProductStatusUseCase;
+import org.jala.edu.catalog.application.usecase.DisableProductUseCase;
 import org.jala.edu.catalog.domain.model.ProductStatus;
 import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
@@ -38,6 +40,7 @@ import java.util.Objects;
 import javafx.animation.PauseTransition;
 import javafx.scene.control.TextField;
 import javafx.util.Duration;
+import javafx.beans.binding.Bindings;
 /**
  * Adaptador de entrada JavaFX para listar los productos que el administrador o comerciante gestiona
  * (vista: {@code manage-products.fxml}). Es también el punto de entrada para editar el producto
@@ -52,10 +55,12 @@ public class ManageProductsController {
 
     // Evita pulsar Eliminar dos veces mientras la eliminación está en curso
     private final BooleanProperty deleting = new SimpleBooleanProperty(false);
+    private final BooleanProperty disabling = new SimpleBooleanProperty(false);
 
     private final ListManagedProductsUseCase listManagedProductsUseCase;
     private final UpdateProductStatusUseCase updateProductStatusUseCase;
     private final DeleteProductUseCase deleteProductUseCase;
+    private final DisableProductUseCase disableProductUseCase;
     private final CurrentUserService currentUserService;
     private final SpringFxmlLoader fxmlLoader;
     private static final Duration SEARCH_DELAY = Duration.millis(300);
@@ -95,6 +100,9 @@ public class ManageProductsController {
     private Button deleteButton;
 
     @FXML
+    private Button disableButton;
+
+    @FXML
     private ComboBox<ProductStatus> availabilitySelector;
 
     @FXML
@@ -122,6 +130,19 @@ public class ManageProductsController {
         // Eliminar requiere un producto seleccionado y que no haya otra eliminación en curso
         deleteButton.disableProperty().bind(
                 productsTable.getSelectionModel().selectedItemProperty().isNull().or(deleting));
+
+        // Deshabilitar requiere un producto seleccionado que todavía esté habilitado
+        disableButton.disableProperty().bind(
+                productsTable.getSelectionModel().selectedItemProperty().isNull()
+                        .or(disabling)
+                        .or(Bindings.createBooleanBinding(
+                                () -> {
+                                    ManagedProduct selected =
+                                            productsTable.getSelectionModel().getSelectedItem();
+                                    return selected != null
+                                            && selected.product().getStatus() == ProductStatus.DISABLED;
+                                },
+                                productsTable.getSelectionModel().selectedItemProperty())));
 
         // El selector solo permite los estados Disponible y Agotado
         availabilitySelector.setItems(FXCollections.observableArrayList(
@@ -270,6 +291,43 @@ public class ManageProductsController {
                 error -> {
                     deleting.set(false);
                     showMessage(ErrorMessages.of(error, "eliminar el producto"), "error");
+                });
+    }
+
+    /**
+     * Deshabilita el producto seleccionado sin eliminarlo ni modificar su stock.
+     */
+    @FXML
+    void onDisable() {
+        ManagedProduct selected = productsTable.getSelectionModel().getSelectedItem();
+
+        if (selected == null || selected.product().getStatus() == ProductStatus.DISABLED) {
+            return;
+        }
+
+        boolean confirmed = Dialogs.confirm(
+                productsTable,
+                "¿Deshabilitar el producto " + selected.product().getName() + "?",
+                "El producto dejará de estar disponible para los clientes. Se conservarán sus datos y su stock.");
+
+        if (!confirmed) {
+            return;
+        }
+
+        UUID productId = selected.product().getId().value();
+
+        disabling.set(true);
+
+        BackgroundTasks.run(
+                () -> disableProductUseCase.execute(
+                        new DisableProductCommand(currentUserService.currentUser().id(), productId)),
+                done -> {
+                    disabling.set(false);
+                    reload("Product disabled successfully.");
+                },
+                error -> {
+                    disabling.set(false);
+                    showMessage(ErrorMessages.of(error, "deshabilitar el producto"), "error");
                 });
     }
 

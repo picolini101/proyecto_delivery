@@ -195,6 +195,20 @@ class CatalogServiceAdapterTest {
     }
 
     @Test
+    void cannotReserveStockForADisabledProduct() {
+        // Arrange
+        product.disable();
+
+        // Act
+        Throwable thrown = catchThrowable(
+                () -> catalogService.reserveStock(product.getId().value(), 1));
+
+        // Assert
+        assertThat(thrown).isInstanceOf(ConflictException.class);
+        assertThat(repository.findById(product.getId()).orElseThrow().getStock()).isEqualTo(10);
+    }
+
+    @Test
     void productIsUnavailableWhenStockIsZero() {
         product.adjustStock(0);
 

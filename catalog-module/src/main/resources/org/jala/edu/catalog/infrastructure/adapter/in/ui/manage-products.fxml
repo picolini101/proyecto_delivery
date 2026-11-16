@@ -22,6 +22,7 @@
         <Region HBox.hgrow="ALWAYS"/>
         <Label fx:id="messageLabel" styleClass="message"/>
         <Button fx:id="editButton" text="Edit" onAction="#onEdit"/>
+        <Button fx:id="disableButton" text="Disable" onAction="#onDisable"/>
         <Button fx:id="deleteButton" text="Delete" onAction="#onDelete"/>
         <Button fx:id="refreshButton" text="Refresh" onAction="#onRefresh"/>
     </HBox>
