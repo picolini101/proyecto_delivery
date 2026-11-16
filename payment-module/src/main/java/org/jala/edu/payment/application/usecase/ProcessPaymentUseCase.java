@@ -81,6 +81,12 @@ public class ProcessPaymentUseCase {
 
         } catch (IllegalStateException exception) {
             return new PaymentResult("", false, exception.getMessage());
+        } catch (RuntimeException exception) {
+            return new PaymentResult(
+                    "",
+                    false,
+                    "No se pudo procesar el pago"
+            );
         }
     }
 
