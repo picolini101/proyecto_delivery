@@ -202,7 +202,6 @@ class ProcessPaymentUseCaseTest {
                 any(), any(), any(), any(), anyString());
     }
 
-
     @Test
     void shouldRejectDuplicatePayment() {
         when(userService.isActiveWithRole(
@@ -241,6 +240,7 @@ class ProcessPaymentUseCaseTest {
         verify(transactionPort, never()).recordRejected(
                 any(), any(), any(), any(), anyString());
     }
+
     @Test
     void shouldRejectPaymentWhenTransactionRecordingFailsUnexpectedly() {
         when(userService.isActiveWithRole(
@@ -269,5 +269,4 @@ class ProcessPaymentUseCaseTest {
                 "No se pudo procesar el pago",
                 result.reason());
     }
-
 }
