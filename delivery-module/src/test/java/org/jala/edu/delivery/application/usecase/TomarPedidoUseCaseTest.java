@@ -4,23 +4,27 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.util.UUID;
+import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.core.contract.ReadyOrder;
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.contract.UserRole;
 import org.jala.edu.core.domain.exception.ConflictException;
+import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.core.domain.exception.NotFoundException;
 import org.jala.edu.core.infrastructure.contract.FallbackCurrentUserService;
 import org.jala.edu.core.infrastructure.contract.FallbackOrderService;
 import org.jala.edu.core.infrastructure.contract.FallbackUserService;
 import org.jala.edu.delivery.application.port.in.TomarPedidoCommand;
 import org.jala.edu.delivery.domain.exception.UnauthorizedOperationException;
+import org.jala.edu.delivery.infrastructure.adapter.out.persistence.memory.InMemoryCourierAvailabilityAdapter;
 import org.junit.jupiter.api.Test;
 
 class TomarPedidoUseCaseTest {
 
     private final FallbackOrderService orders = new FallbackOrderService();
-    private final TomarPedidoUseCase tomarPedido = new TomarPedidoUseCase(orders, new FallbackUserService(),
-            new FallbackCurrentUserService(UserRole.COURIER));
+    private final InMemoryCourierAvailabilityAdapter availability = new InMemoryCourierAvailabilityAdapter();
+    private final CurrentUserService signedInCourier = new FallbackCurrentUserService(UserRole.COURIER);
+    private final TomarPedidoUseCase tomarPedido = tomarPedidoAs(signedInCourier);
 
     @Test
     void assignsTheOrderAndRemovesItFromTheReadyList() {
@@ -36,11 +40,38 @@ class TomarPedidoUseCaseTest {
     }
 
     @Test
+    void theCourierIsNoLongerAvailableAfterTakingAnOrder() {
+        // Arrange
+        TomarPedidoCommand command = new TomarPedidoCommand(firstReadyOrder());
+
+        // Act
+        tomarPedido.execute(command);
+
+        // Assert
+        assertThat(availability.isAvailable(courierId())).isFalse();
+    }
+
+    @Test
+    void rejectsACourierWhoIsBusyWithAnotherOrderAndLeavesTheOrderReady() {
+        // Arrange
+        tomarPedido.execute(new TomarPedidoCommand(firstReadyOrder()));
+        UUID secondOrderId = firstReadyOrder();
+        TomarPedidoCommand command = new TomarPedidoCommand(secondOrderId);
+
+        // Act
+        Throwable thrown = catchThrowable(() -> tomarPedido.execute(command));
+
+        // Assert
+        assertThat(thrown).isInstanceOf(DomainException.class)
+                .hasMessage("El repartidor no está disponible para tomar pedidos");
+        assertThat(orders.findReadyForDelivery()).extracting(ReadyOrder::orderId).contains(secondOrderId);
+    }
+
+    @Test
     void rejectsAUserWhoIsNotAnActiveCourierAndLeavesTheOrderReady() {
         // Arrange
         UUID orderId = firstReadyOrder();
-        TomarPedidoUseCase asCustomer = new TomarPedidoUseCase(orders, new FallbackUserService(),
-                new FallbackCurrentUserService(UserRole.CUSTOMER));
+        TomarPedidoUseCase asCustomer = tomarPedidoAs(new FallbackCurrentUserService(UserRole.CUSTOMER));
         TomarPedidoCommand command = new TomarPedidoCommand(orderId);
 
         // Act
@@ -67,7 +98,7 @@ class TomarPedidoUseCaseTest {
     }
 
     @Test
-    void rejectsAnUnknownOrder() {
+    void rejectsAnUnknownOrderAndKeepsTheCourierAvailable() {
         // Arrange
         TomarPedidoCommand command = new TomarPedidoCommand(UUID.randomUUID());
 
@@ -76,6 +107,17 @@ class TomarPedidoUseCaseTest {
 
         // Assert
         assertThat(thrown).isInstanceOf(NotFoundException.class);
+        assertThat(availability.isAvailable(courierId())).isTrue();
+    }
+
+    private TomarPedidoUseCase tomarPedidoAs(CurrentUserService currentUser) {
+        FallbackUserService users = new FallbackUserService();
+        return new TomarPedidoUseCase(orders, new ValidateCourierEligibilityUseCase(users, availability), availability,
+                currentUser);
+    }
+
+    private UUID courierId() {
+        return signedInCourier.currentUser().id();
     }
 
     private UUID firstReadyOrder() {

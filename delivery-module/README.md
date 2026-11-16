@@ -21,6 +21,16 @@ amount of all of them. It is opened from the "Delivery history" button of the De
 
 Use case: `GetDeliveryHistoryUseCase` (`CU-04`).
 
+## Courier eligibility
+
+Before a courier takes a ready order, `ValidateCourierEligibilityUseCase` checks that they can do it:
+
+- The courier must be an active user with the `COURIER` role; otherwise "User not authorized for this operation".
+- The courier must be available; otherwise the order is not taken and the screen shows "El repartidor no está disponible
+  para tomar pedidos".
+- Every courier starts available. Once a courier takes an order they are busy with it and are marked as not available,
+  so they cannot take a second one. Availability is kept in memory.
+
 ## Build
 
 Depends on `core-module`, so install that first (`./mvnw install` in its repository). Then:
