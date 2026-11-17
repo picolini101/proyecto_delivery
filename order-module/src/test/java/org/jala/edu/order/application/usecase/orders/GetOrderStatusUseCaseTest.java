@@ -44,7 +44,7 @@ class GetOrderStatusUseCaseTest {
 
     /** Criterio 1: Un cliente inactivo no puede ver sus pedidos. */
     @Test
-    void rejectsInactiveCustomer() {
+    void shouldRejectsInactiveCustomer() {
         // Arrange
         when(userService.isActiveWithRole(CUSTOMER_ID, UserRole.CUSTOMER)).thenReturn(false);
 
@@ -54,9 +54,9 @@ class GetOrderStatusUseCaseTest {
 
     /** Criterio 2: El cliente solo ve SUS pedidos. */
     @Test
-    void returnsOnlyCustomerOrders() {
+    void shouldReturnsOnlyCustomerOrders() {
         when(userService.isActiveWithRole(CUSTOMER_ID, UserRole.CUSTOMER)).thenReturn(true);
-        Order order = createSampleOrder(CUSTOMER_ID);
+        Order order = shouldCreateSampleOrder(CUSTOMER_ID);
         when(orderRepository.findByCustomerId(CustomerId.of(CUSTOMER_ID))).thenReturn(List.of(order));
 
         List<Order> result = useCase.execute(CUSTOMER_ID);
@@ -67,17 +67,18 @@ class GetOrderStatusUseCaseTest {
 
     /** Criterio 3: Consultar el detalle de un pedido ajeno lanza excepción de seguridad. */
     @Test
-    void rejectsConsultingAnotherCustomersOrder() {
+    void shouldRejectsConsultingAnotherCustomersOrder() {
         when(userService.isActiveWithRole(CUSTOMER_ID, UserRole.CUSTOMER)).thenReturn(true);
         UUID otherCustomer = UUID.randomUUID();
-        Order otherOrder = createSampleOrder(otherCustomer);
+        Order otherOrder = shouldCreateSampleOrder(otherCustomer);
 
         when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(otherOrder));
 
         assertThrows(UnauthorizedCustomerException.class, () -> useCase.getOrderDetail(CUSTOMER_ID, ORDER_ID));
     }
 
-    private Order createSampleOrder(UUID customerId) {
+
+    private Order shouldCreateSampleOrder(UUID customerId) {
         return Order.restore(ORDER_ID, CustomerId.of(customerId),
                 List.of(OrderLine.of(ProductId.of(UUID.randomUUID()), "Pizza", Money.of(10.0), Quantity.of(1))),
                 Money.of(10.0), OrderStatus.CREATED, java.time.Instant.now(), java.time.Instant.now());
