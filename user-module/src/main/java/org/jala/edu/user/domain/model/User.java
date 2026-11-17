@@ -49,7 +49,9 @@ public class User extends BaseModel<UserId> {
 
     /**
      * Rebuilds an existing user from storage. Only persistence adapters should call this.
+     * It takes every stored field, so it is allowed more parameters than the Checkstyle limit.
      */
+    @SuppressWarnings("checkstyle:ParameterNumber")
     public static User restore(UserId id, String firstName, String lastName, Email email, String phoneNumber,
                                UserRole role, UserStatus status, String passwordHash, Instant createdAt,
                                Instant updatedAt) {

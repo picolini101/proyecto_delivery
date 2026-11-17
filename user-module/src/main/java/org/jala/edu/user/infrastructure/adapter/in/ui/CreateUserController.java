@@ -85,7 +85,8 @@ public class CreateUserController {
                 () -> createUserUseCase.execute(command),
                 userId -> {
                     clearForm();
-                    showMessage("User " + command.firstName() + " " + command.lastName()    + " created (" + command.email() + ").", "success");
+                    showMessage("User " + command.firstName() + " " + command.lastName()
+                            + " created (" + command.email() + ").", "success");
                     form.setDisable(false);
                 },
                 error -> {
