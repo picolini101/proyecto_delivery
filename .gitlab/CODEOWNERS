@@ -5,22 +5,27 @@
 # Each team section lists the team's Scrum Master for the current sprint, plus the practitioner,
 # who approves when the Scrum Master is the author of the merge request.
 # When the Scrum Master changes at the start of a sprint, replace only that user in the section.
+# Each team also owns its pipeline file in .gitlab/ci/ (Lab 8).
 
 # Members: @DaenAlex @HeynerRico @Ale_sm
 [Team C - catalog]
 /catalog-module/ @DaenAlex @Dev-jcgi
+/.gitlab/ci/catalog.yml @DaenAlex @Dev-jcgi
 
 # Members: @DevisF @FelixUrquidi101 @SentinelaLPZ @elmerq225
 [Team B - order]
 /order-module/ @SentinelaLPZ @Dev-jcgi
+/.gitlab/ci/order.yml @SentinelaLPZ @Dev-jcgi
 
 # Members: @Julian.Sanchez0126 @joseCardona.jala @maria_perez_jala @andres_vz66
 [Team A - delivery]
 /delivery-module/ @maria_perez_jala @Dev-jcgi
+/.gitlab/ci/delivery.yml @maria_perez_jala @Dev-jcgi
 
 # Members: @Sterbenn0126 @Estrella05 @JefersonC-Jala
 [Team D - payment]
 /payment-module/ @Estrella05 @Dev-jcgi
+/.gitlab/ci/payment.yml @Estrella05 @Dev-jcgi
 
 ^[Practitioner]
 /core-module/ @Dev-jcgi
