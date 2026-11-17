@@ -94,6 +94,25 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
+            <!-- Static analysis (Lab 8): ./mvnw checkstyle:check -> target/checkstyle-result.xml -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.6.0</version>
+                <configuration>
+                    <configLocation>config/checkstyle.xml</configLocation>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <consoleOutput>true</consoleOutput>
+                    <violationSeverity>warning</violationSeverity>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>14.4.0</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
             <!-- Code coverage report (Lab 7, unit test guideline): ./mvnw verify -> target/site/jacoco/index.html -->
             <plugin>
                 <groupId>org.jacoco</groupId>
