@@ -5,15 +5,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
-
 /**
- * Adds the "Payments" button to the main window navigation bar; it opens the module's main view.
+ * Configuracion de las pantallas del modulo de pagos.
  */
 @Configuration
-
 public class PaymentUiConfiguration {
 
-    public static final String MAIN_VIEW = "/org/jala/edu/payment/infrastructure/adapter/in/ui/payment-home.fxml";
+    // Pantalla principal: metodos, historial y procesamiento de pagos
+    public static final String MAIN_VIEW =
+            "/org/jala/edu/payment/infrastructure/adapter/in/ui/payment-home.fxml";
+
     @Bean
     @Order(500)
     public NavigationItem paymentNavigationItem() {
