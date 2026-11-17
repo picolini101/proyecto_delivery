@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<!--
+    Static analysis rules for user-module (Lab 8). Short on purpose: each rule matches
+    a team agreement (Clean Code, KISS, SOLID) and none is about formatting.
+    Run: ./mvnw checkstyle:check -> target/checkstyle-result.xml
+-->
+<module name="Checker">
+    <property name="charset" value="UTF-8"/>
+    <property name="severity" value="error"/>
+    <module name="FileTabCharacter"/>
+    <module name="LineLength">
+        <property name="max" value="140"/>
+        <property name="ignorePattern" value="^(package|import) "/>
+    </module>
+    <module name="SuppressWarningsFilter"/>
+    <module name="TreeWalker">
+        <!-- Imports -->
+        <module name="AvoidStarImport"/>
+        <module name="RedundantImport"/>
+        <module name="UnusedImports"/>
+        <!-- Names -->
+        <module name="TypeName"/>
+        <module name="MethodName"/>
+        <module name="MemberName"/>
+        <module name="ParameterName"/>
+        <module name="LocalVariableName"/>
+        <!-- Constants in UPPER_CASE; "log" is the usual name of a static logger. -->
+        <module name="ConstantName">
+            <property name="format" value="^log$|^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$"/>
+        </module>
+        <module name="PackageName"/>
+        <!-- Blocks -->
+        <module name="NeedBraces"/>
+        <module name="EmptyBlock"/>
+        <module name="EmptyCatchBlock"/>
+        <!-- Common mistakes -->
+        <module name="EqualsHashCode"/>
+        <module name="SimplifyBooleanExpression"/>
+        <module name="SimplifyBooleanReturn"/>
+        <module name="OneStatementPerLine"/>
+        <module name="ModifiedControlVariable"/>
+        <!-- Size: small methods and classes (KISS) -->
+        <module name="MethodLength">
+            <property name="max" value="60"/>
+        </module>
+        <!-- Constructors are skipped: an entity or aggregate is built from all its fields. -->
+        <module name="ParameterNumber">
+            <property name="max" value="7"/>
+            <property name="ignoreOverriddenMethods" value="true"/>
+            <property name="tokens" value="METHOD_DEF"/>
+        </module>
+        <!-- Lets one method opt out of a rule with @SuppressWarnings("checkstyle:<rule>") and a reason. -->
+        <module name="SuppressWarningsHolder"/>
+        <!-- No console output: use a logger -->
+        <module name="Regexp">
+            <property name="format" value="System\.(out|err)\.print"/>
+            <property name="illegalPattern" value="true"/>
+            <property name="message" value="Use a logger instead of System.out/System.err."/>
+        </module>
+    </module>
+</module>

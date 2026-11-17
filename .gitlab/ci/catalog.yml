@@ -1,0 +1,27 @@
+# Team C - catalog-module. Owned by the team's Scrum Master (CODEOWNERS).
+# Lab 8: the team adds here the linter job, the coverage report and the artifacts of its module.
+# Worked example: lint-user and build-user in .gitlab/ci/practitioner.yml.
+
+# Each module publishes its installed jar as an artifact: the shared cache is overwritten by
+# whichever parallel job finishes last, so assemble-system cannot rely on it.
+# Keep the job name build-catalog: assemble-system needs it.
+build-catalog:
+  stage: build-modules
+  extends: .module-build
+  needs:
+    - build-core
+  variables:
+    MODULE: catalog-module
+  artifacts:
+    paths:
+      - catalog-module/target/*.jar
+      - catalog-module/target/site/jacoco/
+      - .m2/repository/org/jala/edu/catalog-module/
+
+# Linter (Lab 8, Activity 1). Uncomment after configuring the chosen tool in catalog-module/pom.xml.
+# LINT_GOAL is the Maven goal of that tool, for example checkstyle:check, pmd:check or spotbugs:check.
+# lint-catalog:
+#   extends: .module-lint
+#   variables:
+#     MODULE: catalog-module
+#     LINT_GOAL: "checkstyle:check"

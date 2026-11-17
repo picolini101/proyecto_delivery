@@ -1,0 +1,40 @@
+# Shared job templates. Each module job extends one of them and sets MODULE.
+
+# Static analysis (linter). Runs on the sources only, so it needs no other job.
+# Sprint 4 (16-22 Nov): it only reports (allow_failure). From the Sprint 4 close it fails the pipeline.
+.module-lint:
+  stage: lint
+  needs: []
+  allow_failure: true
+  variables:
+    LINT_GOAL: "checkstyle:check"
+  script:
+    - cd "$MODULE"
+    - ./mvnw $MAVEN_CLI_OPTS $LINT_GOAL
+  artifacts:
+    when: always
+    paths:
+      - $MODULE/target/checkstyle-result.xml
+      - $MODULE/target/pmd.xml
+      - $MODULE/target/spotbugsXml.xml
+    expire_in: 1 week
+
+# Compile, run the unit tests, measure coverage (if the module has JaCoCo) and install the jar.
+# The coverage line printed by coverage.sh is what GitLab shows on the job and the merge request.
+.module-build:
+  script:
+    - cd "$MODULE"
+    - ./mvnw $MAVEN_CLI_OPTS install
+    - sh "$CI_PROJECT_DIR/.gitlab/ci/coverage.sh" target/site/jacoco/jacoco.csv
+  coverage: '/Coverage domain\+application: \d+(?:\.\d+)?%/'
+  artifacts:
+    when: always
+    paths:
+      - $MODULE/target/*.jar
+      - $MODULE/target/site/jacoco/
+    reports:
+      junit: $MODULE/target/surefire-reports/TEST-*.xml
+      coverage_report:
+        coverage_format: jacoco
+        path: $MODULE/target/site/jacoco/jacoco.xml
+    expire_in: 1 week

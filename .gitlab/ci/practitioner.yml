@@ -1,0 +1,60 @@
+# Practitioner modules: core-module, user-module (worked example for the teams) and delivery-system.
+
+lint-core:
+  extends: .module-lint
+  variables:
+    MODULE: core-module
+
+lint-user:
+  extends: .module-lint
+  variables:
+    MODULE: user-module
+
+lint-system:
+  extends: .module-lint
+  variables:
+    MODULE: delivery-system
+
+# The shared kernel must be built first; every other module depends on it.
+build-core:
+  stage: build-core
+  extends: .module-build
+  needs: []
+  variables:
+    MODULE: core-module
+  artifacts:
+    paths:
+      - core-module/target/
+      - .m2/repository/org/jala/edu/core-module/
+
+# user-module is the reference implementation; build it so delivery-system can use it.
+build-user:
+  stage: build-reference
+  extends: .module-build
+  needs:
+    - build-core
+  variables:
+    MODULE: user-module
+  artifacts:
+    paths:
+      - user-module/target/*.jar
+      - user-module/target/site/jacoco/
+      - .m2/repository/org/jala/edu/user-module/
+
+# Final assembly: delivery-system depends on all business modules.
+assemble-system:
+  stage: assemble
+  extends: .module-build
+  needs:
+    - build-core
+    - build-user
+    - build-catalog
+    - build-order
+    - build-delivery
+    - build-payment
+  variables:
+    MODULE: delivery-system
+  # package (not install): it builds the runnable jar; coverage of delivery-system is not reported here.
+  script:
+    - cd delivery-system
+    - ./mvnw $MAVEN_CLI_OPTS package -Pmemory
