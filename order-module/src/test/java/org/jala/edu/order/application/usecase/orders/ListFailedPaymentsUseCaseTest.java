@@ -60,7 +60,7 @@ class ListFailedPaymentsUseCaseTest {
     }
 
     @Test
-    void listsTheCancelledOrderWithReasonDetailAndDate() {
+    void shouldListTheCancelledOrderWithReasonDetailAndDate() {
         Order order = newOrderOf(SampleUsers.CUSTOMER);
         rejectPaymentOf(order, SampleUsers.CUSTOMER, "Fondos insuficientes");
 
@@ -74,7 +74,7 @@ class ListFailedPaymentsUseCaseTest {
     }
 
     @Test
-    void doesNotListFailedPaymentsOfOtherCustomers() {
+    void shouldNotListFailedPaymentsOfOtherCustomers() {
         UUID other = UUID.randomUUID();
         rejectPaymentOf(newOrderOf(other), other, "Fondos insuficientes");
 
@@ -82,7 +82,7 @@ class ListFailedPaymentsUseCaseTest {
     }
 
     @Test
-    void newestFailedPaymentComesFirst() throws InterruptedException {
+    void shouldListTheNewestFailedPaymentFirst() throws InterruptedException {
         Order older = newOrderOf(SampleUsers.CUSTOMER);
         rejectPaymentOf(older, SampleUsers.CUSTOMER, "Primero");
         Thread.sleep(5);

@@ -94,7 +94,7 @@ class RegisterFailedPaymentUseCaseTest {
 
     /** Criterio 1: el pago rechazado deja el pedido en CANCELLED. */
     @Test
-    void rejectedPaymentCancelsTheOrder() {
+    void shouldCancelTheOrderWhenThePaymentIsRejected() {
         useCase.execute(rejectedCommand());
 
         Order saved = orders.findById(order.getId()).orElseThrow();
@@ -103,7 +103,7 @@ class RegisterFailedPaymentUseCaseTest {
 
     /** Criterio 1: el historial guarda el motivo automatico "Pago rechazado". */
     @Test
-    void rejectedPaymentSavesTheAutomaticReasonInTheHistory() {
+    void shouldSaveTheAutomaticReasonInTheHistoryWhenThePaymentIsRejected() {
         useCase.execute(rejectedCommand());
 
         List<OrderStatusChange> history = statusHistory.findByOrderId(order.getId());
@@ -115,7 +115,7 @@ class RegisterFailedPaymentUseCaseTest {
 
     /** Criterio 1: el pedido nunca queda confirmado (confirmado = pagado). */
     @Test
-    void rejectedPaymentNeverLeavesTheOrderConfirmed() {
+    void shouldNotConfirmTheOrderWhenThePaymentIsRejected() {
         useCase.execute(rejectedCommand());
 
         Order saved = orders.findById(order.getId()).orElseThrow();
@@ -124,7 +124,7 @@ class RegisterFailedPaymentUseCaseTest {
 
     /** Criterio 2: se guarda un registro con el resultado y el motivo del rechazo. */
     @Test
-    void rejectedPaymentRegistersTheFailedAttempt() {
+    void shouldRegisterTheFailedAttemptWhenThePaymentIsRejected() {
         useCase.execute(rejectedCommand());
 
         List<FailedPaymentRecord> records = failedPayments.findByOrderId(order.getId());
@@ -138,7 +138,7 @@ class RegisterFailedPaymentUseCaseTest {
 
     /** Criterio 2: el registro guarda la fecha y la hora en que ocurrio el intento. */
     @Test
-    void failedAttemptKeepsTheDateAndTime() {
+    void shouldKeepTheDateAndTimeOfTheFailedAttempt() {
         Instant before = Instant.now().truncatedTo(ChronoUnit.MICROS);
 
         useCase.execute(rejectedCommand());
@@ -151,7 +151,7 @@ class RegisterFailedPaymentUseCaseTest {
 
     /** Regla extra: un pago APROBADO no es un fallo; se lanza error y no se cambia ni se registra nada. */
     @Test
-    void approvedPaymentIsNotRegisteredAsFailed() {
+    void shouldNotRegisterAsFailedWhenThePaymentIsApproved() {
         RegisterFailedPaymentCommand approved = commandWith(new PaymentAuthorization.Approved("REF-1"));
 
         assertThrows(ConflictException.class, () -> useCase.execute(approved));
@@ -162,7 +162,7 @@ class RegisterFailedPaymentUseCaseTest {
 
     /** Regla extra: si el servicio de pagos no responde no se sabe si el pago fallo; el pedido no se cancela. */
     @Test
-    void unavailableServiceIsNotRegisteredAsFailed() {
+    void shouldNotRegisterAsFailedWhenThePaymentServiceIsUnavailable() {
         RegisterFailedPaymentCommand unavailable =
                 commandWith(new PaymentAuthorization.Unavailable("El servicio de pagos no esta disponible"));
 

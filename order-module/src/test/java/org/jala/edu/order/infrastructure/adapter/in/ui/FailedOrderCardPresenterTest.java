@@ -17,7 +17,7 @@ class FailedOrderCardPresenterTest {
     private final FailedOrderCardPresenter presenter = new FailedOrderCardPresenter(ZoneId.of("UTC"));
 
     @Test
-    void cardShowsTheCancelledOrderData() {
+    void shouldShowTheCancelledOrderDataInTheCard() {
         FailedOrderCard card = presenter.present(
                 new FailedPaymentItem(ORDER_ID, "Pago rechazado", "Fondos insuficientes", WHEN));
 
@@ -30,14 +30,14 @@ class FailedOrderCardPresenterTest {
     }
 
     @Test
-    void cardWithoutPaymentDetailHasNoDetailText() {
+    void shouldShowNoDetailTextWhenThereIsNoPaymentDetail() {
         FailedOrderCard card = presenter.present(new FailedPaymentItem(ORDER_ID, "Pago rechazado", "  ", WHEN));
 
         assertEquals("", card.detail());
     }
 
     @Test
-    void cardWithoutReasonSaysSoInsteadOfShowingNull() {
+    void shouldShowNoReasonRegisteredInsteadOfNull() {
         FailedOrderCard card = presenter.present(new FailedPaymentItem(ORDER_ID, null, null, WHEN));
 
         assertEquals("Motivo: sin motivo registrado", card.reason());
