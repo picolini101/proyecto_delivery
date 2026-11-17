@@ -54,7 +54,7 @@ assemble-system:
     - build-payment
   variables:
     MODULE: delivery-system
+  # package (not install): it builds the runnable jar; coverage of delivery-system is not reported here.
   script:
     - cd delivery-system
     - ./mvnw $MAVEN_CLI_OPTS package -Pmemory
-    - sh "$CI_PROJECT_DIR/.gitlab/ci/coverage.sh" target/site/jacoco/jacoco.csv
