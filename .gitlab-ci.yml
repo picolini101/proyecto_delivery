@@ -1,6 +1,9 @@
 # GitLab CI for the Delivery System modular monolith.
 # Each module is an independent Maven project. They are built in dependency order
 # and the final delivery-system module is assembled at the end.
+#
+# The jobs live in .gitlab/ci/ (Lab 8): one file per team module, owned by the team's
+# Scrum Master in CODEOWNERS, plus the shared templates and the practitioner's modules.
 
 image: eclipse-temurin:25-jdk
 
@@ -14,104 +17,16 @@ cache:
     - .m2/repository
 
 stages:
+  - lint
   - build-core
   - build-reference
   - build-modules
   - assemble
 
-# The shared kernel must be built first; every other module depends on it.
-build-core:
-  stage: build-core
-  script:
-    - cd core-module
-    - ./mvnw $MAVEN_CLI_OPTS install
-  artifacts:
-    paths:
-      - core-module/target/
-      - .m2/repository/org/jala/edu/core-module/
-    expire_in: 1 hour
-
-# user-module is the reference implementation; build it so delivery-system can use it.
-build-user:
-  stage: build-reference
-  needs:
-    - build-core
-  script:
-    - cd user-module
-    - ./mvnw $MAVEN_CLI_OPTS install
-  artifacts:
-    paths:
-      - user-module/target/
-      - .m2/repository/org/jala/edu/user-module/
-    expire_in: 1 hour
-
-# Each team module is built independently. They all need core-module only.
-# Each one publishes its installed jar as an artifact: the shared cache is overwritten by
-# whichever parallel job finishes last, so assemble-system cannot rely on it.
-# The artifact holds only the job's own module folder: the cache can hold stale copies of
-# the other modules, and assemble-system extracts every artifact over the previous one.
-build-catalog:
-  stage: build-modules
-  needs:
-    - build-core
-  script:
-    - cd catalog-module
-    - ./mvnw $MAVEN_CLI_OPTS install
-  artifacts:
-    paths:
-      - .m2/repository/org/jala/edu/catalog-module/
-    expire_in: 1 hour
-
-build-order:
-  stage: build-modules
-  needs:
-    - build-core
-  script:
-    - cd order-module
-    - ./mvnw $MAVEN_CLI_OPTS install
-  artifacts:
-    paths:
-      - .m2/repository/org/jala/edu/order-module/
-    expire_in: 1 hour
-
-build-delivery:
-  stage: build-modules
-  needs:
-    - build-core
-  script:
-    - cd delivery-module
-    - ./mvnw $MAVEN_CLI_OPTS install
-  artifacts:
-    paths:
-      - .m2/repository/org/jala/edu/delivery-module/
-    expire_in: 1 hour
-
-build-payment:
-  stage: build-modules
-  needs:
-    - build-core
-  script:
-    - cd payment-module
-    - ./mvnw $MAVEN_CLI_OPTS install
-  artifacts:
-    paths:
-      - .m2/repository/org/jala/edu/payment-module/
-    expire_in: 1 hour
-
-# Final assembly: delivery-system depends on all business modules.
-assemble-system:
-  stage: assemble
-  needs:
-    - build-core
-    - build-user
-    - build-catalog
-    - build-order
-    - build-delivery
-    - build-payment
-  script:
-    - cd delivery-system
-    - ./mvnw $MAVEN_CLI_OPTS package -Pmemory
-  artifacts:
-    paths:
-      - delivery-system/target/*.jar
-    expire_in: 1 week
+include:
+  - local: .gitlab/ci/templates.yml
+  - local: .gitlab/ci/practitioner.yml
+  - local: .gitlab/ci/catalog.yml
+  - local: .gitlab/ci/order.yml
+  - local: .gitlab/ci/delivery.yml
+  - local: .gitlab/ci/payment.yml
