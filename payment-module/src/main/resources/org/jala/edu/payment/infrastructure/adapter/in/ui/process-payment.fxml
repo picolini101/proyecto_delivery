@@ -2,13 +2,17 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox xmlns:fx="http://javafx.com/fxml/1"
+<VBox xmlns="http://javafx.com/javafx/25"
+      xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="org.jala.edu.payment.infrastructure.ui.ProcessPaymentController"
-      spacing="12" styleClass="page">
+      spacing="12"
+      styleClass="page">
+
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
@@ -17,17 +21,29 @@
            styleClass="page-title"/>
 
     <Label text="ID del pedido"/>
-    <TextField fx:id="orderIdField" promptText="UUID del pedido"/>
 
-    <Label text="ID del metodo de pago"/>
-    <TextField fx:id="paymentMethodIdField"
-               promptText="UUID del metodo de pago"/>
+    <TextField fx:id="orderIdField"
+               promptText="Ingresa el UUID del pedido"/>
 
-    <Label text="Monto"/>
-    <TextField fx:id="amountField" promptText="Ejemplo: 120.00"/>
+    <Label text="Metodo de pago registrado"/>
 
-    <Button text="Procesar pago" onAction="#processPayment"/>
+    <ComboBox fx:id="paymentMethodCombo"
+              prefWidth="350"
+              promptText="Selecciona un metodo de pago"/>
 
-    <Label fx:id="resultLabel" text="Esperando solicitud de pago"
+    <Button text="Actualizar metodos de pago"
+            onAction="#loadPaymentMethods"/>
+
+    <Label text="Monto del pedido"/>
+
+    <TextField fx:id="amountField"
+               promptText="Ingresa el monto del pedido"/>
+
+    <Button text="Procesar pago"
+            onAction="#processPayment"/>
+
+    <Label fx:id="resultLabel"
+           text="Esperando solicitud de pago"
            wrapText="true"/>
+
 </VBox>
