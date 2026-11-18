@@ -1,4 +1,4 @@
-package org.jala.edu.order.application.dto;
+package org.jala.edu.order.infrastructure.adapter.in.ui;
 
 import org.jala.edu.order.domain.model.Order;
 import org.jala.edu.order.domain.model.OrderStatus;
@@ -7,9 +7,6 @@ import org.jala.edu.order.domain.model.OrderStatusChange;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * DTO con la información necesaria para pintar la línea de tiempo del pedido.
- */
 public record OrderTrackingSummary(
         UUID orderId,
         String shortId,

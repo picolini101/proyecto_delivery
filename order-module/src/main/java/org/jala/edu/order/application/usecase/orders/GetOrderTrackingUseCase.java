@@ -2,7 +2,6 @@ package org.jala.edu.order.application.usecase.orders;
 
 import org.jala.edu.core.contract.UserRole;
 import org.jala.edu.core.contract.UserService;
-import org.jala.edu.order.application.dto.OrderTrackingSummary;
 import org.jala.edu.order.application.port.out.OrderRepositoryPort;
 import org.jala.edu.order.application.port.out.OrderStatusHistoryPort;
 import org.jala.edu.order.domain.exception.OrderNotFoundException;
@@ -10,6 +9,7 @@ import org.jala.edu.order.domain.exception.UnauthorizedCustomerException;
 import org.jala.edu.order.domain.model.CustomerId;
 import org.jala.edu.order.domain.model.Order;
 import org.jala.edu.order.domain.model.OrderId;
+import org.jala.edu.order.infrastructure.adapter.in.ui.OrderTrackingSummary;
 
 import java.util.UUID;
 
