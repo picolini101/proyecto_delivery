@@ -98,4 +98,10 @@ public class OrderMainController {
     void onNewCart() {
         navigator.show(OrderViews.NEW_CART);
     }
+
+    @FXML
+    void onViewHistory() {
+        navigator.show(OrderViews.HISTORY);
+    }
+
 }

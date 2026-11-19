@@ -15,6 +15,7 @@
     <HBox styleClass="toolbar">
         <Label styleClass="page-title" text="Orders"/>
         <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Mis Pedidos" onAction="#onViewHistory" style="-fx-margin-right: 10;"/>
         <Button text="Nuevo carrito" onAction="#onNewCart"/>
     </HBox>
 

@@ -12,6 +12,7 @@ public final class OrderViews {
     public static final String ADDRESS = BASE + "address.fxml";
     public static final String PAYMENT_RESULT = BASE + "payment-result.fxml";
 
+    public static final String HISTORY = BASE + "order-history.fxml";
     private OrderViews() {
     }
 }
