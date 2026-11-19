@@ -3,8 +3,10 @@ package org.jala.edu.payment.infrastructure.ui;
 import java.util.List;
 import java.util.UUID;
 import javafx.fxml.FXML;
+import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TabPane;
 import org.jala.edu.core.contract.CurrentUser;
 import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.core.contract.SampleUsers;
@@ -34,12 +36,26 @@ public class PaymentHistoryController {
     @FXML
     public void initialize() {
         loadHistory();
+        historyListView.sceneProperty().addListener(obs -> connectTabRefresh());
     }
     @FXML
     private void handleRefreshHistory() {
         loadHistory();
         statusLabel.setText("Historial actualizado.");
     }
+    private void connectTabRefresh() {
+        Parent current = historyListView.getParent();
+        while (current != null) {
+            if (current instanceof TabPane tabPane) {
+                tabPane.getSelectionModel().selectedItemProperty().addListener(obs -> loadHistory());
+                return;
+            }
+            current = current.getParent();
+        }
+    }
+    /**
+     * Recarga las transacciones del usuario activo en la lista del historial.
+     */
     @FXML
     private void loadHistory() {
         historyListView.getItems().clear();
