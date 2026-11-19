@@ -13,11 +13,8 @@ import org.jala.edu.order.application.usecase.DecreaseCartItemQuantityUseCase;
 import org.jala.edu.order.application.usecase.GetCartSummaryUseCase;
 import org.jala.edu.order.application.usecase.IncreaseCartItemQuantityUseCase;
 import org.jala.edu.order.application.usecase.ListCatalogProductsUseCase;
-import org.jala.edu.order.application.usecase.orders.ChangeOrderStatusUseCase;
-import org.jala.edu.order.application.usecase.orders.InputAddressUseCase;
+import org.jala.edu.order.application.usecase.orders.*;
 import org.jala.edu.order.application.usecase.RemoveProductFromCartUseCase;
-import org.jala.edu.order.application.usecase.orders.AuthorizePaymentUseCase;
-import org.jala.edu.order.application.usecase.orders.StartCheckoutUseCase;
 import org.jala.edu.order.infrastructure.adapter.out.payment.PaymentServiceAdapter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -105,5 +102,12 @@ public class OrderModuleConfiguration {
                                                              OrderStatusHistoryPort statusHistory,
                                                              org.jala.edu.core.application.port.out.TransactionRunner transactions) {
         return new ChangeOrderStatusUseCase(orderRepository, statusHistory, transactions);
+    }
+
+    @Bean
+    public ConfirmOrderUseCase confirmOrderUseCase(OrderRepositoryPort orderRepository,
+                                                   OrderStatusHistoryPort statusHistory,
+                                                   org.jala.edu.core.application.port.out.TransactionRunner transactions) {
+        return new ConfirmOrderUseCase(orderRepository, statusHistory, transactions);
     }
 }
