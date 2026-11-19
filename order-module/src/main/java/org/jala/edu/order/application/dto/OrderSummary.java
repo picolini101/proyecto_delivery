@@ -7,6 +7,7 @@ import org.jala.edu.order.domain.model.Order;
 
 public record OrderSummary(
         UUID orderId,
+        String shortId,
         UUID customerId,
         int totalItems,
         BigDecimal subtotal,
@@ -17,8 +18,10 @@ public record OrderSummary(
         int itemsCount = order.getLines().stream()
                 .mapToInt(line -> line.getQuantity().value())
                 .sum();
+        String shortId = order.getId().value().toString().substring(0, 8).toUpperCase();
         return new OrderSummary(
                 order.getId().value(),
+                shortId,
                 order.getCustomerId().value(),
                 itemsCount,
                 order.getSubtotal().value(),
