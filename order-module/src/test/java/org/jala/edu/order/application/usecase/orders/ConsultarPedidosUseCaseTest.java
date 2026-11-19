@@ -69,10 +69,9 @@ class ConsultarPedidosUseCaseTest {
         assertEquals(orderNew.getId(), result.get(0).getId());
         assertEquals(orderOld.getId(), result.get(1).getId());
     }
-
     private Order shouldCreateSampleOrder(Instant date) {
-        return Order.restore(OrderId.newId(), CustomerId.of(CUSTOMER_ID),
-                List.of(OrderLine.of(ProductId.of(UUID.randomUUID()), "Pizza", Money.of(10.0), Quantity.of(1))),
-                Money.of(10.0), OrderStatus.CONFIRMED, date, date);
+        OrderLine line = OrderLine.of(ProductId.of(UUID.randomUUID()), UUID.randomUUID(), "Pizza", Money.of(10.0), Quantity.of(1));
+
+        return Order.restore(OrderId.newId(), CustomerId.of(CUSTOMER_ID), List.of(line), Money.of(10.0), OrderStatus.CONFIRMED, date, date);
     }
 }

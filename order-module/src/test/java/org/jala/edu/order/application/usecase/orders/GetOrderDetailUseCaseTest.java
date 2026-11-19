@@ -41,13 +41,13 @@ class GetOrderDetailUseCaseTest {
     }
 
     @Test
-    void rejectsInactiveCustomer() {
+    void shouldRejectsInactiveCustomer() {
         when(userService.isActiveWithRole(CUSTOMER_ID, UserRole.CUSTOMER)).thenReturn(false);
         assertThrows(UnauthorizedCustomerException.class, () -> useCase.execute(CUSTOMER_ID, ORDER_ID));
     }
 
     @Test
-    void throwsNotFoundWhenOrderDoesNotExist() {
+    void shouldThrowsNotFoundWhenOrderDoesNotExist() {
         when(userService.isActiveWithRole(CUSTOMER_ID, UserRole.CUSTOMER)).thenReturn(true);
         when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.empty());
 
@@ -55,20 +55,21 @@ class GetOrderDetailUseCaseTest {
     }
 
     @Test
-    void rejectsAccessToAnotherCustomersOrder() {
+    void shouldRejectsAccessToAnotherCustomersOrder() {
         when(userService.isActiveWithRole(CUSTOMER_ID, UserRole.CUSTOMER)).thenReturn(true);
 
-        Order otherOrder = createSampleOrder(UUID.randomUUID());
+        Order otherOrder = shouldCreateSampleOrder(UUID.randomUUID(), Instant.now());
         when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(otherOrder));
 
         assertThrows(UnauthorizedCustomerException.class, () -> useCase.execute(CUSTOMER_ID, ORDER_ID));
     }
 
     @Test
-    void returnsOrderDetailsWhenValid() {
+    void shouldReturnsOrderDetailsWhenValid() {
         when(userService.isActiveWithRole(CUSTOMER_ID, UserRole.CUSTOMER)).thenReturn(true);
 
-        Order myOrder = createSampleOrder(CUSTOMER_ID);
+        Order myOrder = shouldCreateSampleOrder(CUSTOMER_ID, Instant.now());
+
         when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(myOrder));
 
         Order result = useCase.execute(CUSTOMER_ID, ORDER_ID);
@@ -78,9 +79,8 @@ class GetOrderDetailUseCaseTest {
         assertEquals(CustomerId.of(CUSTOMER_ID), result.getCustomerId());
     }
 
-    private Order createSampleOrder(UUID customerId) {
-        return Order.restore(ORDER_ID, CustomerId.of(customerId),
-                List.of(OrderLine.of(ProductId.of(UUID.randomUUID()), "Pizza", Money.of(10.0), Quantity.of(1))),
-                Money.of(10.0), OrderStatus.CONFIRMED, Instant.now(), Instant.now());
+    private Order shouldCreateSampleOrder(UUID customerId, Instant date) {
+        OrderLine line = OrderLine.of(ProductId.of(UUID.randomUUID()), UUID.randomUUID(), "Pizza", Money.of(10.0), Quantity.of(1));
+        return Order.restore(ORDER_ID, CustomerId.of(customerId), List.of(line), Money.of(10.0), OrderStatus.CONFIRMED, date, date);
     }
 }
