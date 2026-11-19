@@ -11,6 +11,7 @@ import java.util.UUID;
 import org.jala.edu.core.contract.PaymentResult;
 import org.jala.edu.core.contract.UserRole;
 import org.jala.edu.core.contract.UserService;
+import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.payment.application.port.in.ProcessPaymentCommand;
 import org.jala.edu.payment.application.port.out.PaymentMethodValidationPort;
 import org.jala.edu.payment.application.port.out.PaymentTransactionPort;
@@ -42,6 +43,8 @@ class ProcessPaymentUseCaseTest {
         paymentMethodId = UUID.randomUUID();
     }
 
+    // Solicitud nula
+
     @Test
     void shouldRejectNullRequest() {
         PaymentResult result = useCase.execute(null);
@@ -49,6 +52,8 @@ class ProcessPaymentUseCaseTest {
         assertFalse(result.approved());
         verifyNoInteractions(transactionPort);
     }
+
+    // Pedido obligatorio
 
     @Test
     void shouldRejectMissingOrderId() {
@@ -69,24 +74,82 @@ class ProcessPaymentUseCaseTest {
                 eq("El pedido es obligatorio"));
     }
 
+    // HU-32: Monto cero
+
     @Test
     void shouldRejectZeroAmount() {
         ProcessPaymentCommand command =
                 new ProcessPaymentCommand(
-                        orderId, userId, paymentMethodId,
-                        BigDecimal.ZERO);
+                        orderId,
+                        userId,
+                        paymentMethodId,
+                        BigDecimal.ZERO
+                );
 
-        PaymentResult result = useCase.execute(command);
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> useCase.execute(command)
+        );
 
-        assertFalse(result.approved());
+        assertEquals(
+                "El monto del pago debe ser mayor a cero",
+                exception.getMessage()
+        );
 
-        verify(transactionPort).recordRejected(
-                eq(orderId),
-                eq(userId),
-                eq(paymentMethodId),
-                eq(BigDecimal.ZERO),
-                eq("El monto debe ser mayor a cero"));
+        verifyNoInteractions(transactionPort);
     }
+
+    // HU-32: Monto negativo
+
+    @Test
+    void shouldRejectNegativeAmountWithoutRecording() {
+        ProcessPaymentCommand command =
+                new ProcessPaymentCommand(
+                        orderId,
+                        userId,
+                        paymentMethodId,
+                        new BigDecimal("-15.00")
+                );
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> useCase.execute(command)
+        );
+
+        assertEquals(
+                "El monto del pago debe ser mayor a cero",
+                exception.getMessage()
+        );
+
+        verifyNoInteractions(transactionPort);
+    }
+
+    // HU-32: Valor negativo cercano a cero
+
+    @Test
+    void shouldRejectNegativeMinimumAmount() {
+        ProcessPaymentCommand command =
+                new ProcessPaymentCommand(
+                        orderId,
+                        userId,
+                        paymentMethodId,
+                        new BigDecimal("-0.01")
+                );
+
+        DomainException exception = assertThrows(
+                DomainException.class,
+                () -> useCase.execute(command)
+        );
+
+        assertEquals(
+                "El monto del pago debe ser mayor a cero",
+                exception.getMessage()
+        );
+
+        verifyNoInteractions(transactionPort);
+    }
+
+    // HU-32: Monto mayor al limite
 
     @Test
     void shouldRejectAmountAboveLimit() {
@@ -98,10 +161,127 @@ class ProcessPaymentUseCaseTest {
         PaymentResult result = useCase.execute(command);
 
         assertFalse(result.approved());
+
         assertEquals(
                 "El monto excede el limite permitido",
                 result.reason());
+
+        verify(transactionPort, never()).recordApproved(
+                any(), any(), any(), any());
     }
+
+    // HU-32: Monto minimo permitido
+
+    @Test
+    void shouldAcceptMinimumAmount() {
+        when(userService.isActiveWithRole(
+                userId, UserRole.CUSTOMER)).thenReturn(true);
+
+        when(methodPort.isValidPaymentMethod(
+                userId, paymentMethodId)).thenReturn(true);
+
+        when(transactionPort.recordApproved(
+                eq(orderId),
+                eq(userId),
+                eq(paymentMethodId),
+                any(BigDecimal.class)))
+                .thenReturn("PAY-001");
+
+        ProcessPaymentCommand command =
+                new ProcessPaymentCommand(
+                        orderId,
+                        userId,
+                        paymentMethodId,
+                        new BigDecimal("0.01")
+                );
+
+        PaymentResult result = useCase.execute(command);
+
+        assertTrue(result.approved());
+
+        verify(transactionPort).recordApproved(
+                eq(orderId),
+                eq(userId),
+                eq(paymentMethodId),
+                eq(new BigDecimal("0.01"))
+        );
+    }
+
+    // HU-32: Monto maximo permitido
+
+    @Test
+    void shouldAcceptMaximumAmount() {
+        when(userService.isActiveWithRole(
+                userId, UserRole.CUSTOMER)).thenReturn(true);
+
+        when(methodPort.isValidPaymentMethod(
+                userId, paymentMethodId)).thenReturn(true);
+
+        when(transactionPort.recordApproved(
+                eq(orderId),
+                eq(userId),
+                eq(paymentMethodId),
+                any(BigDecimal.class)))
+                .thenReturn("PAY-001");
+
+        ProcessPaymentCommand command =
+                new ProcessPaymentCommand(
+                        orderId,
+                        userId,
+                        paymentMethodId,
+                        new BigDecimal("5000.00")
+                );
+
+        PaymentResult result = useCase.execute(command);
+
+        assertTrue(result.approved());
+
+        verify(transactionPort).recordApproved(
+                eq(orderId),
+                eq(userId),
+                eq(paymentMethodId),
+                eq(new BigDecimal("5000.00"))
+        );
+    }
+
+    // HU-32: Redondeo a dos decimales
+
+    @Test
+    void shouldRoundAmountBeforeProcessingPayment() {
+        when(userService.isActiveWithRole(
+                userId, UserRole.CUSTOMER)).thenReturn(true);
+
+        when(methodPort.isValidPaymentMethod(
+                userId, paymentMethodId)).thenReturn(true);
+
+        when(transactionPort.recordApproved(
+                eq(orderId),
+                eq(userId),
+                eq(paymentMethodId),
+                any(BigDecimal.class)))
+                .thenReturn("PAY-001");
+
+        ProcessPaymentCommand command =
+                new ProcessPaymentCommand(
+                        orderId,
+                        userId,
+                        paymentMethodId,
+                        new BigDecimal("100.505")
+                );
+
+        PaymentResult result = useCase.execute(command);
+
+        assertTrue(result.approved());
+
+        verify(transactionPort).recordApproved(
+                eq(orderId),
+                eq(userId),
+                eq(paymentMethodId),
+                eq(new BigDecimal("100.51"))
+        );
+    }
+
+    // Usuario no autorizado
 
     @Test
     void shouldRejectUnauthorizedUser() {
@@ -116,12 +296,15 @@ class ProcessPaymentUseCaseTest {
         PaymentResult result = useCase.execute(command);
 
         assertFalse(result.approved());
+
         assertEquals(
                 "User not authorized for this operation",
                 result.reason());
 
         verifyNoInteractions(transactionPort);
     }
+
+    // Metodo de pago obligatorio
 
     @Test
     void shouldRejectMissingPaymentMethod() {
@@ -136,12 +319,15 @@ class ProcessPaymentUseCaseTest {
         PaymentResult result = useCase.execute(command);
 
         assertFalse(result.approved());
+
         assertEquals(
                 "El metodo de pago es obligatorio",
                 result.reason());
 
         verifyNoInteractions(methodPort);
     }
+
+    // Metodo de pago invalido
 
     @Test
     void shouldRejectInvalidPaymentMethod() {
@@ -159,6 +345,7 @@ class ProcessPaymentUseCaseTest {
         PaymentResult result = useCase.execute(command);
 
         assertFalse(result.approved());
+
         assertEquals(
                 "Metodo de pago invalido o inactivo",
                 result.reason());
@@ -166,6 +353,8 @@ class ProcessPaymentUseCaseTest {
         verify(transactionPort, never()).recordApproved(
                 any(), any(), any(), any());
     }
+
+    // Pago valido
 
     @Test
     void shouldApproveValidPayment() {
@@ -190,7 +379,10 @@ class ProcessPaymentUseCaseTest {
         PaymentResult result = useCase.execute(command);
 
         assertTrue(result.approved());
-        assertEquals("PAY-001", result.paymentReference());
+
+        assertEquals(
+                "PAY-001",
+                result.paymentReference());
 
         verify(transactionPort).recordApproved(
                 eq(orderId),
@@ -201,6 +393,8 @@ class ProcessPaymentUseCaseTest {
         verify(transactionPort, never()).recordRejected(
                 any(), any(), any(), any(), anyString());
     }
+
+    // Prevencion de cobro duplicado
 
     @Test
     void shouldRejectDuplicatePayment() {
@@ -226,7 +420,11 @@ class ProcessPaymentUseCaseTest {
         PaymentResult result = useCase.execute(command);
 
         assertFalse(result.approved());
-        assertEquals("", result.paymentReference());
+
+        assertEquals(
+                "",
+                result.paymentReference());
+
         assertEquals(
                 "Intento de cobro duplicado sobre pedido aprobado",
                 result.reason());
@@ -240,6 +438,8 @@ class ProcessPaymentUseCaseTest {
         verify(transactionPort, never()).recordRejected(
                 any(), any(), any(), any(), anyString());
     }
+
+    // Manejo de errores inesperados
 
     @Test
     void shouldRejectPaymentWhenTransactionRecordingFailsUnexpectedly() {
@@ -264,7 +464,11 @@ class ProcessPaymentUseCaseTest {
         PaymentResult result = useCase.execute(command);
 
         assertFalse(result.approved());
-        assertEquals("", result.paymentReference());
+
+        assertEquals(
+                "",
+                result.paymentReference());
+
         assertEquals(
                 "No se pudo procesar el pago",
                 result.reason());
