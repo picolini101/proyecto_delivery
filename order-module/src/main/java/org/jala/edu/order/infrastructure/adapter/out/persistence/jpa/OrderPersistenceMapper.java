@@ -39,6 +39,18 @@ final class OrderPersistenceMapper implements PersistenceMapper<Order, OrderId, 
 
     @Override
     public Order toDomain(OrderJpaEntity entity) {
+        // Rescatar el envío. Si viene nulo o es 0, le ponemos 10.00
+        java.math.BigDecimal shippingVal = entity.getShippingCost();
+        if (shippingVal == null || shippingVal.compareTo(java.math.BigDecimal.ZERO) == 0) {
+            shippingVal = new java.math.BigDecimal("10.00");
+        }
+
+        //Rescatar el total. Si viene nulo o es 0, calculamos (Subtotal + Envío)
+        java.math.BigDecimal totalVal = entity.getTotal();
+        if (totalVal == null || totalVal.compareTo(java.math.BigDecimal.ZERO) == 0) {
+            totalVal = entity.getSubtotal().add(shippingVal);
+        }
+
         return Order.restore(OrderId.of(entity.getId()),
                 CustomerId.of(entity.getCustomerId()),
                 orderLinePersistenceMapper.toDomain(entity.getProducts()),
@@ -46,8 +58,8 @@ final class OrderPersistenceMapper implements PersistenceMapper<Order, OrderId, 
                 OrderStatus.valueOf(entity.getStatus()),
                 entity.getDeliveryCity() == null ? null : new DeliveryAddress(entity.getDeliveryCity(),
                         entity.getDeliveryAvenue(), entity.getDeliveryHouseNumber()),
-                entity.getShippingCost() == null ? null : Money.of(entity.getShippingCost()),
-                entity.getTotal() == null ? null : Money.of(entity.getTotal()),
+                Money.of(shippingVal),
+                Money.of(totalVal),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt());
     }
