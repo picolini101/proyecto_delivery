@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<AnchorPane prefHeight="600.0" prefWidth="800.0" style="-fx-background-color: #f4f4f4;" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.jala.edu.order.infrastructure.adapter.in.ui.OrderHistoryController">
+    <children>
+        <VBox spacing="20.0" AnchorPane.topAnchor="20.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0">
+            <children>
+                <Label text="Mis Pedidos" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #1e293b;" />
+
+                <TableView fx:id="ordersTable" VBox.vgrow="ALWAYS" style="-fx-background-color: white; -fx-background-radius: 8;">
+                    <columns>
+                        <TableColumn fx:id="colId" text="Nº Pedido" prefWidth="120" />
+                        <TableColumn fx:id="colDate" text="Fecha" prefWidth="180" />
+                        <TableColumn fx:id="colTotal" text="Total" prefWidth="120" />
+                        <TableColumn fx:id="colStatus" text="Estado" prefWidth="150" />
+                        <TableColumn fx:id="colAction" text="Acciones" prefWidth="150" />
+                    </columns>
+                    <placeholder>
+                        <Label text="No tienes pedidos registrados" style="-fx-text-fill: #64748b; -fx-font-size: 16px;" />
+                    </placeholder>
+                </TableView>
+            </children>
+        </VBox>
+    </children>
+</AnchorPane>
