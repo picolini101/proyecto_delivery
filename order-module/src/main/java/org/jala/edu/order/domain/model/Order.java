@@ -58,6 +58,8 @@ public class Order extends BaseModel<OrderId> {
         return new Order(id, customerId, lines, subtotal, status, createdAt, updatedAt);
     }
 
+    // Reconstruye el objeto desde la base de datos: necesita todos los campos guardados.
+    @SuppressWarnings("checkstyle:ParameterNumber")
     public static Order restore(OrderId id, CustomerId customerId, List<OrderLine> lines, Money subtotal,
                                 OrderStatus status, DeliveryAddress deliveryAddress, Money shippingCost,
                                 Money total, Instant createdAt, Instant updatedAt) {

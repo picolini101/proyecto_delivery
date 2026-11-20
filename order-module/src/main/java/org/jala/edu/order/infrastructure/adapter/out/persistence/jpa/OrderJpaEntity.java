@@ -1,11 +1,13 @@
 package org.jala.edu.order.infrastructure.adapter.out.persistence.jpa;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import org.jala.edu.core.infrastructure.persistence.jpa.BaseJpaEntity;
-import org.jala.edu.order.domain.model.CustomerId;
-import org.jala.edu.order.domain.model.Money;
-import org.jala.edu.order.domain.model.OrderStatus;
 
 import java.math.BigDecimal;
 import java.time.Instant;

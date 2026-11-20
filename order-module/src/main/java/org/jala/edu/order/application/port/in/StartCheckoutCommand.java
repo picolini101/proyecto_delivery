@@ -1,6 +1,5 @@
 package org.jala.edu.order.application.port.in;
 
-import org.jala.edu.order.domain.model.CustomerId;
 
 import java.util.Objects;
 import java.util.UUID;

@@ -1,7 +1,6 @@
 package org.jala.edu.order.infrastructure.adapter.out.persistence.jpa;
 
 import org.jala.edu.core.infrastructure.persistence.jpa.BaseEntityRepository;
-import org.jala.edu.order.domain.model.CustomerId;
 import java.util.UUID;
 
 import java.util.List;

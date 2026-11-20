@@ -39,6 +39,8 @@ public class OrderStatusChange extends BaseModel<OrderStatusChangeId> {
         );
     }
 
+    // Reconstruye el objeto desde la base de datos: necesita todos los campos guardados.
+    @SuppressWarnings("checkstyle:ParameterNumber")
     public static OrderStatusChange restore(OrderStatusChangeId id, OrderId orderId,
                                             OrderStatus previousStatus, OrderStatus newStatus,
                                             UUID changedById, String reason, Instant createdAt,

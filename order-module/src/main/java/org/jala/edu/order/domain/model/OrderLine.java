@@ -45,6 +45,8 @@ public class OrderLine extends BaseModel<OrderLineId> {
         return of(productId, commerceId, productName, unitPrice, quantity, null);
     }
 
+    // Reconstruye el objeto desde la base de datos: necesita todos los campos guardados.
+    @SuppressWarnings("checkstyle:ParameterNumber")
     public static OrderLine restore(OrderLineId id, ProductId productId, UUID commerceId, String productName,
                                     Money unitPrice, Quantity quantity, Money subtotal, OrderId orderId,
                                     Instant createdAt, Instant updatedAt) {

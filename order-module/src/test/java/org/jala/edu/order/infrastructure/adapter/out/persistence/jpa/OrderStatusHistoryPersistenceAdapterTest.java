@@ -17,13 +17,10 @@ import org.jala.edu.order.domain.model.Quantity;
 import org.jala.edu.core.application.port.out.TransactionRunner;
 import org.jala.edu.order.application.usecase.orders.ChangeOrderStatusUseCase;
 import org.jala.edu.order.application.port.in.ChangeOrderStatusCommand;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
-import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Import;
 
 /** Contrato de persistencia JPA esperado para el historial de estados de pedidos. */

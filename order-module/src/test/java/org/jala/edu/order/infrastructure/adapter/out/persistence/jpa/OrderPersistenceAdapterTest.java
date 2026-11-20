@@ -6,7 +6,6 @@ import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import org.jala.edu.order.domain.model.CustomerId;
 import org.jala.edu.order.domain.model.Money;
@@ -16,13 +15,10 @@ import org.jala.edu.order.domain.model.OrderLine;
 import org.jala.edu.order.domain.model.OrderStatus;
 import org.jala.edu.order.domain.model.ProductId;
 import org.jala.edu.order.domain.model.Quantity;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
-import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Import;
 
 /** Contrato de persistencia JPA esperado para pedidos. */

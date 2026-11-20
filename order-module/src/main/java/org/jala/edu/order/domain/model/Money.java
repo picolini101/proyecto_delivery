@@ -1,8 +1,6 @@
 package org.jala.edu.order.domain.model;
 
-import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.order.domain.exception.InvalidMoneyValueException;
-import org.jala.edu.order.domain.exception.InvalidQuantityValueException;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

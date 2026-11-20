@@ -39,13 +39,11 @@ public class CartVerifier {
     /**
      * Verifica cada producto del carrito y devuelve TODOS los problemas encontrados, no solo el primero.
      * Para cada producto:
-     *
-     * Busca el producto en el catalogo. Si no existe: problema NO_LONGER_EXISTS y sigue con el siguiente.</li>
-     *
-     * Calcula la linea con el precio VIGENTE (precio del catalogo x cantidad del carrito).</li>
-     *
-     * Pregunta si hay disponibilidad para esa cantidad. Si no hay: problema NOT_AVAILABLE.</li>
-     *
+     * <ol>
+     *   <li>Busca el producto en el catalogo. Si no existe: problema NO_LONGER_EXISTS y sigue con el siguiente.</li>
+     *   <li>Calcula la linea con el precio VIGENTE (precio del catalogo x cantidad del carrito).</li>
+     *   <li>Pregunta si hay disponibilidad para esa cantidad. Si no hay: problema NOT_AVAILABLE.</li>
+     * </ol>
      *
      * @param cart carrito a verificar
      * @return lineas con precio vigente, problemas y subtotal
