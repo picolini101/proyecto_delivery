@@ -27,7 +27,11 @@ import org.jala.edu.core.infrastructure.ui.ErrorMessages;
 import org.jala.edu.core.infrastructure.ui.Navigator;
 import org.jala.edu.core.infrastructure.ui.SpringFxmlLoader;
 import org.jala.edu.core.infrastructure.ui.Dialogs;
+import org.jala.edu.order.application.dto.PaymentAttempt;
 import org.jala.edu.order.application.port.in.AuthorizePaymentCommand;
+import org.jala.edu.order.application.port.in.RegisterFailedPaymentCommand;
+import org.jala.edu.order.application.port.out.PaymentAuthorization;
+import org.jala.edu.order.application.usecase.orders.RegisterFailedPaymentUseCase;
 import org.jala.edu.order.application.port.in.InputAddressCommand;
 import org.jala.edu.order.application.port.in.StartCheckoutCommand;
 import org.jala.edu.order.application.usecase.*;
@@ -104,6 +108,9 @@ public class NewCartController {
 
     /** pide al servicio de pagos que autorice el monto total del pedido. */
     private final AuthorizePaymentUseCase authorizePayment;
+
+    /** Cancela el pedido y registra el intento fallido cuando el pago es rechazado. */
+    private final RegisterFailedPaymentUseCase registerFailedPayment;
 
     /** Decide los textos de la ventana de respuesta de pago. Al tener valor inicial, Lombok no lo pide en el constructor. */
     private final PaymentResultPresenter paymentPresenter = new PaymentResultPresenter();
@@ -263,8 +270,24 @@ public class NewCartController {
                 lastOrderId, currentUserService.currentUser().id(), SamplePaymentMethods.CUSTOMER_CARD);
         BackgroundTasks.run(
                 () -> authorizePayment.execute(command),
-                attempt -> showPaymentResult(paymentPresenter.present(attempt)),
+                this::handleAttempt,
                 error -> showPaymentResult(paymentPresenter.presentFailure(error)));
+    }
+
+    /**
+     * Si el pago fue rechazado, primero cancela el pedido y guarda el intento fallido; despues muestra el resultado.
+     * Aprobado o servicio caido no cancelan nada (el pedido sigue en CREATED y se puede reintentar).
+     */
+    private void handleAttempt(PaymentAttempt attempt) {
+        if (attempt.authorization() instanceof PaymentAuthorization.Rejected) {
+            BackgroundTasks.run(
+                    () -> registerFailedPayment.execute(
+                            new RegisterFailedPaymentCommand(attempt, currentUserService.currentUser().id())),
+                    ignored -> showPaymentResult(paymentPresenter.present(attempt)),
+                    error -> showPaymentResult(paymentPresenter.presentFailure(error)));
+        } else {
+            showPaymentResult(paymentPresenter.present(attempt));
+        }
     }
 
     /**
@@ -275,7 +298,10 @@ public class NewCartController {
      */
     private void showPaymentResult(PaymentResultView result) {
         SpringFxmlLoader.View<PaymentResultController> view = fxmlLoader.loadView(OrderViews.PAYMENT_RESULT);
-        view.controller().prepare(result, result.isSuccess() ? () -> navigator.show(OrderViews.MAIN) : this::requestPayment);
+        Runnable action = result.kind() == PaymentResultView.Kind.UNAVAILABLE
+                ? this::requestPayment
+                : () -> navigator.show(OrderViews.MAIN);
+        view.controller().prepare(result, action);
         Dialogs.showModal(checkoutButton, result.title(), view.root());
     }
 

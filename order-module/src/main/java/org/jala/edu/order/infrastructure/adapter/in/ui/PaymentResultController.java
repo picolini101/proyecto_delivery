@@ -53,7 +53,7 @@ public class PaymentResultController {
         messageLabel.setText(view.message());
         switch (view.kind()) {
             case SUCCESS -> style("✔", "#16a34a", "Continuar", false);
-            case REJECTED -> style("✖", "#dc2626", "Reintentar pago", true);
+            case REJECTED -> style("✖", "#dc2626", "Ver mis pedidos", false);
             case UNAVAILABLE -> style("⚠", "#d97706", "Reintentar pago", true);
         }
     }
