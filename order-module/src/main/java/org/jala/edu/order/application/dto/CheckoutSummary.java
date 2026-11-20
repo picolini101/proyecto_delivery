@@ -33,6 +33,7 @@ public record CheckoutSummary(List<CartVerification.Line> lines, BigDecimal subt
         BigDecimal shipping = verification.lines().isEmpty() ? BigDecimal.ZERO : Cart.SHIPPING_COST;
         BigDecimal total = verification.subtotal().add(shipping);
 
-        return new CheckoutSummary(verification.lines(), verification.subtotal(), shipping, total, verification.isValid(), verification.issues());
+        return new CheckoutSummary(verification.lines(), verification.subtotal(), shipping, total,
+                verification.isValid(), verification.issues());
     }
 }

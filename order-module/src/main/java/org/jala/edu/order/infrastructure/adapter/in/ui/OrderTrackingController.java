@@ -68,7 +68,9 @@ public class OrderTrackingController {
 
         // Encontrar en qué paso de la lista estamos
         int currentIndex = timeline.indexOf(currentStatus);
-        if (currentIndex == -1) currentIndex = 0;
+        if (currentIndex == -1) {
+            currentIndex = 0;
+        }
 
         for (int i = 0; i < timeline.size(); i++) {
             boolean isCompleted = i <= currentIndex;

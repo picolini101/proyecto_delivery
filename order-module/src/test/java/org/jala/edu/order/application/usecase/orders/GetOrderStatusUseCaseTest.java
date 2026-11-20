@@ -1,24 +1,31 @@
 package org.jala.edu.order.application.usecase.orders;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.contract.UserRole;
 import org.jala.edu.core.contract.UserService;
-import org.jala.edu.core.domain.exception.NotFoundException;
 import org.jala.edu.order.application.port.out.OrderRepositoryPort;
 import org.jala.edu.order.domain.exception.UnauthorizedCustomerException;
-import org.jala.edu.order.domain.model.*;
+import org.jala.edu.order.domain.model.CustomerId;
+import org.jala.edu.order.domain.model.Money;
+import org.jala.edu.order.domain.model.Order;
+import org.jala.edu.order.domain.model.OrderId;
+import org.jala.edu.order.domain.model.OrderLine;
+import org.jala.edu.order.domain.model.OrderStatus;
+import org.jala.edu.order.domain.model.ProductId;
+import org.jala.edu.order.domain.model.Quantity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 /**
  * Fase RED: Escribimos las pruebas ANTES de crear GetOrderStatusUseCase.
@@ -34,8 +41,8 @@ class GetOrderStatusUseCaseTest {
 
     private GetOrderStatusUseCase useCase;
 
-    private final UUID CUSTOMER_ID = SampleUsers.CUSTOMER;
-    private final OrderId ORDER_ID = OrderId.newId();
+    private static final UUID CUSTOMER_ID = SampleUsers.CUSTOMER;
+    private static final OrderId ORDER_ID = OrderId.newId();
 
     @BeforeEach
     void setUp() {

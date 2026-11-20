@@ -246,28 +246,34 @@ public class NewCartController {
 
                     if (confirm) {
                         // Si el usuario acepta, procedemos con la creación de la orden y el pago
-                        BackgroundTasks.run(
-                                () -> startCheckout.execute(command),
-                                orderSummary -> {
-                                    lastOrderId = orderSummary.orderId();
-                                    refreshCart();
-                                    if (deliveryAddress != null) {
-                                        saveAddressForOrder(lastOrderId, deliveryAddress);
-                                    }
-                                    // Llamamos a tu método que muestra el modal verde de "Pago aprobado"
-                                    requestPayment();
-                                },
-                                error -> {
-                                    showError(error, "iniciar la compra");
-                                    checkoutButton.setDisable(false);
-                                }
-                        );
+                        placeOrder(command);
                     } else {
                         checkoutButton.setDisable(false);
                     }
                 },
                 error -> {
                     showError(error, "calcular el resumen");
+                    checkoutButton.setDisable(false);
+                }
+        );
+    }
+
+
+    /** Crea la orden y pasa al pago cuando el usuario confirma el resumen. */
+    private void placeOrder(StartCheckoutCommand command) {
+        BackgroundTasks.run(
+                () -> startCheckout.execute(command),
+                orderSummary -> {
+                    lastOrderId = orderSummary.orderId();
+                    refreshCart();
+                    if (deliveryAddress != null) {
+                        saveAddressForOrder(lastOrderId, deliveryAddress);
+                    }
+                    // Llamamos a tu metodo que muestra el modal verde de "Pago aprobado"
+                    requestPayment();
+                },
+                error -> {
+                    showError(error, "iniciar la compra");
                     checkoutButton.setDisable(false);
                 }
         );
