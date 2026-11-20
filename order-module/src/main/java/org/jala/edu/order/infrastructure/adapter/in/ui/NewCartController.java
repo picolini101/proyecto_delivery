@@ -39,6 +39,8 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import org.jala.edu.order.application.usecase.orders.PreviewCheckoutSummaryUseCase;
+import org.jala.edu.order.application.service.CartVerification;
 /**
  * Controlador de la pantalla de la tienda ({@code new-cart.fxml}).
  * A la izquierda muestra una tarjeta por cada producto del catalogo; a la derecha muestra el carrito del cliente.
@@ -109,6 +111,7 @@ public class NewCartController {
     private DeliveryAddress deliveryAddress;
     private UUID lastOrderId;
 
+    private final PreviewCheckoutSummaryUseCase previewCheckoutSummary;
     // Los campos con @FXML son elementos de new-cart.fxml; JavaFX los conecta solos por el nombre (fx:id).
 
     /** Contenedor donde se dibujan las tarjetas de productos. */
@@ -191,23 +194,61 @@ public class NewCartController {
             return;
         }
         checkoutButton.setDisable(true);
+
         StartCheckoutCommand command = new StartCheckoutCommand(currentUserService.currentUser().id());
 
         BackgroundTasks.run(
-                () -> startCheckout.execute(command),
-                orderSummary -> {
-                    lastOrderId = orderSummary.orderId();
-                    refreshCart();
-                    checkoutButton.setDisable(deliveryAddress == null);
-                    if (deliveryAddress != null) {
-                        saveAddressForOrder(lastOrderId, deliveryAddress);
+                () -> previewCheckoutSummary.execute(command),
+                summary -> {
+                    if (!summary.isValid()) {
+                        showMessage("Alerta: Algunos productos cambiaron de disponibilidad. Revisa tu carrito.", "error");
+                        checkoutButton.setDisable(false);
+                        return;
                     }
-                    // con el pedido creado, se pide la autorizacion del pago y se muestra el resultado
-                    requestPayment();
+
+                    // Armamos el detalle de productos
+                    StringBuilder detalle = new StringBuilder();
+                    for (CartVerification.Line line : summary.lines()) {
+                        detalle.append(String.format("%dx %s - $%s\n",
+                                line.quantity(),
+                                line.productName(),
+                                line.lineSubtotal()));
+                    }
+                    detalle.append("-------------------------\n");
+
+                    // Mostramos el modal con el total
+                    boolean confirm = Dialogs.confirm(checkoutButton, "Resumen de Compra",
+                            detalle.toString() +
+                                    "Subtotal: $" + summary.subtotal() + "\n" +
+                                    "Envío: $" + summary.shippingCost() + "\n" +
+                                    "TOTAL A PAGAR: $" + summary.total() + "\n\n" +
+                                    "¿Desea autorizar el pago?");
+
+                    if (confirm) {
+                        // Si el usuario acepta, procedemos con la creación de la orden y el pago
+                        BackgroundTasks.run(
+                                () -> startCheckout.execute(command),
+                                orderSummary -> {
+                                    lastOrderId = orderSummary.orderId();
+                                    refreshCart();
+                                    if (deliveryAddress != null) {
+                                        saveAddressForOrder(lastOrderId, deliveryAddress);
+                                    }
+                                    // Llamamos a tu método que muestra el modal verde de "Pago aprobado"
+                                    requestPayment();
+                                },
+                                error -> {
+                                    showError(error, "iniciar la compra");
+                                    checkoutButton.setDisable(false);
+                                }
+                        );
+                    } else {
+                        checkoutButton.setDisable(false);
+                    }
                 },
                 error -> {
-                    showError(error, "iniciar la compra");
-                    checkoutButton.setDisable(deliveryAddress == null);
+                    showError(error, "calcular el resumen");
+                    checkoutButton.setDisable(false);
                 }
         );
     }

@@ -13,6 +13,7 @@ import org.jala.edu.order.application.usecase.DecreaseCartItemQuantityUseCase;
 import org.jala.edu.order.application.usecase.GetCartSummaryUseCase;
 import org.jala.edu.order.application.usecase.IncreaseCartItemQuantityUseCase;
 import org.jala.edu.order.application.usecase.ListCatalogProductsUseCase;
+import org.jala.edu.order.application.usecase.orders.InputAddressUseCase;
 import org.jala.edu.order.application.usecase.orders.*;
 import org.jala.edu.order.application.usecase.RemoveProductFromCartUseCase;
 import org.jala.edu.order.infrastructure.adapter.out.payment.PaymentServiceAdapter;
@@ -95,6 +96,12 @@ public class OrderModuleConfiguration {
     public InputAddressUseCase inputAddressUseCase(OrderRepositoryPort orders) {
         return new InputAddressUseCase(orders);
 
+    }
+
+    @Bean
+    public PreviewCheckoutSummaryUseCase previewCheckoutSummaryUseCase(
+            UserService users, CartRepositoryPort carts, CartVerifier cartVerifier) {
+        return new PreviewCheckoutSummaryUseCase(users, carts, cartVerifier);
     }
 
     @Bean
