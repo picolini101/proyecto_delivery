@@ -62,7 +62,7 @@ public class OrderTrackingController {
         }
 
         if (currentStatus == OrderStatus.CREATED) {
-            addStep("Recibido", false, false);
+            addStep("Recibido", true, true);
             return;
         }
 
@@ -114,7 +114,7 @@ public class OrderTrackingController {
     private String getStepLabel(OrderStatus status) {
         return switch (status) {
             case CONFIRMED -> "Recibido";
-            case READY_FOR_DELIVERY -> "En preparación";
+            case READY_FOR_DELIVERY -> "Listo para entrega";
             case ASSIGNED -> "Asignado";
             case ON_THE_WAY -> "En camino";
             case DELIVERED -> "Entregado";
@@ -128,7 +128,7 @@ public class OrderTrackingController {
             case READY_FOR_DELIVERY -> "Tu pedido está listo y esperando a un repartidor.";
             case ASSIGNED -> "Un repartidor ha tomado tu pedido.";
             case ON_THE_WAY -> "El repartidor va en camino a tu dirección.";
-            case DELIVERED -> "¡Tu pedido ha sido entregado!";
+            case DELIVERED -> "Tu pedido ha sido entregado";
             case CANCELLED -> "El pedido fue cancelado.";
             default -> "Procesando...";
         };

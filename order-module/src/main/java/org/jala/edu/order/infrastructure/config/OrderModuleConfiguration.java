@@ -143,5 +143,13 @@ public class OrderModuleConfiguration {
         return new ListFailedPaymentsUseCase(failedPayments, history);
     }
 
+
+    @Bean
+    public PreviewCheckoutSummaryUseCase previewCheckoutSummaryUseCase(
+            UserService users, CartRepositoryPort carts, CartVerifier cartVerifier) {
+        return new PreviewCheckoutSummaryUseCase(users, carts, cartVerifier);
+    }
+
+
 }
 

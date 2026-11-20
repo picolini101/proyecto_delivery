@@ -5,14 +5,15 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.HBox;
 import lombok.RequiredArgsConstructor;
 import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
 import org.jala.edu.core.infrastructure.ui.Dialogs;
+import org.jala.edu.core.infrastructure.ui.SpringFxmlLoader;
 import org.jala.edu.order.application.dto.OrderSummary;
 import org.jala.edu.order.application.usecase.orders.ConsultarPedidosUseCase;
 import org.jala.edu.order.application.usecase.orders.GetOrderDetailUseCase;
+import org.jala.edu.order.application.usecase.orders.GetOrderTrackingUseCase;
 import org.jala.edu.order.domain.model.OrderId;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -30,6 +31,8 @@ public class OrderHistoryController {
     private final ConsultarPedidosUseCase consultarPedidosUseCase;
     private final GetOrderDetailUseCase getOrderDetailUseCase;
     private final CurrentUserService currentUserService;
+    private final GetOrderTrackingUseCase getOrderTrackingUseCase;
+    private final SpringFxmlLoader fxmlLoader;
 
     @FXML private TableView<OrderSummary> ordersTable;
     @FXML private TableColumn<OrderSummary, String> colId;
@@ -54,21 +57,49 @@ public class OrderHistoryController {
 
         // Botón "Ver Detalle" en cada fila
         colAction.setCellFactory(param -> new TableCell<>() {
-            private final Button btn = new Button("Ver Detalle");
+            private final Button btnDetail = new Button("Ver Detalle");
+            private final Button btnStatus = new Button("Estado");
             {
-                btn.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;");
-                btn.setOnAction(event -> {
+                btnDetail.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;");
+                btnStatus.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;");
+
+                btnDetail.setOnAction(event -> {
                     OrderSummary summary = getTableView().getItems().get(getIndex());
-                    showDetailModal(summary.orderId()); // <--- Llama al modal
+                    showDetailModal(summary.orderId());
+                });
+
+                btnStatus.setOnAction(event -> {
+                    OrderSummary summary = getTableView().getItems().get(getIndex());
+                    showTrackingScreen(summary.orderId());
                 });
             }
             @Override
             protected void updateItem(Void item, boolean empty) {
                 super.updateItem(item, empty);
-                setGraphic(empty ? null : btn);
-                setAlignment(Pos.CENTER);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    javafx.scene.layout.HBox box = new javafx.scene.layout.HBox(5, btnDetail, btnStatus);
+                    box.setAlignment(Pos.CENTER);
+                    setGraphic(box);
+                }
             }
         });
+    }
+
+    private void showTrackingScreen(java.util.UUID orderId) {
+        BackgroundTasks.run(
+                () -> getOrderTrackingUseCase.execute(currentUserService.currentUser().id(), OrderId.of(orderId)),
+                summary -> {
+                    // Cargamos el FXML de las bolitas (Stepper)
+                    SpringFxmlLoader.View<OrderTrackingController> view = fxmlLoader.loadView(OrderViews.TRACKING);
+                    // Le pasamos los datos
+                    view.controller().prepare(summary);
+                    // Lo mostramos como modal
+                    Dialogs.showModal(ordersTable, "Estado del Pedido", view.root());
+                },
+                error -> showErrorAlert("Error al cargar estado", error.getMessage())
+        );
     }
 
     /**
