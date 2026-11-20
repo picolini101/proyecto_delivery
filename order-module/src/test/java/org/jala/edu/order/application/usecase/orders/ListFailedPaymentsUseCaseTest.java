@@ -49,7 +49,7 @@ class ListFailedPaymentsUseCaseTest {
 
     private Order newOrderOf(UUID customerId) {
         List<OrderLine> lines = List.of(
-                OrderLine.of(ProductId.of(SampleCatalog.PIZZA), "Pizza", Money.of(50), Quantity.of(2)));
+                OrderLine.of(ProductId.of(SampleCatalog.PIZZA), UUID.randomUUID(), "Pizza", Money.of(50), Quantity.of(2)));
         return orders.save(Order.create(CustomerId.of(customerId), lines, Money.of(100)));
     }
 

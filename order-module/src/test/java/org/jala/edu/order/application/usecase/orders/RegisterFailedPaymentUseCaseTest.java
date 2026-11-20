@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.UUID;
 
 import org.jala.edu.core.application.port.out.TransactionRunner;
 import org.jala.edu.core.contract.SampleCatalog;
@@ -78,7 +79,7 @@ class RegisterFailedPaymentUseCaseTest {
 
     /** Una linea de 2 pizzas a 50.00. */
     private List<OrderLine> lines() {
-        return List.of(OrderLine.of(ProductId.of(SampleCatalog.PIZZA), "Pizza", Money.of(50), Quantity.of(2)));
+        return List.of(OrderLine.of(ProductId.of(SampleCatalog.PIZZA), UUID.randomUUID(), "Pizza", Money.of(50), Quantity.of(2)));
     }
 
     /** Arma el comando con la respuesta de pago indicada para el pedido de prueba. */
