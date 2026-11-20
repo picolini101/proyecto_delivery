@@ -80,7 +80,7 @@ class GetOrderStatusUseCaseTest {
 
     private Order shouldCreateSampleOrder(UUID customerId) {
         return Order.restore(ORDER_ID, CustomerId.of(customerId),
-                List.of(OrderLine.of(ProductId.of(UUID.randomUUID()), "Pizza", Money.of(10.0), Quantity.of(1))),
+                List.of(OrderLine.of(ProductId.of(UUID.randomUUID()), UUID.randomUUID(), "Pizza", Money.of(10.0), Quantity.of(1))),
                 Money.of(10.0), OrderStatus.CREATED, java.time.Instant.now(), java.time.Instant.now());
     }
 }

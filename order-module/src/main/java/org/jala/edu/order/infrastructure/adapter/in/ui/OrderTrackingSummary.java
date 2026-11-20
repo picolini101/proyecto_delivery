@@ -21,7 +21,7 @@ public record OrderTrackingSummary(
 
         String productName = order.getLines().isEmpty()
                 ? "Pedido"
-                : order.getLines().get(0).productName();
+                : order.getLines().get(0).getProductName();
 
         return new OrderTrackingSummary(
                 order.getId().value(),
