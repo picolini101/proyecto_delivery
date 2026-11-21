@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.UUID;
 
 import org.jala.edu.core.contract.SampleCatalog;
+import org.jala.edu.order.domain.exception.PriceChangedException;
+import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.infrastructure.contract.FallbackCatalogService;
 import org.jala.edu.order.domain.exception.ProductUnavailableException;
@@ -179,5 +181,53 @@ class CartVerifierTest {
         cart.addProduct(PRODUCT, COMMERCE, 2);
 
         assertThrows(CatalogUnavailableException.class, () -> verifier.verifyOrThrow(cart));
+    }
+
+    /** Cambio de precio: el cliente vio 40.00 y el catalogo ya vale mas; se informa y se usa el precio vigente. */
+    @Test
+    void reportsAPriceChange() {
+        cart.addProduct(PRODUCT, COMMERCE, 2, new BigDecimal("40.00"));
+        BigDecimal current = catalog.findProduct(PRODUCT).orElseThrow().price();
+
+        CartVerification result = verifier.verify(cart);
+
+        assertTrue(result.isValid());
+        assertTrue(result.hasPriceChanges());
+        assertEquals(1, result.priceChanges().size());
+        CartVerification.PriceChange change = result.priceChanges().get(0);
+        assertEquals(PRODUCT, change.productId());
+        assertEquals(0, new BigDecimal("40.00").compareTo(change.oldPrice()));
+        assertEquals(0, current.compareTo(change.newPrice()));
+        assertEquals(0, current.compareTo(result.lines().get(0).unitPrice()));
+    }
+
+    /** Si el precio que vio el cliente es el mismo del catalogo, no hay cambio que confirmar. */
+    @Test
+    void reportsNoPriceChangeWhenThePriceIsTheSame() {
+        BigDecimal current = catalog.findProduct(PRODUCT).orElseThrow().price();
+        cart.addProduct(PRODUCT, COMMERCE, 2, current);
+
+        assertFalse(verifier.verify(cart).hasPriceChanges());
+    }
+
+    /** Una linea sin precio guardado no genera cambios de precio. */
+    @Test
+    void ignoresLinesWithoutASavedPrice() {
+        cart.addProduct(PRODUCT, COMMERCE, 2);
+
+        assertFalse(verifier.verify(cart).hasPriceChanges());
+    }
+
+    /** verifyOrThrow se detiene si hay un precio sin confirmar, nombra el producto y deja el carrito igual. */
+    @Test
+    void verifyOrThrowStopsWhenAPriceChangedAndKeepsTheCartUntouched() {
+        cart.addProduct(PRODUCT, COMMERCE, 2, new BigDecimal("40.00"));
+        String name = catalog.findProduct(PRODUCT).orElseThrow().name();
+
+        PriceChangedException error = assertThrows(PriceChangedException.class, () -> verifier.verifyOrThrow(cart));
+
+        assertTrue(error.getMessage().contains(name));
+        assertEquals(List.of(PRODUCT), error.getProductIds());
+        assertEquals(0, new BigDecimal("40.00").compareTo(cart.findItem(PRODUCT).getUnitPrice()));
     }
 }

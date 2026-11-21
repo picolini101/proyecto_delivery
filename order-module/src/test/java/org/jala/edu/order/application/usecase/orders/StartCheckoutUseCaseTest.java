@@ -6,6 +6,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.UUID;
 import org.jala.edu.core.contract.SampleCatalog;
 import org.jala.edu.core.contract.SampleUsers;
+import org.jala.edu.core.contract.SampleUsers;
+import org.jala.edu.order.domain.exception.PriceChangedException;
+import org.jala.edu.core.contract.UserService;
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.core.infrastructure.contract.FallbackCatalogService;
 import org.jala.edu.core.infrastructure.contract.FallbackUserService;
@@ -145,5 +148,31 @@ class StartCheckoutUseCaseTest {
         assertThat(cartRepository.findByCustomerId(customerId).orElseThrow().getItems()).hasSize(1);
         assertThat(orderRepository.findByCustomerId(
                 new org.jala.edu.order.domain.model.CustomerId(customerId))).isEmpty();
+    }
+    @Test
+    @DisplayName("Cambio de precio: no crea el pedido hasta que el cliente acepte el precio nuevo")
+    void shouldBlockCheckoutWhileAPriceChangeIsNotConfirmed() {
+        Cart cart = new Cart(customerId);
+        cart.addProduct(productId, commerceId, 2, new java.math.BigDecimal("40.00"));
+        cartRepository.save(cart);
+
+        assertThatThrownBy(() -> useCase.execute(new StartCheckoutCommand(customerId)))
+                .isInstanceOf(PriceChangedException.class);
+
+        assertThat(cartRepository.findByCustomerId(customerId).orElseThrow().getItems()).hasSize(1);
+        assertThat(orderRepository.findByCustomerId(
+                new org.jala.edu.order.domain.model.CustomerId(customerId))).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Sin cambio de precio: el pedido se crea con el precio vigente")
+    void shouldCreateOrderWhenThePriceDidNotChange() {
+        Cart cart = new Cart(customerId);
+        cart.addProduct(productId, commerceId, 2, SampleCatalog.PIZZA_PRICE);
+        cartRepository.save(cart);
+
+        OrderSummary summary = useCase.execute(new StartCheckoutCommand(customerId));
+
+        assertThat(summary.subtotal()).isEqualByComparingTo("100.00");
     }
 }

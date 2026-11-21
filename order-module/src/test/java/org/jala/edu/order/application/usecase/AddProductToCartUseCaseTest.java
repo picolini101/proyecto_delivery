@@ -110,4 +110,11 @@ class AddProductToCartUseCaseTest {
 
         assertTrue(carts.findOrCreate(SampleUsers.CUSTOMER).getItems().isEmpty());
     }
+
+    /** Al agregar, el carrito guarda el precio que el cliente ve en el catalogo en ese momento. */
+    @Test
+    void savesThePriceTheCustomerSees() {
+        Cart cart = useCase.execute(SampleUsers.CUSTOMER, SampleCatalog.PIZZA, 2);
+        assertEquals(0, SampleCatalog.PIZZA_PRICE.compareTo(cart.findItem(SampleCatalog.PIZZA).getUnitPrice()));
+    }
 }
