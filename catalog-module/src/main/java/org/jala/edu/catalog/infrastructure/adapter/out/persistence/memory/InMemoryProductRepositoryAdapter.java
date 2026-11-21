@@ -10,6 +10,10 @@ import org.jala.edu.core.infrastructure.config.ConditionalOnInMemoryPersistence;
 import org.jala.edu.core.infrastructure.persistence.memory.InMemoryCrudRepository;
 import org.springframework.stereotype.Component;
 import java.util.stream.Stream;
+import java.util.Objects;
+import org.jala.edu.catalog.domain.matching.ContainsIgnoreCaseStrategy;
+import org.jala.edu.catalog.domain.matching.TextMatchStrategy;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Almacena productos en la memoria. Activo cuando {@code delivery.persistence.type=memory};
@@ -19,6 +23,18 @@ import java.util.stream.Stream;
 @ConditionalOnInMemoryPersistence
 public class InMemoryProductRepositoryAdapter extends InMemoryCrudRepository<Product, ProductId>
         implements ProductRepositoryPort {
+
+    private final TextMatchStrategy matchStrategy;
+
+    /** Para pruebas y usos simples: busca ignorando mayúsculas. */
+    public InMemoryProductRepositoryAdapter() {
+        this(new ContainsIgnoreCaseStrategy());
+    }
+
+    @Autowired
+    public InMemoryProductRepositoryAdapter(TextMatchStrategy matchStrategy) {
+        this.matchStrategy = Objects.requireNonNull(matchStrategy, "Match strategy is required");
+    }
 
     /**
      * Productos que pertenecen al comercio indicado, ordenados por fecha de creación.
@@ -49,8 +65,7 @@ public class InMemoryProductRepositoryAdapter extends InMemoryCrudRepository<Pro
     private Stream<Product> visibleProducts(UUID commerceId, String searchText) {
         return findByCommerceId(commerceId).stream()
                 .filter(product -> product.getStatus() != ProductStatus.DISABLED)
-                .filter(product -> product.matches(searchText));
-    }
+                .filter(product -> product.matches(searchText, matchStrategy));    }
 
     @Override
     public List<Product> findPageOfVisibleProductsByCommerceId(

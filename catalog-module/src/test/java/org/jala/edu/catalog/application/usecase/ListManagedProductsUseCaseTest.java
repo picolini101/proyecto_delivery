@@ -6,6 +6,8 @@ import java.math.BigDecimal;
 import org.jala.edu.catalog.CatalogFixtures;
 import org.jala.edu.catalog.application.dto.ManagedProduct;
 import org.jala.edu.catalog.application.port.in.ListManagedProductsQuery;
+import org.jala.edu.catalog.domain.matching.AccentInsensitiveStrategy;
+import org.jala.edu.catalog.domain.matching.ContainsIgnoreCaseStrategy;
 import org.jala.edu.catalog.domain.model.Commerce;
 import org.jala.edu.catalog.domain.model.Product;
 import org.jala.edu.catalog.domain.model.ProductStatus;
@@ -26,7 +28,8 @@ class ListManagedProductsUseCaseTest {
             new InMemoryCommerceRepositoryAdapter();
 
     private final ListManagedProductsUseCase listProducts =
-            new ListManagedProductsUseCase(productRepository, commerceRepository);
+            new ListManagedProductsUseCase(
+                    productRepository, commerceRepository, new ContainsIgnoreCaseStrategy());
 
     @Test
     void returnsEveryProductOldestFirst() {
@@ -188,5 +191,17 @@ class ListManagedProductsUseCaseTest {
                 .containsExactlyInAnyOrder(
                         tuple("Pizza Fria", "No disponible"),
                         tuple("Pizza Grande", "Agotado"));
+    }
+
+    @Test
+    void usesTheConfiguredStrategyToMatchTheSearchText() {
+        Commerce commerce = commerceRepository.save(CatalogFixtures.activeCommerce("Active Commerce"));
+        saveProduct(commerce, "Café", "Bebidas");
+        ListManagedProductsUseCase accentInsensitive = new ListManagedProductsUseCase(
+                productRepository, commerceRepository, new AccentInsensitiveStrategy());
+
+        assertThat(names(listProducts.execute(new ListManagedProductsQuery("cafe")))).isEmpty();
+        assertThat(names(accentInsensitive.execute(new ListManagedProductsQuery("cafe"))))
+                .containsExactly("Café");
     }
 }

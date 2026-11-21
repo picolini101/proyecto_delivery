@@ -6,6 +6,7 @@ import org.jala.edu.catalog.application.dto.ManagedProduct;
 import org.jala.edu.catalog.application.port.in.ListManagedProductsQuery;
 import org.jala.edu.catalog.application.port.out.CommerceRepositoryPort;
 import org.jala.edu.catalog.application.port.out.ProductRepositoryPort;
+import org.jala.edu.catalog.domain.matching.TextMatchStrategy;
 import org.jala.edu.catalog.domain.model.Commerce;
 import org.jala.edu.catalog.domain.model.CommerceId;
 import org.jala.edu.catalog.domain.model.Product;
@@ -17,18 +18,21 @@ public class ListManagedProductsUseCase
 
     private final ProductRepositoryPort productRepository;
     private final CommerceRepositoryPort commerceRepository;
+    private final TextMatchStrategy matchStrategy;
 
     public ListManagedProductsUseCase(
             ProductRepositoryPort productRepository,
-            CommerceRepositoryPort commerceRepository) {
+            CommerceRepositoryPort commerceRepository,
+            TextMatchStrategy matchStrategy) {
         this.productRepository = productRepository;
         this.commerceRepository = commerceRepository;
+        this.matchStrategy = matchStrategy;
     }
 
     @Override
     public List<ManagedProduct> execute(ListManagedProductsQuery query) {
         return productRepository.findAll().stream()
-                .filter(product -> product.matches(query.searchText()))
+                .filter(product -> product.matches(query.searchText(), matchStrategy))
                 .map(this::toManagedProduct)
                 .toList();
     }
