@@ -50,6 +50,8 @@ import org.jala.edu.order.domain.model.DeliveryAddress;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.jala.edu.order.application.dto.CheckoutSummary;
+import org.jala.edu.order.application.usecase.orders.ConfirmCartPricesUseCase;
 
 import org.jala.edu.order.application.usecase.orders.PreviewCheckoutSummaryUseCase;
 import org.jala.edu.order.application.service.CartVerification;
@@ -132,6 +134,9 @@ public class NewCartController {
     private final PreviewCheckoutSummaryUseCase previewCheckoutSummary;
     // Los campos con @FXML son elementos de new-cart.fxml; JavaFX los conecta solos por el nombre (fx:id).
 
+    /** Guarda en el carrito los precios nuevos que el cliente acepta. */
+    private final ConfirmCartPricesUseCase confirmCartPrices;
+
     /** Contenedor donde se dibujan las tarjetas de productos. */
     @FXML
     private FlowPane productsPane;
@@ -168,7 +173,7 @@ public class NewCartController {
     @FXML
     private Button checkoutButton;
 
-/**
+    /**
      * JavaFX llama a este metodo automaticamente cuando termina de cargar el FXML.
      * Carga los productos para dibujar sus tarjetas y luego dibuja el carrito actual.
      */
@@ -231,6 +236,11 @@ public class NewCartController {
                         return;
                     }
 
+                    if (summary.hasPriceChanges()) {
+                        askToConfirmPrices(summary);
+                        return;
+                    }
+
                     // Armamos el detalle de productos
                     StringBuilder detalle = new StringBuilder();
                     for (CartVerification.Line line : summary.lines()) {
@@ -263,7 +273,6 @@ public class NewCartController {
         );
     }
 
-
     /** Crea la orden y pasa al pago cuando el usuario confirma el resumen. */
     private void placeOrder(StartCheckoutCommand command) {
         BackgroundTasks.run(
@@ -282,6 +291,40 @@ public class NewCartController {
                     checkoutButton.setDisable(false);
                 }
         );
+    }
+
+    /**
+     * El precio de algun producto cambio desde que se agrego al carrito: muestra el precio anterior y el nuevo
+     * y pide confirmar. Si el cliente acepta, se guardan los precios nuevos y se vuelve a mostrar el resumen de
+     * la compra. Si no acepta, se queda en el carrito para que cambie la cantidad o quite el producto.
+     *
+     * @param summary resumen que trae los cambios de precio
+     */
+    private void askToConfirmPrices(CheckoutSummary summary) {
+        StringBuilder detalle = new StringBuilder();
+        for (CartVerification.PriceChange change : summary.priceChanges()) {
+            detalle.append(String.format("%s: de $%s a $%s%n", change.productName(),
+                    change.oldPrice().toPlainString(), change.newPrice().toPlainString()));
+        }
+        boolean accepted = Dialogs.confirm(checkoutButton, "El precio de un producto cambió",
+                detalle + "\n¿Aceptas los nuevos precios?\n"
+                        + "Si no los aceptas, puedes cambiar la cantidad o quitar el producto del carrito.");
+
+        if (!accepted) {
+            showMessage("No aceptaste el nuevo precio. Cambia la cantidad o quita el producto del carrito.", "error");
+            refreshCart();
+            checkoutButton.setDisable(false);
+            return;
+        }
+
+        UUID customerId = currentUserService.currentUser().id();
+        BackgroundTasks.run(
+                () -> confirmCartPrices.execute(customerId, summary.priceChanges()),
+                cart -> onStartCheckout(),
+                error -> {
+                    showError(error, "confirmar los nuevos precios");
+                    checkoutButton.setDisable(false);
+                });
     }
 
     /**
@@ -702,13 +745,9 @@ public class NewCartController {
     }
 
     /**
-     * Dibuja el carrito: por cada comercio un titulo, y por cada linea "cantidad x nombre" con su subtotal.
-     * Al final actualiza el subtotal, el envio y el total.
-     *
      * Dibuja el carrito: por cada comercio un titulo, y por cada linea el nombre, el subtotal y los botones
-     * "-" y "+" para cambiar la cantidad (ver ).
+     * "-" y "+" para cambiar la cantidad.
      * Al final actualiza el subtotal, el envio y el total.
-     *
      *
      * @param summary resumen calculado por {@link GetCartSummaryUseCase}
      */
@@ -745,6 +784,7 @@ public class NewCartController {
                 : "-fx-padding: 12 18; -fx-background-color: transparent;");
         return row;
     }
+
     private void changeLine(CartSummary.Line line, HBox controls, boolean increase) {
         controls.setDisable(true);
         BackgroundTasks.run(
@@ -757,13 +797,6 @@ public class NewCartController {
                     controls.setDisable(false);
                 });
     }
-    /**
-     * Acorta un id para mostrarlo: devuelve solo los ultimos 4 caracteres.
-     *
-     * @param id id completo
-     * @return los ultimos 4 caracteres del id
-     */
-
 
     /**
      * Muestra un error arriba de la pantalla. Si el error es una regla del negocio (por ejemplo sin stock)
@@ -789,9 +822,9 @@ public class NewCartController {
         messageLabel.setText(text);
         messageLabel.setStyle(styleClass.equals("error")
                 ? "-fx-padding: 9 14; -fx-background-color: #fef2f2; -fx-background-radius: 8; "
-                        + "-fx-font-size: 13px; -fx-text-fill: #b91c1c;"
+                + "-fx-font-size: 13px; -fx-text-fill: #b91c1c;"
                 : "-fx-padding: 9 14; -fx-background-color: #eff6ff; -fx-background-radius: 8; "
-                        + "-fx-font-size: 13px; -fx-text-fill: #15803d;");
+                + "-fx-font-size: 13px; -fx-text-fill: #15803d;");
         messageLabel.setVisible(true);
         messageLabel.setManaged(true);
         PauseTransition timeout = new PauseTransition(Duration.seconds(3));

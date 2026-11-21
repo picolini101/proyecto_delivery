@@ -7,6 +7,7 @@ import org.jala.edu.core.contract.PaymentService;
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.order.application.port.out.CartRepositoryPort;
 import org.jala.edu.order.application.port.out.FailedPaymentLogPort;
+import org.jala.edu.order.application.usecase.orders.ConfirmCartPricesUseCase;
 import org.jala.edu.order.application.usecase.orders.GetOrderConfirmationUseCase;
 import org.jala.edu.order.application.usecase.orders.ListFailedPaymentsUseCase;
 import org.jala.edu.order.application.usecase.orders.RegisterFailedPaymentUseCase;
@@ -39,6 +40,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.jala.edu.order.application.port.out.CatalogPort;
 import org.jala.edu.order.infrastructure.adapter.out.catalog.CatalogGatewayAdapter;
+
+
 
 /**
  * Registra los casos de uso del modulo de pedidos en el contenedor de Spring.
@@ -100,7 +103,7 @@ public class OrderModuleConfiguration {
 
     @Bean
     public MarkOrderAssignedUseCase markOrderAssignedUseCase(OrderRepositoryPort orders,
-                                                              ChangeOrderStatusUseCase changeOrderStatus) {
+                                                             ChangeOrderStatusUseCase changeOrderStatus) {
         return new MarkOrderAssignedUseCase(orders, changeOrderStatus);
     }
 
@@ -116,12 +119,18 @@ public class OrderModuleConfiguration {
 
     @Bean
     public OrderService orderService(FindReadyForDeliveryUseCase findReadyForDelivery,
-                                    MarkOrderAssignedUseCase markOrderAssigned,
-                                    MarkOrderOnTheWayUseCase markOrderOnTheWay,
-                                    MarkOrderDeliveredUseCase markOrderDelivered,
-                                    CurrentUserService currentUserService,GetOrderDetailUseCase getOrderDetailUseCase) {
+                                     MarkOrderAssignedUseCase markOrderAssigned,
+                                     MarkOrderOnTheWayUseCase markOrderOnTheWay,
+                                     MarkOrderDeliveredUseCase markOrderDelivered,
+                                     CurrentUserService currentUserService,GetOrderDetailUseCase getOrderDetailUseCase) {
         return new OrderServiceAdapter(findReadyForDelivery, markOrderAssigned, markOrderOnTheWay,
                 markOrderDelivered, currentUserService, getOrderDetailUseCase);
+    }
+
+    @Bean
+    public ConfirmCartPricesUseCase confirmCartPricesUseCase(UserService users, CartRepositoryPort carts,
+                                                             CartVerifier cartVerifier) {
+        return new ConfirmCartPricesUseCase(users, carts, cartVerifier);
     }
 
     @Bean
@@ -211,4 +220,3 @@ public class OrderModuleConfiguration {
     }
 
 }
-

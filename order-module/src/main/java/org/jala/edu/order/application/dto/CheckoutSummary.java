@@ -16,11 +16,13 @@ import org.jala.edu.order.domain.model.Cart;
  * @param total        Monto definitivo a pagar (subtotal + shippingCost).
  * @param isValid      Bandera que indica si el carrito pasó las validaciones de stock y existencia.
  * @param issues       Lista de problemas encontrados durante la verificación (ej. falta de stock).
+ * @param priceChanges Productos cuyo precio cambió desde que el cliente los agregó y que debe aceptar.
  */
 
 public record CheckoutSummary(List<CartVerification.Line> lines, BigDecimal subtotal, BigDecimal shippingCost, BigDecimal total,
-        boolean isValid,
-        List<CartVerification.Issue> issues) {
+                              boolean isValid,
+                              List<CartVerification.Issue> issues,
+                              List<CartVerification.PriceChange> priceChanges) {
 
     /**
      * Crea una instancia de CheckoutSummary a partir del resultado de la verificación del carrito.
@@ -34,6 +36,11 @@ public record CheckoutSummary(List<CartVerification.Line> lines, BigDecimal subt
         BigDecimal total = verification.subtotal().add(shipping);
 
         return new CheckoutSummary(verification.lines(), verification.subtotal(), shipping, total,
-                verification.isValid(), verification.issues());
+                verification.isValid(), verification.issues(), verification.priceChanges());
+    }
+
+    /** @return {@code true} si el cliente debe aceptar un precio nuevo antes de pagar */
+    public boolean hasPriceChanges() {
+        return !priceChanges.isEmpty();
     }
 }
