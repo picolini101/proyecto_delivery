@@ -127,4 +127,30 @@ class PreviewCheckoutSummaryUseCaseTest {
         assertEquals(1, summary.issues().size(), "Debería reportar el problema de stock");
         assertEquals(CartVerification.IssueType.NOT_AVAILABLE, summary.issues().get(0).type());
     }
+
+
+    @Test
+    void shouldExposePriceChangesSoTheCustomerCanConfirmThem() {
+        when(userService.isActiveWithRole(CUSTOMER_ID, UserRole.CUSTOMER)).thenReturn(true);
+
+        Cart cart = new Cart(CUSTOMER_ID);
+        cart.addProduct(PRODUCT_ID, UUID.randomUUID(), 2, new BigDecimal("40.00"));
+        when(cartRepository.findOrCreate(CUSTOMER_ID)).thenReturn(cart);
+
+        CartVerification.Line line = new CartVerification.Line(
+                PRODUCT_ID, UUID.randomUUID(), "Pizza", new BigDecimal("50.00"), 2, new BigDecimal("100.00")
+        );
+        CartVerification.PriceChange change = new CartVerification.PriceChange(
+                PRODUCT_ID, "Pizza", new BigDecimal("40.00"), new BigDecimal("50.00")
+        );
+        when(cartVerifier.verify(cart)).thenReturn(new CartVerification(
+                List.of(line), List.of(), new BigDecimal("100.00"), List.of(change)
+        ));
+
+        CheckoutSummary summary = useCase.execute(new StartCheckoutCommand(CUSTOMER_ID));
+
+        assertTrue(summary.isValid());
+        assertTrue(summary.hasPriceChanges());
+        assertEquals(List.of(change), summary.priceChanges());
+    }
 }
