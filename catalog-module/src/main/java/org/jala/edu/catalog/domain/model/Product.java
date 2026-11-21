@@ -125,6 +125,10 @@ public class Product extends BaseModel<ProductId> {
     }
 
     public void updateStatus(ProductStatus newStatus) {
+        if (status == ProductStatus.DISABLED) {
+            throw new DomainException("Disabled product cannot be reactivated");
+        }
+
         if (newStatus != ProductStatus.AVAILABLE
                 && newStatus != ProductStatus.OUT_OF_STOCK) {
             throw new DomainException("Invalid product status");
