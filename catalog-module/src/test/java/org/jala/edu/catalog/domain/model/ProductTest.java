@@ -5,6 +5,9 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.math.BigDecimal;
 import java.util.UUID;
+
+import org.jala.edu.catalog.domain.matching.ContainsIgnoreCaseStrategy;
+import org.jala.edu.catalog.domain.matching.TextMatchStrategy;
 import org.jala.edu.core.domain.exception.DomainException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -14,6 +17,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 class ProductTest {
 
     private static final UUID COMMERCE_ID = UUID.randomUUID();
+    private static final TextMatchStrategy STRATEGY = new ContainsIgnoreCaseStrategy();
 
     @Test
     void registersAProductInItsCommerceWithTrimmedText() {
@@ -259,7 +263,8 @@ class ProductTest {
         Product product = Product.register(
                 COMMERCE_ID, "Pizza Margarita", "Food", new BigDecimal("50.00"));
 
-        assertThat(product.matches(text)).isTrue();
+        assertThat(product.matches(text, STRATEGY)).isTrue();
+
     }
 
     @ParameterizedTest
@@ -269,7 +274,7 @@ class ProductTest {
         Product product = Product.register(
                 COMMERCE_ID, "Pizza Margarita", "Food", new BigDecimal("50.00"));
 
-        assertThat(product.matches(text)).isTrue();
+        assertThat(product.matches(text, STRATEGY)).isTrue();
     }
 
     @Test
@@ -277,6 +282,6 @@ class ProductTest {
         Product product = Product.register(
                 COMMERCE_ID, "Pizza Margarita", "Food", new BigDecimal("50.00"));
 
-        assertThat(product.matches("burger")).isFalse();
+        assertThat(product.matches("burger", STRATEGY)).isFalse();
     }
 }

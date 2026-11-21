@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.ToString;
+import org.jala.edu.catalog.domain.matching.TextMatchStrategy;
 import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.core.domain.model.BaseModel;
 import java.util.Locale;
@@ -155,13 +156,17 @@ public class Product extends BaseModel<ProductId> {
      Coincidencia de búsqueda del catálogo un texto vacío coincide con todo
      */
 
-    public boolean matches(String text) {
+    /**
+     * Coincidencia de búsqueda según la estrategia indicada; un texto vacío coincide con todo.
+     * El texto se limpia de espacios y se compara con el nombre y con la categoría.
+     */
+    public boolean matches(String text, TextMatchStrategy strategy) {
+        Objects.requireNonNull(strategy, "Strategy is required");
         if (text == null || text.isBlank()) {
             return true;
         }
-        String needle = text.strip().toLowerCase(Locale.ROOT);
-        return name.toLowerCase(Locale.ROOT).contains(needle)
-                || category.toLowerCase(Locale.ROOT).contains(needle);
+        String query = text.strip();
+        return strategy.matches(name, query) || strategy.matches(category, query);
     }
 
     private static String requireText(String value, String field) {

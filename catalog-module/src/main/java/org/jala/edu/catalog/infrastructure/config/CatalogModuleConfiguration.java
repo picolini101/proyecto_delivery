@@ -3,6 +3,8 @@ package org.jala.edu.catalog.infrastructure.config;
 import org.jala.edu.catalog.application.port.out.CommerceRepositoryPort;
 import org.jala.edu.catalog.application.port.out.ProductRepositoryPort;
 import org.jala.edu.catalog.application.usecase.*;
+import org.jala.edu.catalog.domain.matching.AccentInsensitiveStrategy;
+import org.jala.edu.catalog.domain.matching.TextMatchStrategy;
 import org.jala.edu.core.contract.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -31,8 +33,10 @@ public class CatalogModuleConfiguration {
     @Bean
     public ListManagedProductsUseCase listManagedProductsUseCase(
             ProductRepositoryPort productRepositoryPort,
-            CommerceRepositoryPort commerceRepositoryPort) {
-        return new ListManagedProductsUseCase(productRepositoryPort, commerceRepositoryPort);
+            CommerceRepositoryPort commerceRepositoryPort,
+            TextMatchStrategy textMatchStrategy) {
+        return new ListManagedProductsUseCase(
+                productRepositoryPort, commerceRepositoryPort, textMatchStrategy);
     }
 
     @Bean
@@ -97,5 +101,11 @@ public class CatalogModuleConfiguration {
             UserService userService) {
         return new ChangeCommerceStatusUseCase(
                 commerceRepositoryPort, productRepositoryPort, userService);
+    }
+
+    /// Criterio de búsqueda único para Manage products y el catálogo del cliente
+    @Bean
+    public TextMatchStrategy textMatchStrategy() {
+        return new AccentInsensitiveStrategy();
     }
 }

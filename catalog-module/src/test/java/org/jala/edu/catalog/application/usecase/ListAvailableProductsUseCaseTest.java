@@ -11,6 +11,7 @@ import org.jala.edu.catalog.application.dto.CatalogProduct;
 import org.jala.edu.catalog.application.dto.CatalogProductPage;
 import org.jala.edu.catalog.application.port.in.ListAvailableProductsQuery;
 import org.jala.edu.catalog.domain.exception.PageNotFoundException;
+import org.jala.edu.catalog.domain.matching.AccentInsensitiveStrategy;
 import org.jala.edu.catalog.domain.model.Commerce;
 import org.jala.edu.catalog.domain.model.Product;
 import org.jala.edu.catalog.domain.model.ProductStatus;
@@ -345,5 +346,24 @@ class ListAvailableProductsUseCaseTest {
 
         assertThatThrownBy(() -> search(commerce, 2, "pizza"))
                 .isInstanceOf(PageNotFoundException.class);
+    }
+
+    @Test
+    void customerSearchUsesTheStrategyOfTheRepository() {
+        InMemoryProductRepositoryAdapter accentAware =
+                new InMemoryProductRepositoryAdapter(new AccentInsensitiveStrategy());
+        ListAvailableProductsUseCase accentUseCase =
+                new ListAvailableProductsUseCase(accentAware, commerceRepository, PAGE_SIZE);
+        Product product = Product.register(
+                commerce.getId().value(), "Café", "Bebidas", new BigDecimal("5.00"));
+        product.adjustStock(5);
+        accentAware.save(product);
+
+        CatalogProductPage result = accentUseCase.execute(
+                new ListAvailableProductsQuery(commerce.getId().value(), 1, "cafe"));
+
+        assertThat(result.products())
+                .extracting(CatalogProduct::name)
+                .containsExactly("Café");
     }
 }
