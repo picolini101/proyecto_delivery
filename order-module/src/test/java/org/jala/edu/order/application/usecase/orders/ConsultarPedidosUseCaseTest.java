@@ -1,25 +1,26 @@
 package org.jala.edu.order.application.usecase.orders;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-
-import java.time.Instant;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.UUID;
-
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.contract.UserRole;
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.order.application.port.out.OrderRepositoryPort;
 import org.jala.edu.order.domain.exception.UnauthorizedCustomerException;
 import org.jala.edu.order.domain.model.*;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 class ConsultarPedidosUseCaseTest {
@@ -41,27 +42,27 @@ class ConsultarPedidosUseCaseTest {
 
     @Test
     void shouldRejectsInactiveCustomer() {
-        when(userService.isActiveWithRole(CUSTOMER_ID, UserRole.CUSTOMER)).thenReturn(false);
-        assertThrows(UnauthorizedCustomerException.class, () -> useCase.execute(CUSTOMER_ID));
+        Mockito.when(userService.isActiveWithRole(CUSTOMER_ID, UserRole.CUSTOMER)).thenReturn(false);
+        Assertions.assertThrows(UnauthorizedCustomerException.class, () -> useCase.execute(CUSTOMER_ID));
     }
 
     @Test
     void shouldReturnsEmptyListWhenNoOrders() {
-        when(userService.isActiveWithRole(CUSTOMER_ID, UserRole.CUSTOMER)).thenReturn(true);
-        when(orderRepository.findByCustomerId(any())).thenReturn(new ArrayList<>());
+        Mockito.when(userService.isActiveWithRole(CUSTOMER_ID, UserRole.CUSTOMER)).thenReturn(true);
+        Mockito.when(orderRepository.findByCustomerId(ArgumentMatchers.any())).thenReturn(new ArrayList<>());
 
         List<Order> result = useCase.execute(CUSTOMER_ID);
-        assertTrue(result.isEmpty());
+        Assertions.assertTrue(result.isEmpty());
     }
 
     @Test
     void shouldReturnsOrdersSortedByDateDescending() {
-        when(userService.isActiveWithRole(CUSTOMER_ID, UserRole.CUSTOMER)).thenReturn(true);
+        Mockito.when(userService.isActiveWithRole(CUSTOMER_ID, UserRole.CUSTOMER)).thenReturn(true);
 
         Order orderOld = shouldCreateSampleOrder(Instant.now().minusSeconds(3600));
         Order orderNew = shouldCreateSampleOrder(Instant.now());
 
-        when(orderRepository.findByCustomerId(any())).thenReturn(List.of(orderOld, orderNew));
+        Mockito.when(orderRepository.findByCustomerId(ArgumentMatchers.any())).thenReturn(List.of(orderOld, orderNew));
 
         List<Order> result = useCase.execute(CUSTOMER_ID);
 
