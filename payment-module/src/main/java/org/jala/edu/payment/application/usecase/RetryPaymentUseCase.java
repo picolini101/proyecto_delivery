@@ -1,5 +1,9 @@
 package org.jala.edu.payment.application.usecase;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import org.jala.edu.core.contract.UserRole;
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.core.domain.exception.DomainException;
@@ -8,12 +12,6 @@ import org.jala.edu.payment.application.port.out.PaymentTransactionRepositoryPor
 import org.jala.edu.payment.domain.model.PaymentMethod;
 import org.jala.edu.payment.domain.model.PaymentStatus;
 import org.jala.edu.payment.domain.model.PaymentTransaction;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 /**
  * Caso de uso para reintentar el pago de un pedido cuyo intento previo fue rechazado.
  */
@@ -35,8 +33,13 @@ public class RetryPaymentUseCase {
                                                         UUID paymentMethodId, BigDecimal amount) {
         validateActiveUser(userId);
         List<PaymentTransaction> previousAttempts = transactionRepository.findByOrderId(orderId);
-        boolean hasRejectedAttempt = previousAttempts.stream()
-                .anyMatch(transaction -> transaction.getStatus() == PaymentStatus.REJECTED);
+        boolean hasRejectedAttempt = false;
+        for (PaymentTransaction tx : previousAttempts) {
+            if (tx.getStatus() == PaymentStatus.REJECTED) {
+                hasRejectedAttempt = true;
+                break;
+            }
+        }
         if (!hasRejectedAttempt) {
             throw new DomainException("El pedido no tiene un pago rechazado para reintentar");
         }
