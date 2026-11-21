@@ -1,7 +1,7 @@
 package org.jala.edu.order.application.service;
 
 
-import org.jala.edu.core.contract.CatalogService;
+import org.jala.edu.order.application.port.out.CatalogPort;
 import org.jala.edu.core.contract.ProductInfo;
 import org.jala.edu.order.domain.exception.ProductUnavailableException;
 import org.jala.edu.order.domain.model.Cart;
@@ -25,14 +25,14 @@ import java.util.UUID;
 public class CartVerifier {
 
     /** Para consultar el precio vigente y la disponibilidad de cada producto. */
-    private final CatalogService catalog;
+    private final CatalogPort catalog;
 
     /**
      * Recibe el catalogo. Spring lo entrega desde {@code OrderModuleConfiguration}.
      *
      * @param catalog servicio del catalogo
      */
-    public CartVerifier(CatalogService catalog) {
+    public CartVerifier(CatalogPort catalog) {
         this.catalog = catalog;
     }
 

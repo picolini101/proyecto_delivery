@@ -37,6 +37,8 @@ import org.jala.edu.order.infrastructure.adapter.out.payment.PaymentServiceAdapt
 import org.jala.edu.order.infrastructure.adapter.in.contract.OrderServiceAdapter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.jala.edu.order.application.port.out.CatalogPort;
+import org.jala.edu.order.infrastructure.adapter.out.catalog.CatalogGatewayAdapter;
 
 /**
  * Registra los casos de uso del modulo de pedidos en el contenedor de Spring.
@@ -44,25 +46,33 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OrderModuleConfiguration {
 
+    /**
+     * Adaptador del puerto de catalogo (INT-001): traduce el contrato {@link CatalogService} del core.
+     */
     @Bean
-    public AddProductToCartUseCase addProductToCartUseCase(CartRepositoryPort carts, CatalogService catalog,
+    public CatalogPort catalogPort(CatalogService catalogService) {
+        return new CatalogGatewayAdapter(catalogService);
+    }
+
+    @Bean
+    public AddProductToCartUseCase addProductToCartUseCase(CartRepositoryPort carts, CatalogPort catalog,
                                                            UserService users) {
         return new AddProductToCartUseCase(carts, catalog, users);
     }
 
     @Bean
-    public GetCartSummaryUseCase getCartSummaryUseCase(CartRepositoryPort carts, CatalogService catalog) {
+    public GetCartSummaryUseCase getCartSummaryUseCase(CartRepositoryPort carts, CatalogPort catalog) {
         return new GetCartSummaryUseCase(carts, catalog);
     }
 
     @Bean
-    public ListCatalogProductsUseCase listCatalogProductsUseCase(CatalogService catalog) {
+    public ListCatalogProductsUseCase listCatalogProductsUseCase(CatalogPort catalog) {
         return new ListCatalogProductsUseCase(catalog);
     }
 
     @Bean
     public IncreaseCartItemQuantityUseCase increaseCartItemQuantityUseCase(CartRepositoryPort carts,
-                                                                           CatalogService catalog,
+                                                                           CatalogPort catalog,
                                                                            UserService users) {
         return new IncreaseCartItemQuantityUseCase(carts, catalog, users);
     }
@@ -79,7 +89,7 @@ public class OrderModuleConfiguration {
     }
 
     @Bean
-    public CartVerifier cartVerifier(CatalogService catalog) {
+    public CartVerifier cartVerifier(CatalogPort catalog) {
         return new CartVerifier(catalog);
     }
 

@@ -1,51 +1,34 @@
 package org.jala.edu.order.application.usecase;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
-import org.jala.edu.core.contract.CatalogService;
 import org.jala.edu.core.contract.ProductInfo;
-import org.jala.edu.core.contract.SampleCatalog;
+import org.jala.edu.order.application.port.out.CatalogPort;
+import org.jala.edu.order.domain.exception.CatalogUnavailableException;
 
 /**
  * Caso de uso: obtener los productos que se ofrecen al armar un carrito.
- * <p>
- * Solucion temporal: el contrato {@link CatalogService} todavia no tiene un metodo para listar productos,
- * asi que mientras tanto se consultan por id los productos conocidos.
- * Cuando el catalogo publique el listado, solo hay que cambiar este caso de uso.
+ * Pide al catalogo real los productos disponibles (con stock y de un comercio activo); no usa listas fijas.
  */
 public class ListCatalogProductsUseCase {
 
-    /** Ids de los productos de prueba que se van a mostrar (uno disponible y uno agotado). */
-    private static final List<UUID> KNOWN_PRODUCTS = List.of(
-            SampleCatalog.PIZZA,
-            SampleCatalog.EMPANADA);
-
-    /** Para consultar cada producto por su id. */
-    private final CatalogService catalog;
+    /** Para consultar los productos disponibles. */
+    private final CatalogPort catalog;
 
     /**
-     * @param catalog servicio del catalogo
+     * @param catalog puerto del catalogo
      */
-    public ListCatalogProductsUseCase(CatalogService catalog) {
+    public ListCatalogProductsUseCase(CatalogPort catalog) {
         this.catalog = catalog;
     }
 
     /**
-     * Busca en el catalogo cada producto conocido y devuelve los que existen.
+     * Devuelve los productos disponibles del catalogo, con su nombre y precio vigente.
      *
-     * @return lista de productos con nombre y precio
+     * @return lista de productos; vacia si no hay ninguno
+     * @throws CatalogUnavailableException si el catalogo no responde
      */
     public List<ProductInfo> execute() {
-        List<ProductInfo> products = new ArrayList<>();
-        for (UUID productId : KNOWN_PRODUCTS) {
-            // orElse(null): saca el producto del Optional, o null si no existe
-            ProductInfo product = catalog.findProduct(productId).orElse(null);
-            if (product != null) {
-                products.add(product);
-            }
-        }
-        return products;
+        return catalog.findAvailableProducts();
     }
 }

@@ -2,7 +2,7 @@ package org.jala.edu.order.application.usecase;
 
 import java.util.UUID;
 
-import org.jala.edu.core.contract.CatalogService;
+import org.jala.edu.order.application.port.out.CatalogPort;
 import org.jala.edu.core.contract.UserRole;
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.core.domain.exception.ConflictException;
@@ -29,7 +29,7 @@ public class IncreaseCartItemQuantityUseCase {
     private final CartRepositoryPort carts;
 
     /** Para preguntar si hay stock, lo publica el modulo de catalogo. */
-    private final CatalogService catalog;
+    private final CatalogPort catalog;
 
     /** Para validar que el cliente existe, esta activo y tiene rol CUSTOMER. */
     private final UserService users;
@@ -41,7 +41,7 @@ public class IncreaseCartItemQuantityUseCase {
      * @param catalog servicio del catalogo
      * @param users   servicio de usuarios
      */
-    public IncreaseCartItemQuantityUseCase(CartRepositoryPort carts, CatalogService catalog, UserService users) {
+    public IncreaseCartItemQuantityUseCase(CartRepositoryPort carts, CatalogPort catalog, UserService users) {
         this.carts = carts;
         this.catalog = catalog;
         this.users = users;
