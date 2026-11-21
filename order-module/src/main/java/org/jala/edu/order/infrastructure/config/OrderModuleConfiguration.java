@@ -7,6 +7,7 @@ import org.jala.edu.core.contract.PaymentService;
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.order.application.port.out.CartRepositoryPort;
 import org.jala.edu.order.application.port.out.FailedPaymentLogPort;
+import org.jala.edu.order.application.usecase.orders.GetOrderConfirmationUseCase;
 import org.jala.edu.order.application.usecase.orders.ListFailedPaymentsUseCase;
 import org.jala.edu.order.application.usecase.orders.RegisterFailedPaymentUseCase;
 import org.jala.edu.order.application.port.out.OrderRepositoryPort;
@@ -123,7 +124,6 @@ public class OrderModuleConfiguration {
         return new StartCheckoutUseCase(users, carts, cartVerifier, orderRepository);
     }
 
-
     /**
      * Adaptador del puerto de pagos (INT-002): traduce el contrato {@link PaymentService} del core.
      */
@@ -183,12 +183,17 @@ public class OrderModuleConfiguration {
         return new ListFailedPaymentsUseCase(failedPayments, history);
     }
 
+
     @Bean
     public PreviewCheckoutSummaryUseCase previewCheckoutSummaryUseCase(
             UserService users, CartRepositoryPort carts, CartVerifier cartVerifier) {
         return new PreviewCheckoutSummaryUseCase(users, carts, cartVerifier);
     }
 
+    @Bean
+    public GetOrderConfirmationUseCase getOrderConfirmationUseCase(OrderRepositoryPort orderRepository) {
+        return new GetOrderConfirmationUseCase(orderRepository);
+    }
     @Bean
     public CancelOrderUseCase cancelOrderUseCase(OrderRepositoryPort orderRepository,
                                                  OrderStatusHistoryPort statusHistory,
