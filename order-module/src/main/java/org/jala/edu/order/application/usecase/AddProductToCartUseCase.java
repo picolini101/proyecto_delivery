@@ -84,7 +84,7 @@ public class AddProductToCartUseCase {
         }
 
         // 5. Agregar y guardar
-        cart.addProduct(productId, product.commerceId(), quantity);
+        cart.addProduct(productId, product.commerceId(), quantity, product.price());
         return carts.save(cart);
     }
 }

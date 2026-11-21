@@ -4,7 +4,13 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-public record CartVerification(List<Line> lines,List<Issue> issues, BigDecimal subtotal) {
+public record CartVerification(List<Line> lines, List<Issue> issues, BigDecimal subtotal,
+                               List<PriceChange> priceChanges) {
+
+    /** Verificacion sin cambios de precio. */
+    public CartVerification(List<Line> lines, List<Issue> issues, BigDecimal subtotal) {
+        this(lines, issues, subtotal, List.of());
+    }
 
     /** Tipo de problema que puede tener un producto del carrito. */
     public enum IssueType {
@@ -38,7 +44,20 @@ public record CartVerification(List<Line> lines,List<Issue> issues, BigDecimal s
      */
     public record Issue(UUID productId, String productName, IssueType type, int requestedQuantity){}
 
-    /** @return {@code true} en caso si no se encontro ningun problema */
+    /**
+     * Un producto cuyo precio en el catalogo es distinto al que el cliente vio.
+     *
+     * @param productId   id del producto
+     * @param productName nombre actual del producto
+     * @param oldPrice    precio de una unidad que el cliente vio
+     * @param newPrice    precio vigente de una unidad en el catalogo
+     */
+    public record PriceChange(UUID productId, String productName, BigDecimal oldPrice, BigDecimal newPrice){}
+
+    /** @return {@code true} en caso si no se encontro ningun problema de existencia ni de stock */
     public boolean isValid(){ return issues.isEmpty();}
+
+    /** @return {@code true} si el precio de algun producto cambio y el cliente aun no lo acepto */
+    public boolean hasPriceChanges(){ return !priceChanges.isEmpty();}
 
 }
