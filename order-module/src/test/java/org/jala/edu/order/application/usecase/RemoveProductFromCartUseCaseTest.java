@@ -16,6 +16,7 @@ import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemory
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.jala.edu.order.infrastructure.adapter.out.catalog.CatalogGatewayAdapter;
 
 class RemoveProductFromCartUseCaseTest {
 
@@ -33,7 +34,7 @@ class RemoveProductFromCartUseCaseTest {
         cartRepository = new InMemoryCartRepositoryAdapter();
         catalogService = new FallbackCatalogService();
         removeUseCase = new RemoveProductFromCartUseCase(cartRepository);
-        summaryUseCase = new GetCartSummaryUseCase(cartRepository, catalogService);
+        summaryUseCase = new GetCartSummaryUseCase(cartRepository, new CatalogGatewayAdapter(catalogService));
     }
 
     @Test

@@ -17,6 +17,9 @@ import org.jala.edu.order.domain.exception.ProductUnavailableException;
 import org.jala.edu.order.domain.model.Cart;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.jala.edu.order.domain.exception.CatalogUnavailableException;
+import org.jala.edu.order.infrastructure.adapter.out.catalog.CatalogGatewayAdapter;
+import org.jala.edu.order.infrastructure.adapter.out.catalog.UnavailableCatalogPort;
 
 /**
  * Pruebas de {@link CartVerifier} (HU6).
@@ -47,7 +50,7 @@ class CartVerifierTest {
     @BeforeEach
     void setUp() {
         catalog = new FallbackCatalogService();
-        verifier = new CartVerifier(catalog);
+        verifier = new CartVerifier(new CatalogGatewayAdapter(catalog));
         cart = new Cart(SampleUsers.CUSTOMER);
     }
 
@@ -155,5 +158,26 @@ class CartVerifierTest {
 
         assertTrue(result.isValid());
         assertEquals(BigDecimal.ZERO, result.subtotal());
+    }
+
+    /** Catalogo caido: verify no inventa resultados, lanza el error y el carrito queda igual. */
+    @Test
+    void verifyFailsWhenTheCatalogIsUnavailableAndKeepsTheCartUntouched() {
+        verifier = new CartVerifier(new UnavailableCatalogPort());
+        cart.addProduct(PRODUCT, COMMERCE, 2);
+
+        assertThrows(CatalogUnavailableException.class, () -> verifier.verify(cart));
+
+        assertEquals(2, cart.quantityOf(PRODUCT));
+        assertEquals(1, cart.getItems().size());
+    }
+
+    /** Catalogo caido: verifyOrThrow tambien informa el error del catalogo, no "producto no disponible". */
+    @Test
+    void verifyOrThrowReportsTheUnavailableCatalog() {
+        verifier = new CartVerifier(new UnavailableCatalogPort());
+        cart.addProduct(PRODUCT, COMMERCE, 2);
+
+        assertThrows(CatalogUnavailableException.class, () -> verifier.verifyOrThrow(cart));
     }
 }

@@ -15,6 +15,8 @@ import org.jala.edu.core.infrastructure.contract.FallbackUserService;
 import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryCartRepositoryAdapter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.jala.edu.order.infrastructure.adapter.out.catalog.CatalogGatewayAdapter;
+
 
 /**
  * Pruebas de {@link IncreaseCartItemQuantityUseCase} (HU4).
@@ -42,7 +44,7 @@ class IncreaseCartItemQuantityUseCaseTest {
     @BeforeEach
     void setUp() {
         carts = new InMemoryCartRepositoryAdapter();
-        FallbackCatalogService catalog = new FallbackCatalogService();
+        CatalogGatewayAdapter catalog = new CatalogGatewayAdapter(new FallbackCatalogService());
         FallbackUserService users = new FallbackUserService();
         addToCart = new AddProductToCartUseCase(carts, catalog, users);
         useCase = new IncreaseCartItemQuantityUseCase(carts, catalog, users);

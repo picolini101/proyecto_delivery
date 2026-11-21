@@ -24,6 +24,9 @@ import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemory
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.jala.edu.order.domain.exception.CatalogUnavailableException;
+import org.jala.edu.order.infrastructure.adapter.out.catalog.CatalogGatewayAdapter;
+import org.jala.edu.order.infrastructure.adapter.out.catalog.UnavailableCatalogPort;
 
 class StartCheckoutUseCaseTest {
 
@@ -44,7 +47,7 @@ class StartCheckoutUseCaseTest {
     void setUp() {
         userService = new FallbackUserService();
         cartRepository = new InMemoryCartRepositoryAdapter();
-        cartVerifier = new CartVerifier(new FallbackCatalogService());
+        cartVerifier = new CartVerifier(new CatalogGatewayAdapter(new FallbackCatalogService()));
         orderRepository = new InMemoryOrderRepositoryAdapter();
 
         useCase = new StartCheckoutUseCase(userService, cartRepository, cartVerifier, orderRepository);
@@ -124,5 +127,23 @@ class StartCheckoutUseCaseTest {
 
         Cart cartAfter = cartRepository.findByCustomerId(customerId).orElseThrow();
         assertThat(cartAfter.getItems()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Catálogo caído: no crea el pedido, no vacía el carrito y informa que el catálogo no está disponible")
+    void shouldKeepCartAndCreateNoOrderWhenCatalogIsUnavailable() {
+        Cart cart = new Cart(customerId);
+        cart.addProduct(productId, commerceId, 2);
+        cartRepository.save(cart);
+        StartCheckoutUseCase downCatalog = new StartCheckoutUseCase(
+                userService, cartRepository, new CartVerifier(new UnavailableCatalogPort()), orderRepository);
+
+        assertThatThrownBy(() -> downCatalog.execute(new StartCheckoutCommand(customerId)))
+                .isInstanceOf(CatalogUnavailableException.class)
+                .hasMessage(CatalogUnavailableException.MESSAGE);
+
+        assertThat(cartRepository.findByCustomerId(customerId).orElseThrow().getItems()).hasSize(1);
+        assertThat(orderRepository.findByCustomerId(
+                new org.jala.edu.order.domain.model.CustomerId(customerId))).isEmpty();
     }
 }
