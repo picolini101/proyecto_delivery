@@ -111,4 +111,9 @@ public class Order extends BaseModel<OrderId> {
         this.courierId = Objects.requireNonNull(courierId, "CourierId is neccesary");
         touch();
     }
+
+    public String getDeliveryCode() {
+        String idStr = getId().value().toString();
+        return idStr.substring(idStr.length() - 4).toUpperCase();
+    }
 }
