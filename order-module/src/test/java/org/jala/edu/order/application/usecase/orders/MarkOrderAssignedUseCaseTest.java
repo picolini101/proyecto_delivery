@@ -1,13 +1,21 @@
 package org.jala.edu.order.application.usecase.orders;
 
+import org.jala.edu.core.application.port.out.TransactionRunner;
+import org.jala.edu.order.application.port.in.AssignedOrderCommand;
 import org.jala.edu.order.application.port.out.OrderRepositoryPort;
 import org.jala.edu.order.application.port.out.OrderStatusHistoryPort;
+import org.jala.edu.order.application.usecase.orders.MarkOrderAssignedUseCase;
 import org.jala.edu.order.domain.model.*;
+import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryOrderRepositoryAdapter;
+import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryOrderStatusHistoryAdapter;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Supplier;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class MarkOrderAssignedUseCaseTest {
@@ -16,6 +24,18 @@ public class MarkOrderAssignedUseCaseTest {
     private final UUID courierId = UUID.randomUUID();
     private final UUID adminUserId = UUID.randomUUID();
     private OrderStatusHistoryPort statusHistory;
+
+    @BeforeEach
+    void setUp() {
+        orderRepository = new InMemoryOrderRepositoryAdapter();
+        statusHistory = new InMemoryOrderStatusHistoryAdapter();
+        ChangeOrderStatusUseCase changeStatusUseCase =
+                new ChangeOrderStatusUseCase(
+                        orderRepository,
+                        statusHistory,
+                        TransactionRunner.direct());
+        useCase = new MarkOrderAssignedUseCase(orderRepository, changeStatusUseCase);
+    }
     @Test
     @DisplayName("Should assign courier and change order status to ASSIGNED")
     void shouldAssignCourierSuccessfully() {
