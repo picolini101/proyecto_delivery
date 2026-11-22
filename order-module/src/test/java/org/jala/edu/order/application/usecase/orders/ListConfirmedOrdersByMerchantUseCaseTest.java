@@ -3,6 +3,7 @@ package org.jala.edu.order.application.usecase.orders;
 import org.jala.edu.core.contract.UserRole;
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.order.application.port.out.OrderRepositoryPort;
+import org.jala.edu.order.domain.exception.UnauthorizedCustomerException;
 import org.jala.edu.order.domain.model.CustomerId;
 import org.jala.edu.order.domain.model.Money;
 import org.jala.edu.order.domain.model.Order;
@@ -19,7 +20,9 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class ListConfirmedOrdersByMerchantUseCaseTest {
@@ -46,6 +49,15 @@ class ListConfirmedOrdersByMerchantUseCaseTest {
         List<Order> result = useCase.execute(merchantId);
 
         assertEquals(List.of(merchantConfirmed), result);
+    }
+
+    @Test
+    void rejectsUserThatIsNotAnActiveMerchant() {
+        when(userService.isActiveWithRole(merchantId, UserRole.MERCHANT)).thenReturn(false);
+
+        assertThrows(UnauthorizedCustomerException.class, () -> useCase.execute(merchantId));
+
+        verifyNoInteractions(orderRepository);
     }
 
     private Order order(UUID commerceId, OrderStatus status) {
