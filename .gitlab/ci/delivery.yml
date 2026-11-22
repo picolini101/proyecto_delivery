@@ -20,8 +20,9 @@ build-delivery:
 
 # Linter (Lab 8, Activity 1). Uncomment after configuring the chosen tool in delivery-module/pom.xml.
 # LINT_GOAL is the Maven goal of that tool, for example checkstyle:check, pmd:check or spotbugs:check.
-# lint-delivery:
-#   extends: .module-lint
-#   variables:
-#     MODULE: delivery-module
-#     LINT_GOAL: "checkstyle:check"
+lint-delivery:
+  extends: .module-lint
+  variables:
+    MODULE: delivery-module
+    LINT_GOAL: "checkstyle:check"
+  allow_failure: true
