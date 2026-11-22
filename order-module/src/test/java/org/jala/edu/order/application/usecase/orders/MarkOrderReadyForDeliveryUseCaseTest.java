@@ -1,6 +1,7 @@
 package org.jala.edu.order.application.usecase.orders;
 
 import org.jala.edu.core.application.port.out.TransactionRunner;
+import org.jala.edu.order.domain.exception.UnauthorizedCustomerException;
 import org.jala.edu.order.application.port.in.MarkOrderReadyForDeliveryCommand;
 import org.jala.edu.order.domain.model.CustomerId;
 import org.jala.edu.order.domain.model.Money;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class MarkOrderReadyForDeliveryUseCaseTest {
 
@@ -50,6 +52,19 @@ class MarkOrderReadyForDeliveryUseCaseTest {
                     assertThat(change.getChangedById()).isEqualTo(userId);
                     assertThat(change.getCreatedAt()).isNotNull();
                 });
+    }
+
+    @Test
+    void rejectsOrderOwnedByAnotherMerchantWithoutChangingIt() {
+        Order order = confirmedOrder(UUID.randomUUID());
+
+        assertThatThrownBy(() -> useCase.execute(
+                new MarkOrderReadyForDeliveryCommand(order.getId().value(), merchantId, userId)))
+                .isInstanceOf(UnauthorizedCustomerException.class);
+
+        assertThat(orderRepository.findById(order.getId()).orElseThrow().getStatus())
+                .isEqualTo(OrderStatus.CONFIRMED);
+        assertThat(statusHistory.findByOrderId(order.getId())).isEmpty();
     }
 
     private Order confirmedOrder(UUID commerceId) {
