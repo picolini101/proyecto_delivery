@@ -74,10 +74,4 @@ public class MissingJpaAdaptersAutoConfiguration {
         return new org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryOrderStatusHistoryAdapter();
     }
 
-    @Bean
-    @ConditionalOnMissingBean
-    public org.jala.edu.order.application.port.out.FailedPaymentLogPort inMemoryFailedPaymentLogBridge() {
-        warnInMemory(org.jala.edu.order.application.port.out.FailedPaymentLogPort.class);
-        return new org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryFailedPaymentLogAdapter();
-    }
 }

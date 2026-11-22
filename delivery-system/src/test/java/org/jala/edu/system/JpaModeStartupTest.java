@@ -31,5 +31,7 @@ class JpaModeStartupTest {
         assertThat(context.getBean(CartRepositoryPort.class)).isNotNull();
         assertThat(context.getBean(CourierRepositoryPort.class)).isNotNull();
         assertThat(context.getBean(OrderRepositoryPort.class)).isNotNull();
+        assertThat(context.getBean(org.jala.edu.order.application.port.out.FailedPaymentLogPort.class))
+                .isInstanceOf(org.jala.edu.order.infrastructure.adapter.out.persistence.jpa.FailedPaymentLogPersistenceAdapter.class);
     }
 }
