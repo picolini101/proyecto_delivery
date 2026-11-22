@@ -29,6 +29,12 @@ import org.jala.edu.order.application.usecase.orders.InputAddressUseCase;
 import org.jala.edu.order.application.usecase.orders.CancelOrderUseCase;
 import org.jala.edu.order.application.usecase.orders.ConsultarPedidosUseCase;
 import org.jala.edu.order.application.usecase.orders.GetOrderDetailUseCase;
+import org.jala.edu.order.application.usecase.orders.GetOrderTrackingUseCase;
+import org.jala.edu.order.application.usecase.orders.InputAddressUseCase;
+import org.jala.edu.order.application.usecase.orders.ListConfirmedOrdersByMerchantUseCase;
+import org.jala.edu.order.application.usecase.orders.MarkOrderReadyForDeliveryUseCase;
+import org.jala.edu.order.application.usecase.orders.StartCheckoutUseCase;
+import org.jala.edu.order.application.usecase.RemoveProductFromCartUseCase;
 import org.jala.edu.order.application.usecase.orders.FindReadyForDeliveryUseCase;
 import org.jala.edu.order.application.usecase.orders.MarkOrderAssignedUseCase;
 import org.jala.edu.order.application.usecase.orders.MarkOrderDeliveredUseCase;
@@ -143,6 +149,7 @@ public class OrderModuleConfiguration {
         return new StartCheckoutUseCase(users, carts, cartVerifier, orderRepository);
     }
 
+
     /**
      * Adaptador del puerto de pagos (INT-002): traduce el contrato {@link PaymentService} del core.
      */
@@ -181,6 +188,19 @@ public class OrderModuleConfiguration {
     @Bean
     public GetOrderDetailUseCase getOrderDetailUseCase(UserService users, OrderRepositoryPort orders) {
         return new GetOrderDetailUseCase(users, orders);
+    }
+
+    @Bean
+    public ListConfirmedOrdersByMerchantUseCase listConfirmedOrdersByMerchantUseCase(
+            OrderRepositoryPort orders, UserService users, CatalogService catalog) {
+        return new ListConfirmedOrdersByMerchantUseCase(orders, users, catalog);
+    }
+
+    @Bean
+    public MarkOrderReadyForDeliveryUseCase markOrderReadyForDeliveryUseCase(
+            OrderRepositoryPort orders, ChangeOrderStatusUseCase changeOrderStatus,
+            CatalogService catalog, UserService users) {
+        return new MarkOrderReadyForDeliveryUseCase(orders, changeOrderStatus, catalog, users);
     }
 
     @Bean
