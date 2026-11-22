@@ -94,5 +94,11 @@ class FindReadyForDeliveryUseCaseTest {
                 Instant.now());
         return order;
     }
-
+    @Test
+    @DisplayName("Should return an empty list when there are no ready orders")
+    void shouldReturnEmptyListWhenThereAreNoReadyOrders() {
+        when(orderRepository.findAll()).thenReturn(List.of());
+        List<ReadyOrder> result = useCase.execute(null);
+        assertThat(result).isEmpty();
+    }
 }
