@@ -1,48 +1,94 @@
 package org.jala.edu.delivery.application.usecase;
 
-import org.jala.edu.core.application.usecase.UseCase;
-import org.jala.edu.core.contract.UserRole;
-import org.jala.edu.core.contract.UserService;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.catchThrowable;
+
+import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.domain.exception.DomainException;
+import org.jala.edu.core.infrastructure.contract.FallbackUserService;
 import org.jala.edu.delivery.application.port.in.RegisterCourierCommand;
-import org.jala.edu.delivery.application.port.out.CourierRepositoryPort;
 import org.jala.edu.delivery.domain.model.Courier;
+import org.jala.edu.delivery.domain.model.TransportMode;
+import org.jala.edu.delivery.infrastructure.adapter.out.persistence.memory.InMemoryCourierRepositoryAdapter;
+import org.junit.jupiter.api.Test;
 
-/**
- * Use case UC-01: register a delivery driver
- */
-public class RegisterCourierUseCaseTest
-        implements UseCase<RegisterCourierCommand, Courier> {
+class RegisterCourierUseCaseTest {
 
-    private final CourierRepositoryPort couriers;
-    private final UserService users;
+    private final InMemoryCourierRepositoryAdapter repository =
+            new InMemoryCourierRepositoryAdapter();
 
-    public RegisterCourierUseCaseTest(
-            CourierRepositoryPort couriers,
-            UserService users) {
-        this.couriers = couriers;
-        this.users = users;
-    }
+    private final RegisterCourierUseCase registerCourier =
+            new RegisterCourierUseCase(repository, new FallbackUserService());
 
-    @Override
-    public Courier execute(RegisterCourierCommand command) {
-
-        if (command == null) {
-            throw new DomainException("Los datos son obligatorios");
-        }
-
-        if (command.adminId() == null
-                || !users.isActiveWithRole(command.adminId(), UserRole.ADMIN)) {
-            throw new DomainException(
-                    "Solo un administrador activo puede registrar repartidores");
-        }
-
-        Courier courier = Courier.register(
-                command.name(),
-                command.phoneNumber(),
-                command.transportMode()
+    @Test
+    void registersCourierWhenAdminIsActive() {
+        // Arrange
+        RegisterCourierCommand command = new RegisterCourierCommand(
+                SampleUsers.ADMIN,
+                "Maria Perez",
+                "3001234567",
+                TransportMode.MOTORCYCLE
         );
 
-        return couriers.save(courier);
+        // Act
+        Courier result = registerCourier.execute(command);
+
+        // Assert
+        assertThat(result.getId()).isNotNull();
+        assertThat(result.getName()).isEqualTo("Maria Perez");
+        assertThat(result.getPhoneNumber()).isEqualTo("3001234567");
+        assertThat(result.getTransportMode()).isEqualTo(TransportMode.MOTORCYCLE);
+        assertThat(repository.findById(result.getId())).contains(result);
+    }
+
+    @Test
+    void rejectsANullCommand() {
+        // Act
+        Throwable thrown = catchThrowable(() -> registerCourier.execute(null));
+
+        // Assert
+        assertThat(thrown)
+                .isInstanceOf(DomainException.class)
+                .hasMessage("Los datos son obligatorios.");
+    }
+
+    @Test
+    void rejectsACommandWithoutAdminId() {
+        // Arrange
+        RegisterCourierCommand command = new RegisterCourierCommand(
+                null,
+                "Maria Perez",
+                "3001234567",
+                TransportMode.BICYCLE
+        );
+
+        // Act
+        Throwable thrown = catchThrowable(() -> registerCourier.execute(command));
+
+        // Assert
+        assertThat(thrown)
+                .isInstanceOf(DomainException.class)
+                .hasMessage("Solo un administrador activo puede registrar repartidores.");
+    }
+
+    @Test
+    void rejectsAUserWhoIsNotAnAdmin() {
+        // Arrange
+        RegisterCourierCommand command = new RegisterCourierCommand(
+                SampleUsers.CUSTOMER,
+                "Maria Perez",
+                "3001234567",
+                TransportMode.BICYCLE
+        );
+
+        // Act
+        Throwable thrown = catchThrowable(() -> registerCourier.execute(command));
+
+        // Assert
+        assertThat(thrown)
+                .isInstanceOf(DomainException.class)
+                .hasMessage("Solo un administrador activo puede registrar repartidores.");
+
+        assertThat(repository.findAll()).isEmpty();
     }
 }
