@@ -1,15 +1,14 @@
 package org.jala.edu.payment.infrastructure.ui;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import javafx.fxml.FXML;
+import javafx.scene.Parent;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.TabPane;
 import org.jala.edu.core.contract.CurrentUser;
 import org.jala.edu.core.contract.CurrentUserService;
-import org.jala.edu.core.contract.SamplePaymentMethods;
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.payment.application.usecase.ManagePaymentHistoryUseCase;
@@ -18,15 +17,11 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 /**
- * Controlador JavaFX para consultar el historial de pagos y prevenir el doble cobro.
+ * Controlador JavaFX para consultar y actualizar el historial de pagos del cliente.
  */
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class PaymentHistoryController {
-    @FXML
-    private TextField orderIdField;
-    @FXML
-    private TextField amountField;
     @FXML
     private Label statusLabel;
     @FXML
@@ -40,33 +35,28 @@ public class PaymentHistoryController {
     }
     @FXML
     public void initialize() {
-        orderIdField.setText(UUID.randomUUID().toString());
-        amountField.setText("120.00");
         loadHistory();
+        historyListView.sceneProperty().addListener(obs -> connectTabRefresh());
     }
     @FXML
-    private void handleRecordPayment() {
-        try {
-            UUID orderId = UUID.fromString(orderIdField.getText().trim());
-            BigDecimal amount = new BigDecimal(amountField.getText().trim());
-            UUID userId = resolveCurrentUserId();
-            PaymentTransaction transaction = useCase.recordPaymentAttempt(
-                    orderId, userId, SamplePaymentMethods.CUSTOMER_CARD, amount);
-            if (transaction.isApproved()) {
-                statusLabel.setText("Pago APROBADO para el pedido: " + orderId);
-            } else {
-                statusLabel.setText("Pago RECHAZADO: " + transaction.getReason());
+    private void handleRefreshHistory() {
+        loadHistory();
+        statusLabel.setText("Historial actualizado.");
+    }
+    private void connectTabRefresh() {
+        Parent current = historyListView.getParent();
+        while (current != null) {
+            if (current instanceof TabPane tabPane) {
+                tabPane.getSelectionModel().selectedItemProperty().addListener(obs -> loadHistory());
+                return;
             }
-            loadHistory();
-        } catch (IllegalArgumentException | DomainException e) {
-            statusLabel.setText("Error: " + e.getMessage());
+            current = current.getParent();
         }
     }
+    /**
+     * Recarga las transacciones del usuario activo en la lista del historial.
+     */
     @FXML
-    private void handleNewOrderId() {
-        orderIdField.setText(UUID.randomUUID().toString());
-        statusLabel.setText("Nuevo ID de pedido generado.");
-    }
     private void loadHistory() {
         historyListView.getItems().clear();
         try {

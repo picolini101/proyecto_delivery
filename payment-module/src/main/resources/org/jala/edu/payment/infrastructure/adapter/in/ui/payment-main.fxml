@@ -3,26 +3,22 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
-<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-
-<!-- Vista principal de historial de pagos y prevencion de doble cobro (#33) -->
+<!-- Vista principal de historial de pagos (#33 / #133) -->
 <VBox spacing="15" styleClass="page"
       xmlns="http://javafx.com/javafx/25"
       xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="org.jala.edu.payment.infrastructure.ui.PaymentHistoryController">
+      fx:controller="org.jala.edu.payment.infrastructure.ui.PaymentHistoryController"
+      onMouseEntered="#loadHistory">
     <padding>
         <Insets top="20" right="20" bottom="20" left="20"/>
     </padding>
-    <Label styleClass="page-title" text="Historial de Pagos y Prevencion de Doble Cobro"/>
+    <Label styleClass="page-title" text="Historial de Pagos"/>
     <Label styleClass="subtitle" wrapText="true"
-           text="Consulta tus transacciones y verifica el bloqueo automatico ante cobros duplicados."/>
+           text="Consulta las transacciones aprobadas y rechazadas procesadas en tu cuenta."/>
     <HBox spacing="10">
-        <TextField fx:id="orderIdField" prefWidth="300" promptText="UUID del Pedido"/>
-        <TextField fx:id="amountField" prefWidth="120" promptText="Monto (ej. 120.00)"/>
-        <Button text="Registrar Pago" onAction="#handleRecordPayment"/>
-        <Button text="Nuevo Pedido" onAction="#handleNewOrderId"/>
+        <Button text="Actualizar" onAction="#handleRefreshHistory"/>
     </HBox>
     <Label fx:id="statusLabel" text=""/>
     <ListView fx:id="historyListView" prefHeight="260"/>
