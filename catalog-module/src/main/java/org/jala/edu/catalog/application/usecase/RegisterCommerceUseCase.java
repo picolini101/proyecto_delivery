@@ -9,7 +9,8 @@ import org.jala.edu.core.contract.UserService;
 
 /**
  * CU-CAT-01: registra un comercio con nombre, dirección, teléfono y su comerciante dueño. Solo un
- * administrador puede hacerlo, y el dueño debe ser un MERCHANT activo; el comercio queda Deshabilitado. Los datos los valida {@link Commerce}.
+ * administrador puede hacerlo, y el dueño debe ser un MERCHANT activo; el comercio queda Deshabilitado.
+ * Los datos los valida {@link Commerce}.
  */
 public class RegisterCommerceUseCase implements UseCase<RegisterCommerceCommand, UUID> {
 
