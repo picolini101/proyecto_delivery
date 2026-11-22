@@ -1,6 +1,7 @@
 package org.jala.edu.order.application.usecase.orders;
 
 import org.jala.edu.core.application.port.out.TransactionRunner;
+import org.jala.edu.order.domain.exception.InvalidStateTransitionException;
 import org.jala.edu.order.domain.exception.UnauthorizedCustomerException;
 import org.jala.edu.order.application.port.in.MarkOrderReadyForDeliveryCommand;
 import org.jala.edu.order.domain.model.CustomerId;
@@ -64,6 +65,22 @@ class MarkOrderReadyForDeliveryUseCaseTest {
 
         assertThat(orderRepository.findById(order.getId()).orElseThrow().getStatus())
                 .isEqualTo(OrderStatus.CONFIRMED);
+        assertThat(statusHistory.findByOrderId(order.getId())).isEmpty();
+    }
+
+    @Test
+    void rejectsOrderThatIsNotConfirmedWithoutChangingIt() {
+        OrderLine line = OrderLine.of(ProductId.of(UUID.randomUUID()), merchantId, "Product",
+                Money.of(10.0), Quantity.of(1));
+        Order order = orderRepository.save(Order.create(
+                CustomerId.of(UUID.randomUUID()), List.of(line), line.getSubtotal()));
+
+        assertThatThrownBy(() -> useCase.execute(
+                new MarkOrderReadyForDeliveryCommand(order.getId().value(), merchantId, userId)))
+                .isInstanceOf(InvalidStateTransitionException.class);
+
+        assertThat(orderRepository.findById(order.getId()).orElseThrow().getStatus())
+                .isEqualTo(OrderStatus.CREATED);
         assertThat(statusHistory.findByOrderId(order.getId())).isEmpty();
     }
 
