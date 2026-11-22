@@ -61,6 +61,13 @@ public class CatalogModuleConfiguration {
     }
 
     @Bean
+    public EnableProductUseCase enableProductUseCase(
+            ProductRepositoryPort productRepositoryPort,
+            UserService userService) {
+        return new EnableProductUseCase(productRepositoryPort, userService);
+    }
+
+    @Bean
     public DeleteProductUseCase deleteProductUseCase(
             ProductRepositoryPort productRepositoryPort,
             CommerceRepositoryPort commerceRepositoryPort,
