@@ -123,6 +123,15 @@ public class ManageProductsController {
 
     @FXML
     void initialize() {
+        bindColumns();
+        bindActionButtons();
+        configureAvailabilitySelector();
+        configureSelectionAndRows();
+        configureSearch();
+        reload(null);
+    }
+
+    private void bindColumns() {
         bind(nameColumn, managed -> managed.product().getName());
         bind(commerceColumn, ManagedProduct::commerceName);
         bind(categoryColumn, managed -> managed.product().getCategory());
@@ -130,7 +139,9 @@ public class ManageProductsController {
         bind(stockColumn, managed -> String.valueOf(managed.product().getStock()));
         bind(availabilityColumn, ManagedProduct::availability);
         bind(createdAtColumn, managed -> DisplayFormat.dateTime(managed.product().getCreatedAt()));
+    }
 
+    private void bindActionButtons() {
         // El botón Editar solo se habilita cuando hay un producto seleccionado
         editButton.disableProperty().bind(productsTable.getSelectionModel().selectedItemProperty().isNull());
 
@@ -163,7 +174,9 @@ public class ManageProductsController {
                                             || selected.product().getStatus() != ProductStatus.DISABLED;
                                 },
                                 productsTable.getSelectionModel().selectedItemProperty())));
+    }
 
+    private void configureAvailabilitySelector() {
         // El selector solo permite los estados Disponible y Agotado
         availabilitySelector.setItems(FXCollections.observableArrayList(
                 ProductStatus.AVAILABLE,
@@ -189,7 +202,9 @@ public class ManageProductsController {
                 productsTable.getSelectionModel().selectedItemProperty().isNull()
                         .or(availabilitySelector.valueProperty().isNull())
                         .or(updatingAvailability));
+    }
 
+    private void configureSelectionAndRows() {
         // Al seleccionar un producto, muestra su estado actual
         productsTable.getSelectionModel().selectedItemProperty().addListener(
                 (observable, oldValue, selected) -> {
@@ -215,12 +230,12 @@ public class ManageProductsController {
             });
             return row;
         });
+    }
 
+    private void configureSearch() {
         searchDelay.setOnFinished(event -> reload(null));
         searchField.textProperty().addListener(
                 (observable, previous, text) -> searchDelay.playFromStart());
-
-        reload(null);
     }
 
     @FXML
