@@ -42,6 +42,7 @@ class MarkOrderReadyForDeliveryUseCaseTest {
         ChangeOrderStatusUseCase changeOrderStatus = new ChangeOrderStatusUseCase(
                 orderRepository, statusHistory, TransactionRunner.direct());
         useCase = new MarkOrderReadyForDeliveryUseCase(orderRepository, changeOrderStatus, catalogService, userService);
+        when(userService.isActiveWithRole(merchantId, UserRole.MERCHANT)).thenReturn(true);
     }
 
     @Test
