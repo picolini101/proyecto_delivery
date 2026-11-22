@@ -2,10 +2,12 @@ package org.jala.edu.order.application.usecase.orders;
 
 import org.jala.edu.core.application.usecase.UseCase;
 import org.jala.edu.core.domain.exception.NotFoundException;
+import org.jala.edu.order.domain.exception.UnauthorizedCustomerException;
 import org.jala.edu.order.application.port.in.ChangeOrderStatusCommand;
 import org.jala.edu.order.application.port.in.MarkOrderReadyForDeliveryCommand;
 import org.jala.edu.order.application.port.out.OrderRepositoryPort;
 import org.jala.edu.order.domain.model.OrderId;
+import org.jala.edu.order.domain.model.Order;
 import org.jala.edu.order.domain.model.OrderStatus;
 
 public class MarkOrderReadyForDeliveryUseCase implements UseCase<MarkOrderReadyForDeliveryCommand, Void> {
@@ -22,8 +24,11 @@ public class MarkOrderReadyForDeliveryUseCase implements UseCase<MarkOrderReadyF
     @Override
     public Void execute(MarkOrderReadyForDeliveryCommand command) {
         OrderId orderId = OrderId.of(command.orderId());
-        orderRepository.findById(orderId)
+        Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Order not found: " + command.orderId()));
+        if (order.getLines().stream().noneMatch(line -> line.getCommerceId().equals(command.merchantId()))) {
+            throw new UnauthorizedCustomerException("El pedido no pertenece a este comercio.");
+        }
 
         return changeOrderStatus.execute(new ChangeOrderStatusCommand(
                 command.orderId(),
