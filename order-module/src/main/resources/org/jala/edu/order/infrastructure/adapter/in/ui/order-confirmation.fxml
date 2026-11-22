@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox styleClass="page" spacing="16"
+      xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.jala.edu.order.infrastructure.adapter.in.ui.OrderConfirmationController">
+
+    <HBox styleClass="toolbar" alignment="CENTER_LEFT" spacing="10">
+        <VBox spacing="2">
+            <Label styleClass="page-title" text="Comprobante de Compra"/>
+            <Label text="Resumen del pedido confirmado" style="-fx-text-fill: #666666; -fx-font-size: 13px;"/>
+        </VBox>
+        <Region HBox.hgrow="ALWAYS"/>
+    </HBox>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-border-color: transparent;">
+        <VBox alignment="TOP_CENTER" spacing="16" style="-fx-padding: 10 20 20 20;">
+
+            <VBox alignment="CENTER" spacing="6" maxWidth="600"
+                  style="-fx-background-color: #f0fdf4; -fx-border-color: #16a34a; -fx-border-width: 1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 14;">
+                <Label text="CÓDIGO DE ENTREGA"
+                       style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #166534;"/>
+                <Label fx:id="deliveryCodeLabel" text="XXXX"
+                       style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #15803d;"/>
+                <Label text="Dicta este código al repartidor para recibir tu pedido."
+                       style="-fx-font-size: 12px; -fx-text-fill: #166534;"/>
+            </VBox>
+
+            <VBox spacing="14" maxWidth="600"
+                  style="-fx-background-color: white; -fx-border-color: #cccccc; -fx-border-width: 1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 18;">
+
+                <HBox alignment="CENTER_LEFT" style="-fx-padding: 0 0 10 0; -fx-border-color: #e5e7eb; -fx-border-width: 0 0 1 0;">
+                    <VBox spacing="2">
+                        <Label text="Detalle de Factura" style="-fx-font-size: 15px; -fx-font-weight: bold; -fx-text-fill: #111827;"/>
+                        <Label fx:id="invoiceNumberLabel" text="FAC-..." style="-fx-font-size: 12px; -fx-text-fill: #666666;"/>
+                    </VBox>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <VBox alignment="TOP_RIGHT" spacing="2">
+                        <Label fx:id="statusLabel" text="CONFIRMADO" style="-fx-font-size: 12px; -fx-font-weight: bold; -fx-text-fill: #15803d;"/>
+                        <Label fx:id="orderDateLabel" text="Fecha" style="-fx-font-size: 12px; -fx-text-fill: #666666;"/>
+                    </VBox>
+                </HBox>
+
+                <VBox spacing="6">
+                    <HBox spacing="8">
+                        <Label text="Cliente:" style="-fx-font-weight: bold; -fx-text-fill: #4b5563; -fx-font-size: 12px;"/>
+                        <Label fx:id="customerNameLabel" text="..." style="-fx-text-fill: #111827; -fx-font-size: 12px;"/>
+                    </HBox>
+                    <HBox spacing="8">
+                        <Label text="Dirección:" style="-fx-font-weight: bold; -fx-text-fill: #4b5563; -fx-font-size: 12px;"/>
+                        <Label fx:id="addressLabel" text="..." wrapText="true" style="-fx-text-fill: #111827; -fx-font-size: 12px;"/>
+                    </HBox>
+                </VBox>
+
+                <VBox spacing="6" style="-fx-padding: 6 0 6 0;">
+                    <Label text="Productos:" style="-fx-font-weight: bold; -fx-text-fill: #374151; -fx-font-size: 13px;"/>
+                    <VBox fx:id="productsContainer" spacing="4"/>
+                </VBox>
+
+                <VBox spacing="6" style="-fx-padding: 10 0 0 0; -fx-border-color: #e5e7eb; -fx-border-width: 1 0 0 0;">
+                    <HBox alignment="CENTER_LEFT">
+                        <Label text="Subtotal:" style="-fx-text-fill: #4b5563; -fx-font-size: 12px;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="subtotalLabel" text="0.00" style="-fx-text-fill: #111827; -fx-font-size: 12px;"/>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT">
+                        <Label text="Costo de envío:" style="-fx-text-fill: #4b5563; -fx-font-size: 12px;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="shippingLabel" text="0.00" style="-fx-text-fill: #111827; -fx-font-size: 12px;"/>
+                    </HBox>
+                    <HBox alignment="CENTER_LEFT" style="-fx-padding: 4 0 0 0;">
+                        <Label text="Total pagado:" style="-fx-font-weight: bold; -fx-font-size: 14px; -fx-text-fill: #111827;"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="totalLabel" text="0.00" style="-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: #2563eb;"/>
+                    </HBox>
+                </VBox>
+            </VBox>
+
+            <Button fx:id="finishButton" text="Volver a Mis Pedidos" onAction="#onFinish"
+                    maxWidth="600"
+                    style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px; -fx-background-radius: 6; -fx-padding: 9 16; -fx-cursor: hand;"/>
+        </VBox>
+    </ScrollPane>
+</VBox>

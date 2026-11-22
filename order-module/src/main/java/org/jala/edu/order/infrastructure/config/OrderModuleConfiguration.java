@@ -7,6 +7,7 @@ import org.jala.edu.core.contract.PaymentService;
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.order.application.port.out.CartRepositoryPort;
 import org.jala.edu.order.application.port.out.FailedPaymentLogPort;
+
 import org.jala.edu.order.application.usecase.orders.GetOrderConfirmationUseCase;
 import org.jala.edu.order.application.usecase.orders.ListFailedPaymentsUseCase;
 import org.jala.edu.order.application.usecase.orders.RegisterFailedPaymentUseCase;
@@ -20,14 +21,14 @@ import org.jala.edu.order.application.usecase.GetCartSummaryUseCase;
 import org.jala.edu.order.application.usecase.IncreaseCartItemQuantityUseCase;
 import org.jala.edu.order.application.usecase.ListCatalogProductsUseCase;
 import org.jala.edu.order.application.usecase.RemoveProductFromCartUseCase;
-import org.jala.edu.order.application.usecase.orders.CancelOrderUseCase;
-import org.jala.edu.order.application.usecase.orders.StartCheckoutUseCase;
-import org.jala.edu.order.application.usecase.orders.AuthorizePaymentUseCase;
-import org.jala.edu.order.application.usecase.orders.InputAddressUseCase;
 import org.jala.edu.order.application.usecase.orders.ChangeOrderStatusUseCase;
+import org.jala.edu.order.application.usecase.orders.GetOrderTrackingUseCase;
+import org.jala.edu.order.application.usecase.orders.AuthorizePaymentUseCase;
+import org.jala.edu.order.application.usecase.orders.StartCheckoutUseCase;
+import org.jala.edu.order.application.usecase.orders.InputAddressUseCase;
+import org.jala.edu.order.application.usecase.orders.CancelOrderUseCase;
 import org.jala.edu.order.application.usecase.orders.ConsultarPedidosUseCase;
 import org.jala.edu.order.application.usecase.orders.GetOrderDetailUseCase;
-import org.jala.edu.order.application.usecase.orders.GetOrderTrackingUseCase;
 import org.jala.edu.order.application.usecase.orders.FindReadyForDeliveryUseCase;
 import org.jala.edu.order.application.usecase.orders.MarkOrderAssignedUseCase;
 import org.jala.edu.order.application.usecase.orders.MarkOrderDeliveredUseCase;
@@ -183,7 +184,6 @@ public class OrderModuleConfiguration {
         return new ListFailedPaymentsUseCase(failedPayments, history);
     }
 
-
     @Bean
     public PreviewCheckoutSummaryUseCase previewCheckoutSummaryUseCase(
             UserService users, CartRepositoryPort carts, CartVerifier cartVerifier) {
@@ -200,5 +200,6 @@ public class OrderModuleConfiguration {
                                                  org.jala.edu.core.application.port.out.TransactionRunner transactions) {
         return new CancelOrderUseCase(orderRepository, statusHistory, transactions);
     }
+
 }
 
