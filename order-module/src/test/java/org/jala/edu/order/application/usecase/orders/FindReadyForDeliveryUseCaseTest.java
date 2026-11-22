@@ -64,4 +64,35 @@ class FindReadyForDeliveryUseCaseTest {
         assertThat(result.get(0).shippingCost())
                 .isEqualByComparingTo(new BigDecimal("10.00"));
     }
+    @Test
+    @DisplayName("Should return only orders with READY_FOR_DELIVERY status")
+    void shouldReturnOnlyOrdersReadyForDelivery() {
+        Order readyOrder = createOrder(OrderStatus.READY_FOR_DELIVERY);
+        Order createdOrder = createOrder(OrderStatus.CREATED);
+        when(orderRepository.findAll()).thenReturn(List.of(readyOrder, createdOrder));
+        List<ReadyOrder> result = useCase.execute(null);
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).orderId()).isEqualTo(readyOrder.getId().value());
+    }
+    private Order createOrder(OrderStatus status) {
+        UUID orderId = UUID.randomUUID();
+        Order order = Order.restore(
+                OrderId.of(orderId),
+                CustomerId.of(UUID.randomUUID()),
+                List.of(OrderLine.of(
+                                ProductId.of(UUID.randomUUID()),
+                                UUID.randomUUID(),
+                                "Product Test",
+                                Money.of(new BigDecimal("25.00")),
+                                Quantity.of(1))),
+                Money.of(new BigDecimal("25.00")),
+                status,
+                new DeliveryAddress("Cochabamba", "Av. América", "123"),
+                Money.of(new BigDecimal("10.00")),
+                Money.of(new BigDecimal("35.00")),
+                Instant.now(),
+                Instant.now());
+        return order;
+    }
+
 }
