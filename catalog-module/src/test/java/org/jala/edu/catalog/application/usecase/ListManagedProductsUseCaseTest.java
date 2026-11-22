@@ -204,4 +204,58 @@ class ListManagedProductsUseCaseTest {
         assertThat(names(accentInsensitive.execute(new ListManagedProductsQuery("cafe"))))
                 .containsExactly("Café");
     }
+
+    // ---------- Filtro por comercio ----------
+
+    @Test
+    void returnsEveryProductWhenNoCommerceIsSelected() {
+        Commerce pizzeria = commerceRepository.save(CatalogFixtures.activeCommerce("Pizzeria"));
+        Commerce cafe = commerceRepository.save(CatalogFixtures.activeCommerce("Cafe"));
+        saveProduct(pizzeria, "Pizza", "Food");
+        saveProduct(cafe, "Latte", "Drinks");
+
+        // commerceId nulo = "Todos los comercios": no se filtra
+        assertThat(names(listProducts.execute(new ListManagedProductsQuery("", null))))
+                .containsExactlyInAnyOrder("Pizza", "Latte");
+    }
+
+    @Test
+    void returnsOnlyTheProductsOfTheSelectedCommerce() {
+        Commerce pizzeria = commerceRepository.save(CatalogFixtures.activeCommerce("Pizzeria"));
+        Commerce cafe = commerceRepository.save(CatalogFixtures.activeCommerce("Cafe"));
+        saveProduct(pizzeria, "Pizza", "Food");
+        saveProduct(cafe, "Latte", "Drinks");
+
+        var result = listProducts.execute(
+                new ListManagedProductsQuery(null, pizzeria.getId().value()));
+
+        assertThat(names(result)).containsExactly("Pizza");
+    }
+
+    @Test
+    void combinesTheCommerceFilterWithTheSearchText() {
+        Commerce pizzeria = commerceRepository.save(CatalogFixtures.activeCommerce("Pizzeria"));
+        Commerce cafe = commerceRepository.save(CatalogFixtures.activeCommerce("Cafe"));
+        saveProduct(pizzeria, "Pizza", "Food");
+        saveProduct(pizzeria, "Soda", "Drinks");
+        saveProduct(cafe, "Pizza fria", "Food");
+
+        // "pizza" también coincide en el otro comercio, pero el filtro de comercio lo excluye
+        var result = listProducts.execute(
+                new ListManagedProductsQuery("pizza", pizzeria.getId().value()));
+
+        assertThat(names(result)).containsExactly("Pizza");
+    }
+
+    @Test
+    void returnsAnEmptyListWhenTheSelectedCommerceHasNoProducts() {
+        Commerce pizzeria = commerceRepository.save(CatalogFixtures.activeCommerce("Pizzeria"));
+        Commerce emptyCommerce = commerceRepository.save(CatalogFixtures.disabledCommerce("Vacio"));
+        saveProduct(pizzeria, "Pizza", "Food");
+
+        var result = listProducts.execute(
+                new ListManagedProductsQuery(null, emptyCommerce.getId().value()));
+
+        assertThat(result).isEmpty();
+    }
 }
