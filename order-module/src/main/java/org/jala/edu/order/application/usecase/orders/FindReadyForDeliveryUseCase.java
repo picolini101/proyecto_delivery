@@ -7,6 +7,7 @@ import org.jala.edu.core.application.usecase.UseCase;
 import org.jala.edu.core.contract.ReadyOrder;
 import org.jala.edu.order.application.port.out.OrderRepositoryPort;
 import org.jala.edu.order.domain.model.Order;
+import org.jala.edu.order.domain.model.OrderStatus;
 
 public class FindReadyForDeliveryUseCase implements UseCase<Void, List<ReadyOrder>> {
     private final OrderRepositoryPort orderRepository;
@@ -16,6 +17,7 @@ public class FindReadyForDeliveryUseCase implements UseCase<Void, List<ReadyOrde
     @Override
     public List<ReadyOrder> execute(Void unused) {
         return orderRepository.findAll().stream()
+                .filter(order -> order.getStatus() == OrderStatus.READY_FOR_DELIVERY)
                 .map(this::toReadyOrder)
                 .toList();
     }
