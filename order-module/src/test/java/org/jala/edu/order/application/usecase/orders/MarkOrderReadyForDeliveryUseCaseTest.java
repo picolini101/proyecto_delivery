@@ -2,6 +2,8 @@ package org.jala.edu.order.application.usecase.orders;
 
 import org.jala.edu.core.application.port.out.TransactionRunner;
 import org.jala.edu.core.contract.CatalogService;
+import org.jala.edu.core.contract.UserRole;
+import org.jala.edu.core.contract.UserService;
 import org.jala.edu.order.domain.exception.InvalidStateTransitionException;
 import org.jala.edu.order.domain.exception.UnauthorizedCustomerException;
 import org.jala.edu.order.application.port.in.MarkOrderReadyForDeliveryCommand;
@@ -30,6 +32,7 @@ class MarkOrderReadyForDeliveryUseCaseTest {
     private final InMemoryOrderRepositoryAdapter orderRepository = new InMemoryOrderRepositoryAdapter();
     private final InMemoryOrderStatusHistoryAdapter statusHistory = new InMemoryOrderStatusHistoryAdapter();
     private final CatalogService catalogService = mock(CatalogService.class);
+    private final UserService userService = mock(UserService.class);
     private final UUID merchantId = UUID.randomUUID();
     private final UUID userId = UUID.randomUUID();
     private MarkOrderReadyForDeliveryUseCase useCase;
@@ -38,7 +41,7 @@ class MarkOrderReadyForDeliveryUseCaseTest {
     void setUp() {
         ChangeOrderStatusUseCase changeOrderStatus = new ChangeOrderStatusUseCase(
                 orderRepository, statusHistory, TransactionRunner.direct());
-        useCase = new MarkOrderReadyForDeliveryUseCase(orderRepository, changeOrderStatus, catalogService);
+        useCase = new MarkOrderReadyForDeliveryUseCase(orderRepository, changeOrderStatus, catalogService, userService);
     }
 
     @Test
@@ -101,6 +104,20 @@ class MarkOrderReadyForDeliveryUseCaseTest {
 
         assertThat(orderRepository.findById(order.getId()).orElseThrow().getStatus())
                 .isEqualTo(OrderStatus.READY_FOR_DELIVERY);
+    }
+
+    @Test
+    void rejectsUserThatIsNotAnActiveMerchant() {
+        Order order = confirmedOrder(merchantId);
+        when(userService.isActiveWithRole(merchantId, UserRole.MERCHANT)).thenReturn(false);
+
+        assertThatThrownBy(() -> useCase.execute(
+                new MarkOrderReadyForDeliveryCommand(order.getId().value(), merchantId, userId)))
+                .isInstanceOf(UnauthorizedCustomerException.class);
+
+        assertThat(orderRepository.findById(order.getId()).orElseThrow().getStatus())
+                .isEqualTo(OrderStatus.CONFIRMED);
+        assertThat(statusHistory.findByOrderId(order.getId())).isEmpty();
     }
 
     private Order confirmedOrder(UUID commerceId) {
