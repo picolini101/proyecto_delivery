@@ -115,7 +115,13 @@ public class Product extends BaseModel<ProductId> {
     }
 
     public void enable() {
-        this.status = ProductStatus.AVAILABLE;
+        if (status != ProductStatus.DISABLED) {
+            throw new DomainException("Product is not disabled");
+        }
+
+        this.status = stock > 0
+                ? ProductStatus.AVAILABLE
+                : ProductStatus.OUT_OF_STOCK;
         touch();
     }
 
