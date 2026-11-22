@@ -4,6 +4,7 @@ import org.jala.edu.core.application.port.out.TransactionRunner;
 import org.jala.edu.order.application.port.in.MarkOrderCommand;
 import org.jala.edu.order.application.port.out.OrderRepositoryPort;
 import org.jala.edu.order.application.port.out.OrderStatusHistoryPort;
+import org.jala.edu.order.domain.exception.InvalidStateTransitionException;
 import org.jala.edu.order.domain.model.*;
 import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryOrderRepositoryAdapter;
 import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryOrderStatusHistoryAdapter;
@@ -15,6 +16,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 public class MarkOrderDeliveredUseCaseTest {
@@ -46,6 +48,17 @@ public class MarkOrderDeliveredUseCaseTest {
         assertThat(history).hasSize(1);
         assertThat(history.get(0).getPreviousStatus()).isEqualTo(OrderStatus.ON_THE_WAY);
         assertThat(history.get(0).getNewStatus()).isEqualTo(OrderStatus.DELIVERED);
+    }
+    @Test
+    @DisplayName("Should reject marking an order as DELIVERED when it is not ON_THE_WAY")
+    void shouldRejectOrderThatIsNotOnTheWay() {
+        Order order = createOrderWithStatus(OrderStatus.ASSIGNED);
+        MarkOrderCommand command = new MarkOrderCommand(
+                order.getId().value(), adminUserId);
+        assertThatThrownBy(() -> useCase.execute(command)).isInstanceOf(InvalidStateTransitionException.class);
+        Order unchanged = orderRepository.findById(order.getId()).orElseThrow();
+        assertThat(unchanged.getStatus()).isEqualTo(OrderStatus.ASSIGNED);
+        assertThat(statusHistory.findByOrderId(order.getId())).isEmpty();
     }
     private Order createOrderWithStatus(OrderStatus status) {
         OrderLine line = OrderLine.of(
