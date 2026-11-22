@@ -54,19 +54,26 @@ public class MarkOrderDeliveredUseCaseTest {
                 "Producto Test",
                 Money.of(new BigDecimal("25.00")),
                 Quantity.of(1));
-        Order order = Order.create(CustomerId.of(UUID.randomUUID()), List.of(line), line.getSubtotal());
-        if (status == OrderStatus.CONFIRMED || status == OrderStatus.READY_FOR_DELIVERY || status == OrderStatus.ASSIGNED) {
+        Order order = Order.create(
+                CustomerId.of(UUID.randomUUID()),
+                List.of(line),
+                line.getSubtotal());
+        if (status == OrderStatus.CONFIRMED
+                || status == OrderStatus.READY_FOR_DELIVERY
+                || status == OrderStatus.ASSIGNED
+                || status == OrderStatus.ON_THE_WAY) {
             order.transitionTo(OrderStatus.CONFIRMED, null);
         }
-        if (status == OrderStatus.READY_FOR_DELIVERY || status == OrderStatus.ASSIGNED) {
+        if (status == OrderStatus.READY_FOR_DELIVERY || status == OrderStatus.ASSIGNED || status == OrderStatus.ON_THE_WAY) {
             order.transitionTo(OrderStatus.READY_FOR_DELIVERY, null);
         }
-        if (status == OrderStatus.ASSIGNED) {
+        if (status == OrderStatus.ASSIGNED || status == OrderStatus.ON_THE_WAY) {
             order.transitionTo(OrderStatus.ASSIGNED, null);
         }
         if (status == OrderStatus.ON_THE_WAY) {
             order.transitionTo(OrderStatus.ON_THE_WAY, null);
         }
+
         return orderRepository.save(order);
     }
 }
