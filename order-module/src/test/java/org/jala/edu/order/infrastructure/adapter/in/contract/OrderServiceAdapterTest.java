@@ -20,6 +20,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -35,6 +36,7 @@ class OrderServiceAdapterTest {
     @BeforeEach
     void setUp() {
         adapter = new OrderServiceAdapter(findReady, assign, onTheWay, delivered, currentUserService);
+        doCallRealMethod().when(currentUserService).currentUser();
     }
 
     @Test

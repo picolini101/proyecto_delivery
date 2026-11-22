@@ -1,10 +1,14 @@
 package org.jala.edu.order.infrastructure.config;
 
 import org.jala.edu.core.contract.CatalogService;
+import org.jala.edu.core.contract.CurrentUserService;
+import org.jala.edu.core.contract.OrderService;
 import org.jala.edu.core.contract.PaymentService;
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.order.application.port.out.CartRepositoryPort;
 import org.jala.edu.order.application.port.out.FailedPaymentLogPort;
+import org.jala.edu.order.application.usecase.orders.ListFailedPaymentsUseCase;
+import org.jala.edu.order.application.usecase.orders.RegisterFailedPaymentUseCase;
 import org.jala.edu.order.application.port.out.OrderRepositoryPort;
 import org.jala.edu.order.application.port.out.OrderStatusHistoryPort;
 import org.jala.edu.order.application.port.out.PaymentGatewayPort;
@@ -22,10 +26,18 @@ import org.jala.edu.order.application.usecase.orders.ChangeOrderStatusUseCase;
 import org.jala.edu.order.application.usecase.orders.ConsultarPedidosUseCase;
 import org.jala.edu.order.application.usecase.orders.GetOrderDetailUseCase;
 import org.jala.edu.order.application.usecase.orders.GetOrderTrackingUseCase;
+import org.jala.edu.order.application.usecase.orders.InputAddressUseCase;
+import org.jala.edu.order.application.usecase.orders.FindReadyForDeliveryUseCase;
+import org.jala.edu.order.application.usecase.orders.MarkOrderAssignedUseCase;
+import org.jala.edu.order.application.usecase.orders.MarkOrderDeliveredUseCase;
+import org.jala.edu.order.application.usecase.orders.MarkOrderOnTheWayUseCase;
+import org.jala.edu.order.application.usecase.orders.StartCheckoutUseCase;
+import org.jala.edu.order.application.usecase.RemoveProductFromCartUseCase;
 import org.jala.edu.order.application.usecase.orders.RegisterFailedPaymentUseCase;
 import org.jala.edu.order.application.usecase.orders.ListFailedPaymentsUseCase;
 import org.jala.edu.order.application.usecase.orders.PreviewCheckoutSummaryUseCase;
 import org.jala.edu.order.infrastructure.adapter.out.payment.PaymentServiceAdapter;
+import org.jala.edu.order.infrastructure.adapter.in.contract.OrderServiceAdapter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -73,6 +85,38 @@ public class OrderModuleConfiguration {
     public CartVerifier cartVerifier(CatalogService catalog) {
         return new CartVerifier(catalog);
     }
+
+    @Bean
+    public FindReadyForDeliveryUseCase findReadyForDeliveryUseCase(OrderRepositoryPort orders) {
+        return new FindReadyForDeliveryUseCase(orders);
+    }
+
+    @Bean
+    public MarkOrderAssignedUseCase markOrderAssignedUseCase(OrderRepositoryPort orders,
+                                                              ChangeOrderStatusUseCase changeOrderStatus) {
+        return new MarkOrderAssignedUseCase(orders, changeOrderStatus);
+    }
+
+    @Bean
+    public MarkOrderOnTheWayUseCase markOrderOnTheWayUseCase(ChangeOrderStatusUseCase changeOrderStatus) {
+        return new MarkOrderOnTheWayUseCase(changeOrderStatus);
+    }
+
+    @Bean
+    public MarkOrderDeliveredUseCase markOrderDeliveredUseCase(ChangeOrderStatusUseCase changeOrderStatus) {
+        return new MarkOrderDeliveredUseCase(changeOrderStatus);
+    }
+
+    @Bean
+    public OrderService orderService(FindReadyForDeliveryUseCase findReadyForDelivery,
+                                    MarkOrderAssignedUseCase markOrderAssigned,
+                                    MarkOrderOnTheWayUseCase markOrderOnTheWay,
+                                    MarkOrderDeliveredUseCase markOrderDelivered,
+                                    CurrentUserService currentUserService) {
+        return new OrderServiceAdapter(findReadyForDelivery, markOrderAssigned, markOrderOnTheWay,
+                markOrderDelivered, currentUserService);
+    }
+
     @Bean
     public StartCheckoutUseCase startCheckoutUseCase(
             UserService users,
