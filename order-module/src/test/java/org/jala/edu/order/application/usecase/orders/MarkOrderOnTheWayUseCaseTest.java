@@ -1,9 +1,11 @@
 package org.jala.edu.order.application.usecase.orders;
 
 import org.jala.edu.core.application.port.out.TransactionRunner;
-import org.jala.edu.order.application.port.in.MarkOrderOnTheWayCommand;
+import org.jala.edu.core.domain.exception.NotFoundException;
+import org.jala.edu.order.application.port.in.MarkOrderCommand;
 import org.jala.edu.order.application.port.out.OrderRepositoryPort;
 import org.jala.edu.order.application.port.out.OrderStatusHistoryPort;
+import org.jala.edu.order.domain.exception.InvalidStateTransitionException;
 import org.jala.edu.order.domain.model.*;
 import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryOrderRepositoryAdapter;
 import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryOrderStatusHistoryAdapter;
@@ -11,6 +13,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -36,7 +40,7 @@ public class MarkOrderOnTheWayUseCaseTest {
     void shouldMarkAssignedOrderAsOnTheWay() {
         //Arrage
         Order order = createOrderWithStatus(OrderStatus.ASSIGNED);
-        MarkOrderOnTheWayCommand command = new MarkOrderOnTheWayCommand(order.getId().value(), adminUserId);
+        MarkOrderCommand command = new MarkOrderCommand(order.getId().value(), adminUserId);
         //act
         useCase.execute(command);
         Order updated = orderRepository.findById(order.getId()).orElseThrow();
@@ -48,6 +52,25 @@ public class MarkOrderOnTheWayUseCaseTest {
                 .isEqualTo(OrderStatus.ASSIGNED);
         assertThat(history.get(0).getNewStatus())
                 .isEqualTo(OrderStatus.ON_THE_WAY);
+    }
+    @Test
+    @DisplayName("Should reject marking an order as ON_THE_WAY when it is not ASSIGNED")
+    void shouldRejectOrderThatIsNotAssigned() {
+        Order order = createOrderWithStatus(OrderStatus.READY_FOR_DELIVERY);
+        MarkOrderCommand command = new MarkOrderCommand(
+                        order.getId().value(), adminUserId);
+        assertThatThrownBy(() -> useCase.execute(command)).isInstanceOf(InvalidStateTransitionException.class);
+        Order unchanged = orderRepository.findById(order.getId()).orElseThrow();
+        assertThat(unchanged.getStatus()).isEqualTo(OrderStatus.READY_FOR_DELIVERY);
+        assertThat(statusHistory.findByOrderId(order.getId())).isEmpty();
+    }
+    @Test
+    @DisplayName("Should throw NotFoundException when order does not exist")
+    void shouldThrowNotFoundExceptionWhenOrderDoesNotExist() {
+        MarkOrderCommand command = new MarkOrderCommand(
+                        UUID.randomUUID(),
+                        adminUserId);
+        assertThatThrownBy(() -> useCase.execute(command)).isInstanceOf(NotFoundException.class);
     }
     private Order createOrderWithStatus(OrderStatus status) {
         OrderLine line = OrderLine.of(
