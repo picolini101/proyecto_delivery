@@ -2,6 +2,7 @@ package org.jala.edu.order.application.usecase.orders;
 
 import org.jala.edu.core.contract.UserRole;
 import org.jala.edu.core.contract.UserService;
+import org.jala.edu.core.contract.CatalogService;
 import org.jala.edu.order.application.port.out.OrderRepositoryPort;
 import org.jala.edu.order.domain.exception.UnauthorizedCustomerException;
 import org.jala.edu.order.domain.model.CustomerId;
@@ -29,6 +30,7 @@ class ListConfirmedOrdersByMerchantUseCaseTest {
 
     private final OrderRepositoryPort orderRepository = mock(OrderRepositoryPort.class);
     private final UserService userService = mock(UserService.class);
+    private final CatalogService catalogService = mock(CatalogService.class);
     private final UUID merchantId = UUID.randomUUID();
     private ListConfirmedOrdersByMerchantUseCase useCase;
 
@@ -58,6 +60,21 @@ class ListConfirmedOrdersByMerchantUseCaseTest {
         assertThrows(UnauthorizedCustomerException.class, () -> useCase.execute(merchantId));
 
         verifyNoInteractions(orderRepository);
+    }
+
+    @Test
+    void findsOrdersByCommerceIdsOwnedByMerchant() {
+        UUID commerceId = UUID.randomUUID();
+        Order order = order(commerceId, OrderStatus.CONFIRMED);
+        when(userService.isActiveWithRole(merchantId, UserRole.MERCHANT)).thenReturn(true);
+        when(catalogService.findCommerceIdsByMerchant(merchantId)).thenReturn(List.of(commerceId));
+        when(orderRepository.findAll()).thenReturn(List.of(order));
+        ListConfirmedOrdersByMerchantUseCase commerceAwareUseCase =
+                new ListConfirmedOrdersByMerchantUseCase(orderRepository, userService, catalogService);
+
+        List<Order> result = commerceAwareUseCase.execute(merchantId);
+
+        assertEquals(List.of(order), result);
     }
 
     private Order order(UUID commerceId, OrderStatus status) {
