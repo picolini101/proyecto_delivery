@@ -1,6 +1,7 @@
 package org.jala.edu.order.application.usecase.orders;
 
 import org.jala.edu.core.application.port.out.TransactionRunner;
+import org.jala.edu.core.contract.CatalogService;
 import org.jala.edu.order.domain.exception.InvalidStateTransitionException;
 import org.jala.edu.order.domain.exception.UnauthorizedCustomerException;
 import org.jala.edu.order.application.port.in.MarkOrderReadyForDeliveryCommand;
@@ -21,11 +22,14 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class MarkOrderReadyForDeliveryUseCaseTest {
 
     private final InMemoryOrderRepositoryAdapter orderRepository = new InMemoryOrderRepositoryAdapter();
     private final InMemoryOrderStatusHistoryAdapter statusHistory = new InMemoryOrderStatusHistoryAdapter();
+    private final CatalogService catalogService = mock(CatalogService.class);
     private final UUID merchantId = UUID.randomUUID();
     private final UUID userId = UUID.randomUUID();
     private MarkOrderReadyForDeliveryUseCase useCase;
@@ -34,12 +38,13 @@ class MarkOrderReadyForDeliveryUseCaseTest {
     void setUp() {
         ChangeOrderStatusUseCase changeOrderStatus = new ChangeOrderStatusUseCase(
                 orderRepository, statusHistory, TransactionRunner.direct());
-        useCase = new MarkOrderReadyForDeliveryUseCase(orderRepository, changeOrderStatus);
+        useCase = new MarkOrderReadyForDeliveryUseCase(orderRepository, changeOrderStatus, catalogService);
     }
 
     @Test
     void marksConfirmedOrderReadyAndRecordsHistory() {
         Order order = confirmedOrder(merchantId);
+        when(catalogService.findCommerceIdsByMerchant(merchantId)).thenReturn(List.of(merchantId));
 
         useCase.execute(new MarkOrderReadyForDeliveryCommand(order.getId().value(), merchantId, userId));
 
@@ -58,6 +63,7 @@ class MarkOrderReadyForDeliveryUseCaseTest {
     @Test
     void rejectsOrderOwnedByAnotherMerchantWithoutChangingIt() {
         Order order = confirmedOrder(UUID.randomUUID());
+        when(catalogService.findCommerceIdsByMerchant(merchantId)).thenReturn(List.of(merchantId));
 
         assertThatThrownBy(() -> useCase.execute(
                 new MarkOrderReadyForDeliveryCommand(order.getId().value(), merchantId, userId)))
@@ -74,6 +80,7 @@ class MarkOrderReadyForDeliveryUseCaseTest {
                 Money.of(10.0), Quantity.of(1));
         Order order = orderRepository.save(Order.create(
                 CustomerId.of(UUID.randomUUID()), List.of(line), line.getSubtotal()));
+        when(catalogService.findCommerceIdsByMerchant(merchantId)).thenReturn(List.of(merchantId));
 
         assertThatThrownBy(() -> useCase.execute(
                 new MarkOrderReadyForDeliveryCommand(order.getId().value(), merchantId, userId)))
@@ -82,6 +89,18 @@ class MarkOrderReadyForDeliveryUseCaseTest {
         assertThat(orderRepository.findById(order.getId()).orElseThrow().getStatus())
                 .isEqualTo(OrderStatus.CREATED);
         assertThat(statusHistory.findByOrderId(order.getId())).isEmpty();
+    }
+
+    @Test
+    void marksOrderForCommerceOwnedByMerchantWhenIdsDiffer() {
+        UUID commerceId = UUID.randomUUID();
+        Order order = confirmedOrder(commerceId);
+        when(catalogService.findCommerceIdsByMerchant(merchantId)).thenReturn(List.of(commerceId));
+
+        useCase.execute(new MarkOrderReadyForDeliveryCommand(order.getId().value(), merchantId, userId));
+
+        assertThat(orderRepository.findById(order.getId()).orElseThrow().getStatus())
+                .isEqualTo(OrderStatus.READY_FOR_DELIVERY);
     }
 
     private Order confirmedOrder(UUID commerceId) {
