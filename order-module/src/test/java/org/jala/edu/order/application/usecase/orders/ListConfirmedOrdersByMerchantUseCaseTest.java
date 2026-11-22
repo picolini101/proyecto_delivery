@@ -36,7 +36,7 @@ class ListConfirmedOrdersByMerchantUseCaseTest {
 
     @BeforeEach
     void setUp() {
-        useCase = new ListConfirmedOrdersByMerchantUseCase(orderRepository, userService);
+        useCase = new ListConfirmedOrdersByMerchantUseCase(orderRepository, userService, catalogService);
     }
 
     @Test
@@ -45,6 +45,7 @@ class ListConfirmedOrdersByMerchantUseCaseTest {
         Order merchantCreated = order(merchantId, OrderStatus.CREATED);
         Order anotherMerchantConfirmed = order(UUID.randomUUID(), OrderStatus.CONFIRMED);
         when(userService.isActiveWithRole(merchantId, UserRole.MERCHANT)).thenReturn(true);
+        when(catalogService.findCommerceIdsByMerchant(merchantId)).thenReturn(List.of(merchantId));
         when(orderRepository.findAll()).thenReturn(List.of(
                 merchantConfirmed, merchantCreated, anotherMerchantConfirmed));
 
@@ -69,10 +70,7 @@ class ListConfirmedOrdersByMerchantUseCaseTest {
         when(userService.isActiveWithRole(merchantId, UserRole.MERCHANT)).thenReturn(true);
         when(catalogService.findCommerceIdsByMerchant(merchantId)).thenReturn(List.of(commerceId));
         when(orderRepository.findAll()).thenReturn(List.of(order));
-        ListConfirmedOrdersByMerchantUseCase commerceAwareUseCase =
-                new ListConfirmedOrdersByMerchantUseCase(orderRepository, userService, catalogService);
-
-        List<Order> result = commerceAwareUseCase.execute(merchantId);
+        List<Order> result = useCase.execute(merchantId);
 
         assertEquals(List.of(order), result);
     }
