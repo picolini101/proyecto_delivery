@@ -9,7 +9,6 @@ import lombok.ToString;
 import org.jala.edu.catalog.domain.matching.TextMatchStrategy;
 import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.core.domain.model.BaseModel;
-import java.util.Locale;
 
 /**
  * Todas las reglas de negocio relativas a un producto válido residen aquí.
@@ -46,8 +45,10 @@ public class Product extends BaseModel<ProductId> {
     }
 
     /**
-     * Restaura un producto existente desde la persistencia.
+     * Restaura un producto existente desde la persistencia. Recibe todos los campos guardados
+     * (8), por eso se justifica la regla ParameterNumber.
      */
+    @SuppressWarnings("checkstyle:ParameterNumber")
     public static Product restore(
             ProductId id,
             UUID commerceId,
