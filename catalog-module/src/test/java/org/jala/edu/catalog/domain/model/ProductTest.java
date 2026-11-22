@@ -285,6 +285,49 @@ class ProductTest {
 
     }
 
+
+    @Test
+    void enablesADisabledProductWithStockAsAvailable() {
+        Product product = Product.register(
+                COMMERCE_ID, "Pizza", "Food", new BigDecimal("50.00"));
+        product.adjustStock(10);
+        product.disable();
+
+        product.enable();
+
+        assertThat(product.getStatus()).isEqualTo(ProductStatus.AVAILABLE);
+        assertThat(product.getStock()).isEqualTo(10);
+    }
+
+    @Test
+    void enablesADisabledProductWithoutStockAsOutOfStock() {
+        Product product = Product.register(
+                COMMERCE_ID, "Pizza", "Food", new BigDecimal("50.00"));
+        product.disable();
+
+        product.enable();
+
+        assertThat(product.getStatus()).isEqualTo(ProductStatus.OUT_OF_STOCK);
+        assertThat(product.getStock()).isZero();
+    }
+
+    @Test
+    void doesNotChangeProductDataWhenEnablingIt() {
+        Product product = Product.register(
+                COMMERCE_ID, "Pizza", "Food", new BigDecimal("50.00"));
+        product.adjustStock(10);
+        product.disable();
+
+        product.enable();
+
+        assertThat(product.getName()).isEqualTo("Pizza");
+        assertThat(product.getCategory()).isEqualTo("Food");
+        assertThat(product.getPrice()).isEqualByComparingTo("50.00");
+        assertThat(product.getCommerceId()).isEqualTo(COMMERCE_ID);
+        assertThat(product.getStock()).isEqualTo(10);
+    }
+
+
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = {" ", "   "})

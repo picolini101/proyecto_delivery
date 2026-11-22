@@ -22,10 +22,12 @@ import org.jala.edu.catalog.application.port.in.DeleteProductCommand;
 import org.jala.edu.catalog.application.port.in.ListManagedProductsQuery;
 import org.jala.edu.catalog.application.port.in.UpdateProductStatusCommand;
 import org.jala.edu.catalog.application.port.in.DisableProductCommand;
+import org.jala.edu.catalog.application.port.in.EnableProductCommand;
 import org.jala.edu.catalog.application.usecase.DeleteProductUseCase;
 import org.jala.edu.catalog.application.usecase.ListManagedProductsUseCase;
 import org.jala.edu.catalog.application.usecase.UpdateProductStatusUseCase;
 import org.jala.edu.catalog.application.usecase.DisableProductUseCase;
+import org.jala.edu.catalog.application.usecase.EnableProductUseCase;
 import org.jala.edu.catalog.domain.model.ProductStatus;
 import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
@@ -56,11 +58,13 @@ public class ManageProductsController {
     // Evita pulsar Eliminar dos veces mientras la eliminación está en curso
     private final BooleanProperty deleting = new SimpleBooleanProperty(false);
     private final BooleanProperty disabling = new SimpleBooleanProperty(false);
+    private final BooleanProperty enabling = new SimpleBooleanProperty(false);
 
     private final ListManagedProductsUseCase listManagedProductsUseCase;
     private final UpdateProductStatusUseCase updateProductStatusUseCase;
     private final DeleteProductUseCase deleteProductUseCase;
     private final DisableProductUseCase disableProductUseCase;
+    private final EnableProductUseCase enableProductUseCase;
     private final CurrentUserService currentUserService;
     private final SpringFxmlLoader fxmlLoader;
     private static final Duration SEARCH_DELAY = Duration.millis(300);
@@ -103,6 +107,9 @@ public class ManageProductsController {
     private Button disableButton;
 
     @FXML
+    private Button enableButton;
+
+    @FXML
     private ComboBox<ProductStatus> availabilitySelector;
 
     @FXML
@@ -141,6 +148,19 @@ public class ManageProductsController {
                                             productsTable.getSelectionModel().getSelectedItem();
                                     return selected != null
                                             && selected.product().getStatus() == ProductStatus.DISABLED;
+                                },
+                                productsTable.getSelectionModel().selectedItemProperty())));
+
+        // Habilitar requiere un producto deshabilitado y que no haya otra habilitación en curso
+        enableButton.disableProperty().bind(
+                productsTable.getSelectionModel().selectedItemProperty().isNull()
+                        .or(enabling)
+                        .or(Bindings.createBooleanBinding(
+                                () -> {
+                                    ManagedProduct selected =
+                                            productsTable.getSelectionModel().getSelectedItem();
+                                    return selected == null
+                                            || selected.product().getStatus() != ProductStatus.DISABLED;
                                 },
                                 productsTable.getSelectionModel().selectedItemProperty())));
 
@@ -328,6 +348,43 @@ public class ManageProductsController {
                 error -> {
                     disabling.set(false);
                     showMessage(ErrorMessages.of(error, "deshabilitar el producto"), "error");
+                });
+    }
+
+    /**
+     * Habilita el producto seleccionado sin modificar sus datos ni su stock.
+     */
+    @FXML
+    void onEnable() {
+        ManagedProduct selected = productsTable.getSelectionModel().getSelectedItem();
+
+        if (selected == null || selected.product().getStatus() != ProductStatus.DISABLED) {
+            return;
+        }
+
+        boolean confirmed = Dialogs.confirm(
+                productsTable,
+                "¿Habilitar el producto " + selected.product().getName() + "?",
+                "El producto volverá a estar disponible según su stock actual. Se conservarán sus datos y su stock.");
+
+        if (!confirmed) {
+            return;
+        }
+
+        UUID productId = selected.product().getId().value();
+
+        enabling.set(true);
+
+        BackgroundTasks.run(
+                () -> enableProductUseCase.execute(
+                        new EnableProductCommand(currentUserService.currentUser().id(), productId)),
+                done -> {
+                    enabling.set(false);
+                    reload("Product enabled successfully.");
+                },
+                error -> {
+                    enabling.set(false);
+                    showMessage(ErrorMessages.of(error, "habilitar el producto"), "error");
                 });
     }
 
