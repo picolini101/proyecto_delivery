@@ -60,7 +60,7 @@ public class MarkOrderAssignedUseCaseTest {
     @DisplayName("Should reject assignment when order is not READY_FOR_DELIVERY")
     void shouldRejectAssignmentWhenOrderIsNotReadyForDelivery() {
         //Arrage
-        Order order = createReadyOrder();
+        Order order = createOrder();
         AssignedOrderCommand command = new AssignedOrderCommand(
                 order.getId().value(),
                 courierId,
@@ -88,5 +88,22 @@ public class MarkOrderAssignedUseCaseTest {
         order.transitionTo(OrderStatus.CONFIRMED, null);
         order.transitionTo(OrderStatus.READY_FOR_DELIVERY, null);
         return orderRepository.save(order);
+    }
+    private Order createOrder() {
+        OrderLine line = createOrderLine();
+        Order order = Order.create(
+                CustomerId.of(UUID.randomUUID()),
+                List.of(line),
+                line.getSubtotal());
+        return orderRepository.save(order);
+    }
+    private OrderLine createOrderLine() {
+        return OrderLine.of(
+                ProductId.of(UUID.randomUUID()),
+                UUID.randomUUID(),
+                "Producto Test",
+                Money.of(new BigDecimal("25.00")),
+                Quantity.of(1)
+        );
     }
 }
