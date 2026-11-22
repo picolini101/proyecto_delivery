@@ -1,8 +1,13 @@
 package org.jala.edu.order.application.usecase.orders;
 
+import org.jala.edu.core.application.port.out.TransactionRunner;
+import org.jala.edu.order.application.port.in.MarkOrderOnTheWayCommand;
 import org.jala.edu.order.application.port.out.OrderRepositoryPort;
 import org.jala.edu.order.application.port.out.OrderStatusHistoryPort;
 import org.jala.edu.order.domain.model.*;
+import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryOrderRepositoryAdapter;
+import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryOrderStatusHistoryAdapter;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -10,14 +15,22 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-
 public class MarkOrderOnTheWayUseCaseTest {
     private MarkOrderOnTheWayUseCase useCase;
     private OrderRepositoryPort orderRepository;
     private OrderStatusHistoryPort statusHistory;
     private final UUID adminUserId = UUID.randomUUID();
-
+    @BeforeEach
+    void setUp() {
+        orderRepository = new InMemoryOrderRepositoryAdapter();
+        statusHistory = new InMemoryOrderStatusHistoryAdapter();
+        ChangeOrderStatusUseCase changeStatusUseCase =
+                new ChangeOrderStatusUseCase(
+                        orderRepository,
+                        statusHistory,
+                        TransactionRunner.direct());
+        useCase = new MarkOrderOnTheWayUseCase(changeStatusUseCase);
+    }
     @Test
     @DisplayName("Should mark assigned order as ON_THE_WAY")
     void shouldMarkAssignedOrderAsOnTheWay() {
