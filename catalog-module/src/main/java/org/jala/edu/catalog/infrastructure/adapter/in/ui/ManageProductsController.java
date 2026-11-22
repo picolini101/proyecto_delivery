@@ -1,5 +1,6 @@
 package org.jala.edu.catalog.infrastructure.adapter.in.ui;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 import javafx.beans.property.BooleanProperty;
@@ -16,14 +17,17 @@ import javafx.scene.control.TableView;
 import javafx.scene.input.MouseButton;
 import javafx.util.StringConverter;
 import lombok.RequiredArgsConstructor;
+import org.jala.edu.catalog.application.dto.CommerceSummary;
 import org.jala.edu.catalog.application.dto.DeleteProductResult;
 import org.jala.edu.catalog.application.dto.ManagedProduct;
 import org.jala.edu.catalog.application.port.in.DeleteProductCommand;
+import org.jala.edu.catalog.application.port.in.ListCommercesQuery;
 import org.jala.edu.catalog.application.port.in.ListManagedProductsQuery;
 import org.jala.edu.catalog.application.port.in.UpdateProductStatusCommand;
 import org.jala.edu.catalog.application.port.in.DisableProductCommand;
 import org.jala.edu.catalog.application.port.in.EnableProductCommand;
 import org.jala.edu.catalog.application.usecase.DeleteProductUseCase;
+import org.jala.edu.catalog.application.usecase.ListCommercesUseCase;
 import org.jala.edu.catalog.application.usecase.ListManagedProductsUseCase;
 import org.jala.edu.catalog.application.usecase.UpdateProductStatusUseCase;
 import org.jala.edu.catalog.application.usecase.DisableProductUseCase;
@@ -61,6 +65,7 @@ public class ManageProductsController {
     private final BooleanProperty enabling = new SimpleBooleanProperty(false);
 
     private final ListManagedProductsUseCase listManagedProductsUseCase;
+    private final ListCommercesUseCase listCommercesUseCase;
     private final UpdateProductStatusUseCase updateProductStatusUseCase;
     private final DeleteProductUseCase deleteProductUseCase;
     private final DisableProductUseCase disableProductUseCase;
@@ -69,6 +74,9 @@ public class ManageProductsController {
     private final SpringFxmlLoader fxmlLoader;
     private static final Duration SEARCH_DELAY = Duration.millis(300);
     private final PauseTransition searchDelay = new PauseTransition(SEARCH_DELAY);
+
+    // Evita que cargar las opciones del selector dispare otra recarga (bucle)
+    private boolean updatingCommerceFilter;
 
     @FXML
     private TableView<ManagedProduct> productsTable;
@@ -122,11 +130,15 @@ public class ManageProductsController {
     private TextField searchField;
 
     @FXML
+    private ComboBox<CommerceSummary> commerceFilter;
+
+    @FXML
     void initialize() {
         bindColumns();
         bindActionButtons();
         configureAvailabilitySelector();
         configureSelectionAndRows();
+        configureCommerceFilter();
         configureSearch();
         reload(null);
     }
@@ -229,6 +241,18 @@ public class ManageProductsController {
                 }
             });
             return row;
+        });
+    }
+
+    // El selector arranca solo con «Todos los comercios»; los comercios se cargan en reload(...)
+    private void configureCommerceFilter() {
+        commerceFilter.setConverter(new CommerceNameConverter());
+        commerceFilter.getItems().setAll(CommerceFilterOptions.ALL);
+        commerceFilter.setValue(CommerceFilterOptions.ALL);
+        commerceFilter.valueProperty().addListener((observable, previous, selected) -> {
+            if (!updatingCommerceFilter) {
+                reload(null);
+            }
         });
     }
 
@@ -404,34 +428,72 @@ public class ManageProductsController {
     }
 
     /**
-     * Carga los productos; luego muestra {@code successMessage}, o el conteo si es {@code null}.
+     * Carga comercios y productos, conservando el comercio seleccionado; luego muestra
+     * {@code successMessage}, o el conteo si es {@code null}.
      */
-
     private void reload(String successMessage) {
         String searchText = searchField.getText();
+        UUID requestedCommerceId = selectedCommerceId();
 
         refreshButton.setDisable(true);
         BackgroundTasks.run(
-                () -> listManagedProductsUseCase.execute(new ListManagedProductsQuery(searchText)),
-                products -> {
-                    // Si el usuario siguió escribiendo, esta respuesta ya quedó vieja
-                    if (!Objects.equals(searchText, searchField.getText())) {
+                () -> loadScreenData(searchText, requestedCommerceId),
+                data -> {
+                    // Si el usuario cambió el texto o el comercio, esta respuesta ya quedó vieja
+                    if (!Objects.equals(searchText, searchField.getText())
+                            || !Objects.equals(requestedCommerceId, selectedCommerceId())) {
                         return;
                     }
-                    productsTable.getItems().setAll(products);
-                    if (successMessage != null) {
-                        showMessage(successMessage, "success");
-                    } else if (products.isEmpty() && !searchText.isBlank()) {
-                        showMessage("No products match your search.", "info");
-                    } else {
-                        showMessage(count(products.size()), "info");
-                    }
+                    showCommerceOptions(data.commerces(), data.commerceId());
+                    productsTable.getItems().setAll(data.products());
+                    showResultMessage(
+                            successMessage, data.products(), searchText, data.commerceId() != null);
                     refreshButton.setDisable(false);
                 },
                 error -> {
                     showMessage(ErrorMessages.of(error, "load the products"), "error");
                     refreshButton.setDisable(false);
                 });
+    }
+
+    /** Consulta comercios y productos; si el comercio pedido ya no existe, no se filtra. */
+    private ScreenData loadScreenData(String searchText, UUID requestedCommerceId) {
+        List<CommerceSummary> commerces = listCommercesUseCase.execute(ListCommercesQuery.all());
+        UUID commerceId = CommerceFilterOptions.resolveId(commerces, requestedCommerceId);
+        List<ManagedProduct> products = listManagedProductsUseCase.execute(
+                new ListManagedProductsQuery(searchText, commerceId));
+        return new ScreenData(commerces, commerceId, products);
+    }
+
+    /** Id del comercio seleccionado; {@code null} con «Todos los comercios». */
+    private UUID selectedCommerceId() {
+        return CommerceFilterOptions.idOf(commerceFilter.getValue());
+    }
+
+    /** Recarga las opciones del selector y deja elegido el comercio indicado. */
+    private void showCommerceOptions(List<CommerceSummary> commerces, UUID commerceId) {
+        List<CommerceSummary> options = CommerceFilterOptions.options(commerces);
+        updatingCommerceFilter = true;
+        try {
+            commerceFilter.getItems().setAll(options);
+            commerceFilter.setValue(CommerceFilterOptions.optionFor(options, commerceId));
+        } finally {
+            updatingCommerceFilter = false;
+        }
+    }
+
+    private void showResultMessage(
+            String successMessage, List<ManagedProduct> products,
+            String searchText, boolean filteredByCommerce) {
+        if (successMessage != null) {
+            showMessage(successMessage, "success");
+        } else if (products.isEmpty() && !searchText.isBlank()) {
+            showMessage("No products match your search.", "info");
+        } else if (products.isEmpty() && filteredByCommerce) {
+            showMessage("El comercio no tiene productos.", "info");
+        } else {
+            showMessage(count(products.size()), "info");
+        }
     }
 
     private void showMessage(String text, String styleClass) {
@@ -453,5 +515,10 @@ public class ManageProductsController {
 
     private static void bind(TableColumn<ManagedProduct, String> column, Function<ManagedProduct, String> value) {
         column.setCellValueFactory(cell -> new ReadOnlyStringWrapper(value.apply(cell.getValue())));
+    }
+
+    /** Resultado de una carga: comercios del selector, comercio aplicado y productos filtrados. */
+    private record ScreenData(
+            List<CommerceSummary> commerces, UUID commerceId, List<ManagedProduct> products) {
     }
 }
