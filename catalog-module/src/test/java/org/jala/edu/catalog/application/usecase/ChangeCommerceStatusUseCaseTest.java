@@ -9,7 +9,6 @@ import org.jala.edu.catalog.CatalogFixtures;
 import org.jala.edu.catalog.application.port.in.ChangeCommerceStatusCommand;
 import org.jala.edu.catalog.domain.exception.CommerceNotFoundException;
 import org.jala.edu.catalog.domain.model.Commerce;
-import org.jala.edu.catalog.domain.model.CommerceId;
 import org.jala.edu.catalog.domain.model.CommerceStatus;
 import org.jala.edu.catalog.infrastructure.adapter.out.persistence.memory.InMemoryCommerceRepositoryAdapter;
 import org.jala.edu.catalog.infrastructure.adapter.out.persistence.memory.InMemoryProductRepositoryAdapter;
@@ -165,7 +164,7 @@ class ChangeCommerceStatusUseCaseTest {
                         SampleUsers.ADMIN, commerce.getId().value(), CommerceStatus.ACTIVE)));
 
         assertThat(thrown).isInstanceOf(DomainException.class)
-          .hasMessage(CommerceActivationPolicy.NO_AVAILABLE_PRODUCT_MESSAGE);
+                .hasMessage(CommerceActivationPolicy.NO_AVAILABLE_PRODUCT_MESSAGE);
         assertThat(commerce.getStatus()).isEqualTo(CommerceStatus.DISABLED);
     }
 

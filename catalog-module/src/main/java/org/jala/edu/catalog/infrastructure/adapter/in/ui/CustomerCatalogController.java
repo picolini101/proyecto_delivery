@@ -1,4 +1,3 @@
-
 package org.jala.edu.catalog.infrastructure.adapter.in.ui;
 
 import java.util.List;
@@ -16,7 +15,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import lombok.RequiredArgsConstructor;
 import org.jala.edu.catalog.application.dto.CatalogProduct;
-import org.jala.edu.catalog.application.dto.CatalogProductPage;
 import org.jala.edu.catalog.application.dto.CommerceSummary;
 import org.jala.edu.catalog.application.port.in.ListAvailableProductsQuery;
 import org.jala.edu.catalog.application.port.in.ListCommercesQuery;
@@ -98,10 +96,10 @@ public class CustomerCatalogController {
         productsPane.getStylesheets().add(getClass().getResource(STYLESHEET).toExternalForm());
 
         productsPane.widthProperty().addListener((observable, previousWidth, newWidth) -> {
-        if (newWidth.doubleValue() > 0 && !currentProducts.isEmpty()) {
-            showProducts(currentProducts);
-        }
-    });
+            if (newWidth.doubleValue() > 0 && !currentProducts.isEmpty()) {
+                showProducts(currentProducts);
+            }
+        });
         commerceSelector.setConverter(new CommerceNameConverter());
 
         // Al elegir otro comercio se reinicia la paginación.
