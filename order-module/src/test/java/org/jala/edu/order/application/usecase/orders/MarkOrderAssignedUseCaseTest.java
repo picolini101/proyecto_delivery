@@ -5,6 +5,7 @@ import org.jala.edu.order.application.port.in.AssignedOrderCommand;
 import org.jala.edu.order.application.port.out.OrderRepositoryPort;
 import org.jala.edu.order.application.port.out.OrderStatusHistoryPort;
 import org.jala.edu.order.application.usecase.orders.MarkOrderAssignedUseCase;
+import org.jala.edu.order.domain.exception.InvalidStateTransitionException;
 import org.jala.edu.order.domain.model.*;
 import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryOrderRepositoryAdapter;
 import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryOrderStatusHistoryAdapter;
@@ -17,6 +18,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 public class MarkOrderAssignedUseCaseTest {
     private MarkOrderAssignedUseCase useCase;
@@ -39,17 +41,39 @@ public class MarkOrderAssignedUseCaseTest {
     @Test
     @DisplayName("Should assign courier and change order status to ASSIGNED")
     void shouldAssignCourierSuccessfully() {
+        //Arrage
         Order order = createReadyOrder();
         AssignedOrderCommand command = new AssignedOrderCommand(
                 order.getId().value(),
                 courierId,
                 adminUserId);
+        //act
         useCase.execute(command);
         Order updated = orderRepository.findById(order.getId()).orElseThrow();
+        //assert
         assertThat(updated.getStatus()).isEqualTo(OrderStatus.ASSIGNED);
         assertThat(updated.getCourierId()).isEqualTo(courierId);
         assertThat(statusHistory.findByOrderId(order.getId())).hasSize(1);
     }
+
+    @Test
+    @DisplayName("Should reject assignment when order is not READY_FOR_DELIVERY")
+    void shouldRejectAssignmentWhenOrderIsNotReadyForDelivery() {
+        //Arrage
+        Order order = createReadyOrder();
+        AssignedOrderCommand command = new AssignedOrderCommand(
+                order.getId().value(),
+                courierId,
+                adminUserId);
+        //act
+        assertThatThrownBy(() -> useCase.execute(command)).isInstanceOf(InvalidStateTransitionException.class);
+        Order unchanged = orderRepository.findById(order.getId()).orElseThrow();
+        //assert
+        assertThat(unchanged.getStatus()).isEqualTo(OrderStatus.CREATED);
+        assertThat(unchanged.getCourierId()).isNull();
+        assertThat(statusHistory.findByOrderId(order.getId())).isEmpty();
+    }
+
     private Order createReadyOrder() {
         OrderLine line = OrderLine.of(
                 ProductId.of(UUID.randomUUID()),
