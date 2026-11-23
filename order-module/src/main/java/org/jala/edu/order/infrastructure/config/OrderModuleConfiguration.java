@@ -190,12 +190,6 @@ public class OrderModuleConfiguration {
                                                  org.jala.edu.core.application.port.out.TransactionRunner transactions) {
         return new CancelOrderUseCase(orderRepository, statusHistory, transactions);
     }
-    @Bean
-    public PreviewCheckoutSummaryUseCase previewCheckoutSummaryUseCase(
-            UserService users, CartRepositoryPort carts, CartVerifier cartVerifier) {
-        return new PreviewCheckoutSummaryUseCase(users, carts, cartVerifier);
-    }
-
 
 }
 

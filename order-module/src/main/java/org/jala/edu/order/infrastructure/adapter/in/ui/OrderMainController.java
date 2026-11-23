@@ -1,5 +1,6 @@
 package org.jala.edu.order.infrastructure.adapter.in.ui;
 
+import java.util.List;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
@@ -26,7 +27,6 @@ import org.springframework.stereotype.Component;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
 
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
@@ -133,6 +133,12 @@ public class OrderMainController {
             case "DELIVERED" -> baseStyle + "-fx-background-color: #e0e7ff; -fx-text-fill: #3730a3;";
             default -> baseStyle + "-fx-background-color: #f1f5f9; -fx-text-fill: #475569;";
         };
+    }
+
+
+    @FXML
+    void onCancelOrders() {
+        navigator.show(OrderViews.CANCELLATION);
     }
 
 

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox styleClass="page" spacing="16"
+      xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="org.jala.edu.order.infrastructure.adapter.in.ui.OrderCancellationController">
+
+    <!-- Barra de herramientas superior -->
+    <HBox styleClass="toolbar" alignment="CENTER_LEFT" spacing="12">
+        <VBox spacing="2">
+            <Label styleClass="page-title" text="Cancelar Pedidos"/>
+            <Label text="Selecciona un pedido activo (Creado o Confirmado) para cancelar tu compra"
+                   style="-fx-text-fill: #64748b; -fx-font-size: 13px;"/>
+        </VBox>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button text="Volver a Pedidos" onAction="#onBack"
+                style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 7 14; -fx-text-fill: #334155; -fx-font-weight: bold; -fx-cursor: hand;"/>
+    </HBox>
+
+    <!-- Lista de tarjetas de pedidos cancelables -->
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-border-color: transparent;">
+        <VBox fx:id="ordersContainer" spacing="12" style="-fx-padding: 8 0 16 0;"/>
+    </ScrollPane>
+</VBox>
