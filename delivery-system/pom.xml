@@ -13,7 +13,7 @@
 
     <groupId>org.jala.edu</groupId>
     <artifactId>delivery-system</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>delivery-system</name>
     <description>Delivery system desktop application: assembles the modules and starts the JavaFX UI</description>
 
@@ -23,7 +23,7 @@
         <javafx-maven-plugin.version>0.0.8</javafx-maven-plugin.version>
         <!-- Install the module repositories first (./mvnw install in each one) -->
         <core-module.version>0.0.1-SNAPSHOT</core-module.version>
-        <user-module.version>0.0.1-SNAPSHOT</user-module.version>
+        <user-module.version>1.0.0</user-module.version>
         <catalog-module.version>0.0.1-SNAPSHOT</catalog-module.version>
         <order-module.version>0.0.1-SNAPSHOT</order-module.version>
         <delivery-module.version>0.0.1-SNAPSHOT</delivery-module.version>
