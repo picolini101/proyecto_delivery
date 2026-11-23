@@ -81,4 +81,9 @@ public class InMemoryProductRepositoryAdapter extends InMemoryCrudRepository<Pro
         return findPageOfVisibleProductsByCommerceId(commerceId, null, offset, limit);
     }
 
+    @Override
+    public void deleteAllByCommerceId(UUID commerceId) {
+        findByCommerceId(commerceId).forEach(product -> deleteById(product.getId()));
+    }
+
 }

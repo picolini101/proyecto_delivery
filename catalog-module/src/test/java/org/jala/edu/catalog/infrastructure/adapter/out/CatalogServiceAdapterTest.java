@@ -335,4 +335,11 @@ class CatalogServiceAdapterTest {
         assertThat(catalogService.isAvailable(product.getId().value(), 1)).isFalse();
         assertThat(catalogService.findAvailableProducts()).isEmpty();
     }
+
+    @Test
+    void doesNotFindAProductWhenItsCommerceDoesNotExist() {
+        commerceRepository.deleteById(new CommerceId(product.getCommerceId()));
+
+        assertThat(catalogService.findProduct(product.getId().value())).isEmpty();
+    }
 }

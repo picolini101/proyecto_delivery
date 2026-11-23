@@ -13,6 +13,7 @@ public interface ProductRepositoryPort extends CrudRepositoryPort<Product, Produ
     List<Product> findPageOfVisibleProductsByCommerceId(UUID commerceId, int offset, int limit);
     long countVisibleProductsByCommerceId(UUID commerceId);
     long countAvailableProductsByCommerceId(UUID commerceId);
+    void deleteAllByCommerceId(UUID commerceId);
 
     /// Página de productos visibles del comercio que coinciden con el texto (vacío = todos)
     List<Product> findPageOfVisibleProductsByCommerceId(

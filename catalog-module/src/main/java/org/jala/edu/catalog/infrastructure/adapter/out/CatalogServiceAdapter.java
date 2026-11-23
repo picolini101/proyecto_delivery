@@ -121,7 +121,9 @@ public class CatalogServiceAdapter implements CatalogService {
             return Optional.empty();
         }
 
-        return productRepository.findById(new ProductId(productId));
+        return productRepository.findById(new ProductId(productId))
+                .filter(product -> commerceRepository.existsById(
+                        new CommerceId(product.getCommerceId())));
     }
 
     private Product getRequiredProduct(UUID productId) {
