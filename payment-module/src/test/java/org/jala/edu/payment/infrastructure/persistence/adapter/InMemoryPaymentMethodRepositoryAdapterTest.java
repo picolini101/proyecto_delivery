@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.UUID;
 import org.jala.edu.payment.domain.model.Alias;
 import org.jala.edu.payment.domain.model.PaymentMethod;
-import org.jala.edu.payment.application.port.out.PaymentMethodRepositoryPort;
 import org.jala.edu.payment.domain.model.PaymentType;
 import org.junit.jupiter.api.Test;
 
