@@ -12,13 +12,18 @@ import org.jala.edu.payment.application.port.out.PaymentTransactionRepositoryPor
 import org.jala.edu.payment.domain.model.PaymentMethod;
 import org.jala.edu.payment.domain.model.PaymentStatus;
 import org.jala.edu.payment.domain.model.PaymentTransaction;
+
 /**
  * Caso de uso para reintentar el pago de un pedido cuyo intento previo fue rechazado.
  */
 public class RetryPaymentUseCase {
+
+    private static final BigDecimal MAX_AMOUNT = new BigDecimal("5000.00");
+
     private final PaymentTransactionRepositoryPort transactionRepository;
     private final PaymentMethodRepositoryPort paymentMethodRepository;
     private final UserService userService;
+
     public RetryPaymentUseCase(PaymentTransactionRepositoryPort transactionRepository,
                                PaymentMethodRepositoryPort paymentMethodRepository,
                                UserService userService) {
@@ -26,12 +31,14 @@ public class RetryPaymentUseCase {
         this.paymentMethodRepository = paymentMethodRepository;
         this.userService = userService;
     }
+
     /**
      * Procesa un nuevo intento de pago sobre un pedido con pago rechazado previo.
      */
     public synchronized PaymentTransaction retryPayment(UUID orderId, UUID userId,
                                                         UUID paymentMethodId, BigDecimal amount) {
         validateActiveUser(userId);
+
         List<PaymentTransaction> previousAttempts = transactionRepository.findByOrderId(orderId);
         boolean hasRejectedAttempt = false;
         for (PaymentTransaction tx : previousAttempts) {
@@ -40,23 +47,34 @@ public class RetryPaymentUseCase {
                 break;
             }
         }
+
         if (!hasRejectedAttempt) {
             throw new DomainException("El pedido no tiene un pago rechazado para reintentar");
         }
+
         if (transactionRepository.existsApprovedByOrderId(orderId)) {
             PaymentTransaction rejectedDuplicate = PaymentTransaction.recordRejected(
                     orderId, userId, paymentMethodId, amount, "Intento de cobro duplicado sobre pedido aprobado");
             return transactionRepository.save(rejectedDuplicate);
         }
+
+        if (amount != null && amount.compareTo(MAX_AMOUNT) > 0) {
+            PaymentTransaction rejectedAmount = PaymentTransaction.recordRejected(
+                    orderId, userId, paymentMethodId, amount, "El monto excede el limite permitido");
+            return transactionRepository.save(rejectedAmount);
+        }
+
         if (!isValidPaymentMethod(userId, paymentMethodId)) {
             PaymentTransaction rejectedMethod = PaymentTransaction.recordRejected(
                     orderId, userId, paymentMethodId, amount, "Metodo de pago invalido o inactivo");
             return transactionRepository.save(rejectedMethod);
         }
+
         PaymentTransaction approvedRetry = PaymentTransaction.recordApproved(
                 orderId, userId, paymentMethodId, amount);
         return transactionRepository.save(approvedRetry);
     }
+
     private boolean isValidPaymentMethod(UUID userId, UUID paymentMethodId) {
         if (paymentMethodId == null) {
             return false;
@@ -68,6 +86,7 @@ public class RetryPaymentUseCase {
         PaymentMethod method = methodOpt.get();
         return method.getUserId().equals(userId) && method.isActive();
     }
+
     private void validateActiveUser(UUID userId) {
         if (!userService.isActiveWithRole(userId, UserRole.CUSTOMER)) {
             throw new DomainException("User not authorized for this operation");
