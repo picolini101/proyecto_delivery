@@ -9,6 +9,7 @@ import org.jala.edu.order.domain.exception.InvalidStateTransitionException;
 import java.time.Instant;
 import java.util.*;
 
+
 @Getter
 @ToString(callSuper = true)
 public class Order extends BaseModel<OrderId> {
