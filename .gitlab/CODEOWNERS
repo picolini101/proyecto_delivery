@@ -2,30 +2,31 @@
 # Sections without ^ are required: a merge request that touches them needs approval from one of their owners.
 # Optional sections (^) only suggest reviewers.
 #
-# Each team section lists the team's Scrum Master for the current sprint, plus the practitioner,
-# who approves when the Scrum Master is the author of the merge request.
+# Each team section lists the team's Scrum Master for the current sprint first, then the Scrum Masters
+# of the other teams and the practitioner. The team's Scrum Master approves; when the Scrum Master is the
+# author of the merge request, another Scrum Master or the practitioner approves.
 # When the Scrum Master changes at the start of a sprint, replace only that user in the section.
 # Each team also owns its pipeline file in .gitlab/ci/ (Lab 8).
 
 # Members: @DaenAlex @HeynerRico @Ale_sm
 [Team C - catalog]
-/catalog-module/ @HeynerRico @Dev-jcgi
-/.gitlab/ci/catalog.yml @HeynerRico @Dev-jcgi
+/catalog-module/ @HeynerRico @FelixUrquidi101 @joseCardona.jala @Sterbenn0126 @Dev-jcgi
+/.gitlab/ci/catalog.yml @HeynerRico @FelixUrquidi101 @joseCardona.jala @Sterbenn0126 @Dev-jcgi
 
 # Members: @DevisF @FelixUrquidi101 @SentinelaLPZ @elmerq225
 [Team B - order]
-/order-module/ @FelixUrquidi101 @Dev-jcgi
-/.gitlab/ci/order.yml @FelixUrquidi101 @Dev-jcgi
+/order-module/ @FelixUrquidi101 @HeynerRico @joseCardona.jala @Sterbenn0126 @Dev-jcgi
+/.gitlab/ci/order.yml @FelixUrquidi101 @HeynerRico @joseCardona.jala @Sterbenn0126 @Dev-jcgi
 
 # Members: @Julian.Sanchez0126 @joseCardona.jala @maria_perez_jala @andres_vz66
 [Team A - delivery]
-/delivery-module/ @joseCardona.jala @Dev-jcgi
-/.gitlab/ci/delivery.yml @joseCardona.jala @Dev-jcgi
+/delivery-module/ @joseCardona.jala @HeynerRico @FelixUrquidi101 @Sterbenn0126 @Dev-jcgi
+/.gitlab/ci/delivery.yml @joseCardona.jala @HeynerRico @FelixUrquidi101 @Sterbenn0126 @Dev-jcgi
 
 # Members: @Sterbenn0126 @Estrella05 @JefersonC-Jala
 [Team D - payment]
-/payment-module/ @Sterbenn0126 @Dev-jcgi
-/.gitlab/ci/payment.yml @Sterbenn0126 @Dev-jcgi
+/payment-module/ @Sterbenn0126 @HeynerRico @FelixUrquidi101 @joseCardona.jala @Dev-jcgi
+/.gitlab/ci/payment.yml @Sterbenn0126 @HeynerRico @FelixUrquidi101 @joseCardona.jala @Dev-jcgi
 
 ^[Practitioner]
 /core-module/ @Dev-jcgi
