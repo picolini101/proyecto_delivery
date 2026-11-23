@@ -1,11 +1,11 @@
 # Shared job templates. Each module job extends one of them and sets MODULE.
 
 # Static analysis (linter). Runs on the sources only, so it needs no other job.
-# Sprint 4 (16-22 Nov): it only reports (allow_failure). From the Sprint 4 close it fails the pipeline.
+# Since the Sprint 4 close (23 Nov) it fails the pipeline: a module must reach main with 0 violations.
+# Each team adds its lint-<module> job in its own .gitlab/ci/<module>.yml.
 .module-lint:
   stage: lint
   needs: []
-  allow_failure: true
   variables:
     LINT_GOAL: "checkstyle:check"
   script:
