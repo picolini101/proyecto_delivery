@@ -7,13 +7,17 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import lombok.RequiredArgsConstructor;
 import org.jala.edu.catalog.application.dto.CommerceSummary;
 import org.jala.edu.catalog.application.dto.EnableCommerceResult;
 import org.jala.edu.catalog.application.port.in.EnableCommerceCommand;
 import org.jala.edu.catalog.application.port.in.ListCommercesQuery;
+import org.jala.edu.catalog.application.port.in.DeleteCommerceCommand;
 import org.jala.edu.catalog.application.usecase.EnableCommerceUseCase;
 import org.jala.edu.catalog.application.usecase.ListCommercesUseCase;
+import org.jala.edu.catalog.application.usecase.DeleteCommerceUseCase;
 import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
 import org.jala.edu.core.infrastructure.ui.DisplayFormat;
@@ -39,6 +43,7 @@ public class ManageCommercesController {
     private final EnableCommerceUseCase enableCommerceUseCase;
     private final CurrentUserService currentUserService;
     private final ChangeCommerceStatusUseCase changeCommerceStatusUseCase;
+    private final DeleteCommerceUseCase deleteCommerceUseCase;
 
     @FXML
     private TableView<CommerceSummary> commercesTable;
@@ -62,6 +67,9 @@ public class ManageCommercesController {
     private Button enableButton;
 
     @FXML
+    private Button deleteButton;
+
+    @FXML
     private Label messageLabel;
 
     @FXML
@@ -79,6 +87,9 @@ public class ManageCommercesController {
                 .bind(commercesTable.getSelectionModel().selectedItemProperty().isNull());
         disableButton.disableProperty()
                 .bind(commercesTable.getSelectionModel().selectedItemProperty().isNull());
+
+        deleteButton.disableProperty()
+        .bind(commercesTable.getSelectionModel().selectedItemProperty().isNull());
 
         reload(null, "info");
     }
@@ -132,6 +143,45 @@ public class ManageCommercesController {
                 id -> reload("Commerce " + selected.name() + " disabled.", "success"),
                 error -> MessageLabels.show(messageLabel,
                         ErrorMessages.of(error, "disable the commerce"), "error"));
+    }
+
+    /** Elimina el comercio seleccionado después de confirmar la acción. */
+    @FXML
+    void onDelete() {
+        CommerceSummary selected = commercesTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            return;
+        }
+
+        String productLabel = selected.productCount() == 1
+                ? "1 producto"
+                : selected.productCount() + " productos";
+
+        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmation.setTitle("Eliminar comercio");
+        confirmation.setHeaderText("¿Eliminar " + selected.name() + "?");
+        confirmation.setContentText(
+                "Esta acción eliminará permanentemente este comercio, "
+                        + productLabel + " y su inventario.\n\n"
+                        + "Esta operación no se puede deshacer.");
+
+        confirmation.getButtonTypes().setAll(
+                new ButtonType("Cancelar", ButtonType.CANCEL.getButtonData()),
+                new ButtonType("Eliminar", ButtonType.OK.getButtonData()));
+
+        confirmation.showAndWait().ifPresent(response -> {
+            if (response.getButtonData() == ButtonType.OK.getButtonData()) {
+                BackgroundTasks.run(
+                        () -> deleteCommerceUseCase.execute(new DeleteCommerceCommand(
+                                currentUserService.currentUser().id(), selected.id())),
+                        result -> reload("Comercio " + selected.name() + " eliminado.", "success"),
+                        error -> {
+                            String message = ErrorMessages.of(error, "eliminar el comercio");
+                            MessageLabels.show(messageLabel, message, "error");
+                            new Alert(Alert.AlertType.ERROR, message).showAndWait();
+                        });
+            }
+        });
     }
 
     /** Carga los comercios; luego muestra {@code message}, o el conteo si es {@code null}. */

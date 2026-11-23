@@ -21,6 +21,7 @@
         <Button fx:id="refreshButton" text="Refresh" onAction="#onRefresh"/>
         <Button fx:id="enableButton" styleClass="primary" text="Enable" onAction="#onEnable"/>
         <Button fx:id="disableButton" text="Disable" onAction="#onDisable"/>
+        <Button fx:id="deleteButton" text="Delete" onAction="#onDelete"/>
     </HBox>
 
     <TableView fx:id="commercesTable" VBox.vgrow="ALWAYS">
