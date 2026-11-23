@@ -106,6 +106,34 @@ class DeleteCommerceUseCaseTest {
         assertThat(storedBurger.getStock()).isEqualTo(7);
     }
 
+    @Test
+    void restoresCommerceAndProductsWhenProductDeletionFails() {
+        InMemoryProductRepositoryAdapter failingRepository =
+                new InMemoryProductRepositoryAdapter() {
+                    @Override
+                    public void deleteAllByCommerceId(UUID commerceId) {
+                        super.deleteAllByCommerceId(commerceId);
+                        throw new IllegalStateException("Deletion failed");
+                    }
+                };
+
+        Product pizza = saveProduct(commerce, "Pizza", "Comida", 10);
+        failingRepository.save(pizza);
+
+        DeleteCommerceUseCase useCase = new DeleteCommerceUseCase(
+                commerceRepository, failingRepository, new FallbackUserService());
+
+        Throwable thrown = catchThrowable(
+                () -> useCase.execute(commandFor(SampleUsers.ADMIN, commerce)));
+
+        assertThat(thrown)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Deletion failed");
+
+        assertThat(commerceRepository.existsById(commerce.getId())).isTrue();
+        assertThat(failingRepository.existsById(pizza.getId())).isTrue();
+    }
+
     private Product saveProduct(Commerce owner, String name, String category, int stock) {
         Product product = Product.register(
                 owner.getId().value(), name, category, new BigDecimal("50.00"));
