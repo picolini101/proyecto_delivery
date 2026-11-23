@@ -29,6 +29,7 @@ import org.jala.edu.order.application.usecase.orders.InputAddressUseCase;
 import org.jala.edu.order.application.usecase.orders.CancelOrderUseCase;
 import org.jala.edu.order.application.usecase.orders.ConsultarPedidosUseCase;
 import org.jala.edu.order.application.usecase.orders.GetOrderDetailUseCase;
+import org.jala.edu.order.application.usecase.orders.FindReadyForDeliveryUseCase;
 import org.jala.edu.order.application.usecase.orders.GetOrderTrackingUseCase;
 import org.jala.edu.order.application.usecase.orders.InputAddressUseCase;
 import org.jala.edu.order.application.usecase.orders.ListConfirmedOrdersByMerchantUseCase;
@@ -102,10 +103,7 @@ public class OrderModuleConfiguration {
         return new CartVerifier(catalog);
     }
 
-    @Bean
-    public FindReadyForDeliveryUseCase findReadyForDeliveryUseCase(OrderRepositoryPort orders) {
-        return new FindReadyForDeliveryUseCase(orders);
-    }
+
 
     @Bean
     public MarkOrderAssignedUseCase markOrderAssignedUseCase(OrderRepositoryPort orders,
@@ -201,6 +199,18 @@ public class OrderModuleConfiguration {
             OrderRepositoryPort orders, ChangeOrderStatusUseCase changeOrderStatus,
             CatalogService catalog, UserService users) {
         return new MarkOrderReadyForDeliveryUseCase(orders, changeOrderStatus, catalog, users);
+    }
+
+    @Bean
+    public FindReadyForDeliveryUseCase findReadyForDeliveryUseCase(OrderRepositoryPort orders) {
+        return new FindReadyForDeliveryUseCase(orders);
+    }
+
+    @Bean
+    public OrderService orderService(FindReadyForDeliveryUseCase findReadyForDelivery,
+                                     ChangeOrderStatusUseCase changeOrderStatus,
+                                     CurrentUserService currentUserService) {
+        return new OrderServiceAdapter(findReadyForDelivery, changeOrderStatus, currentUserService);
     }
 
     @Bean
