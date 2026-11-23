@@ -20,7 +20,6 @@
     <properties>
         <java.version>25</java.version>
         <javafx.version>25</javafx.version>
-        <!-- Install core-module first (./mvnw install in its repository) -->
         <core-module.version>0.0.1-SNAPSHOT</core-module.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -88,7 +87,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <!-- JDK 23+ no longer discovers annotation processors on the classpath automatically -->
                     <annotationProcessorPaths>
                         <path>
                             <groupId>org.projectlombok</groupId>
@@ -99,7 +97,27 @@
                 </configuration>
             </plugin>
 
-            <!-- Cobertura de pruebas unitarias -->
+            <!-- Análisis estático de código: Checkstyle (Lab 8) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+                <version>3.6.0</version>
+                <configuration>
+                    <configLocation>config/checkstyle.xml</configLocation>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <consoleOutput>true</consoleOutput>
+                    <violationSeverity>warning</violationSeverity>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>14.4.0</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <!-- Cobertura de pruebas unitarias: JaCoCo -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
