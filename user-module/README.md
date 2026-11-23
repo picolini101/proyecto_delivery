@@ -46,7 +46,7 @@ Depends on `core-module`, so install that first (`./mvnw install` in its reposit
 ./mvnw install
 ```
 
-Installs `org.jala.edu:user-module:0.0.1-SNAPSHOT` into `~/.m2` for `delivery-system`. Tests need no database:
+Installs `org.jala.edu:user-module:1.0.0` into `~/.m2` for `delivery-system`. Tests need no database:
 the JPA adapter runs against H2 in MySQL mode with the real Flyway migration. Requires JDK 25.
 
 The architecture of the whole system is described in the `delivery-system` repository README.

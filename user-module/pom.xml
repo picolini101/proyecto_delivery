@@ -13,7 +13,7 @@
 
     <groupId>org.jala.edu</groupId>
     <artifactId>user-module</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>user-module</name>
     <description>User management bounded context of the delivery system</description>
 

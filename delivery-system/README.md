@@ -319,7 +319,7 @@ application: it depends on the other modules, assembles them and starts the Java
 | `delivery-system`  | `org.jala.edu`        | Desktop application: assembles every module and launches the JavaFX UI   | Done |
 
 Business modules depend only on `core-module`, never on each other. Only `delivery-system` depends on all of them.
-Modules share their jars through the local Maven repository (`~/.m2`), as `org.jala.edu:<module>:0.0.1-SNAPSHOT`;
+Modules share their jars through the local Maven repository (`~/.m2`), as `org.jala.edu:<module>:<version>`;
 the versions used are properties in this `pom.xml` (`core-module.version`, `user-module.version`,
 `catalog-module.version`, `order-module.version`, `delivery-module.version`, `payment-module.version`).
 
