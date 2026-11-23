@@ -1,0 +1,65 @@
+# Lab 9: release of the product with GitHub Flow. Owned by the practitioner.
+# main is the only long-lived branch: each module moves to the release version in a short branch
+# FEAT-<issue>/release/<module>-X.Y.Z merged into main, and the tag vX.Y.Z on the rehearsed main commit
+# publishes the GitLab Release, like the tags that close each sprint.
+
+# Lists every pom.xml that still has another version or a SNAPSHOT dependency.
+# On the release branches and on main it only warns; on the tag it blocks the release.
+check-release-versions:
+  stage: lint
+  needs: []
+  variables:
+    RELEASE_VERSION: "1.0.0"
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+    - if: $CI_COMMIT_BRANCH =~ /\/release\// || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      allow_failure: true
+  script:
+    - sh .gitlab/ci/check-release-versions.sh
+
+# Publishes the GitLab Release with the assembled application and the jar of each module.
+# It keeps those files (expire_in: never); the other jobs' artifacts expire after a week.
+release-system:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/cli:latest
+  needs:
+    - check-release-versions
+    - job: assemble-system
+      artifacts: true
+    - job: build-core
+      artifacts: true
+    - job: build-user
+      artifacts: true
+    - job: build-catalog
+      artifacts: true
+    - job: build-order
+      artifacts: true
+    - job: build-delivery
+      artifacts: true
+    - job: build-payment
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+  script:
+    - ls delivery-system/target/delivery-system.jar */target/*-module-*.jar
+  artifacts:
+    paths:
+      - delivery-system/target/delivery-system.jar
+      - "*/target/*-module-*.jar"
+    expire_in: never
+  release:
+    tag_name: $CI_COMMIT_TAG
+    name: "Delivery System $CI_COMMIT_TAG"
+    description: |
+      Delivery System $CI_COMMIT_TAG: the application assembled from the six modules.
+
+      Release notes of each module (stories, fixed bugs, coverage, contracts and how to run it):
+      wiki → Modulos → <module> → Release-1.0.0.
+
+      Run: `cd delivery-system && docker compose up -d && ./mvnw javafx:run -Pjpa`
+    assets:
+      links:
+        - name: delivery-system.jar
+          url: "$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/raw/delivery-system/target/delivery-system.jar"
+        - name: Module jars
+          url: "$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/browse"
