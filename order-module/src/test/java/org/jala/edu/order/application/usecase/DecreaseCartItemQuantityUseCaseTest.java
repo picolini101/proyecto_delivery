@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.UUID;
 
+import org.jala.edu.core.contract.SampleCatalog;
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.core.domain.exception.NotFoundException;
@@ -20,7 +21,7 @@ import org.junit.jupiter.api.Test;
 class DecreaseCartItemQuantityUseCaseTest {
 
     /** Producto de prueba con stock 10. */
-    private static final UUID PRODUCT = FallbackCatalogService.AVAILABLE_PRODUCT;
+    private static final UUID PRODUCT = SampleCatalog.PIZZA;
 
     /** Repositorio que se comparte entre los dos casos de uso. */
     private InMemoryCartRepositoryAdapter carts;

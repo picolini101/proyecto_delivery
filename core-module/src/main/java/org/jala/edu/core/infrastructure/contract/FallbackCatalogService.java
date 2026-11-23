@@ -20,16 +20,6 @@ import org.jala.edu.core.domain.exception.NotFoundException;
  */
 public class FallbackCatalogService implements CatalogService {
 
-    /** @deprecated use {@link SampleCatalog#COMMERCE}, which {@code catalog-module} also stores (#87). */
-    @Deprecated(forRemoval = true)
-    public static final UUID SAMPLE_COMMERCE = SampleCatalog.COMMERCE;
-    /** @deprecated use {@link SampleCatalog#PIZZA}, which {@code catalog-module} also stores (#87). */
-    @Deprecated(forRemoval = true)
-    public static final UUID AVAILABLE_PRODUCT = SampleCatalog.PIZZA;
-    /** @deprecated use {@link SampleCatalog#EMPANADA}, which {@code catalog-module} also stores (#87). */
-    @Deprecated(forRemoval = true)
-    public static final UUID SOLD_OUT_PRODUCT = SampleCatalog.EMPANADA;
-
     private static final Map<UUID, ProductInfo> PRODUCTS = Map.of(
             SampleCatalog.PIZZA, new ProductInfo(SampleCatalog.PIZZA, SampleCatalog.COMMERCE, SampleCatalog.PIZZA_NAME,
                     SampleCatalog.PIZZA_PRICE),

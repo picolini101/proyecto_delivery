@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
+import org.jala.edu.core.contract.SampleCatalog;
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.infrastructure.contract.FallbackCatalogService;
 import org.jala.edu.order.domain.exception.ProductUnavailableException;
@@ -21,10 +22,10 @@ import org.junit.jupiter.api.Test;
 class CartVerifierTest {
 
     /** Producto de prueba con stock 10. */
-    private static final UUID PRODUCT = FallbackCatalogService.AVAILABLE_PRODUCT;
+    private static final UUID PRODUCT = SampleCatalog.PIZZA;
 
     /** Producto de prueba agotado. */
-    private static final UUID SOLD_OUT = FallbackCatalogService.SOLD_OUT_PRODUCT;
+    private static final UUID SOLD_OUT = SampleCatalog.EMPANADA;
 
     /** Comercio de prueba (el verificador no lo usa, pero el carrito lo pide). */
     private static final UUID COMMERCE = UUID.randomUUID();

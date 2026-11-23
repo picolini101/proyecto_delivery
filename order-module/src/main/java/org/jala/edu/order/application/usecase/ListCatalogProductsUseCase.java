@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.jala.edu.core.contract.CatalogService;
 import org.jala.edu.core.contract.ProductInfo;
-import org.jala.edu.core.infrastructure.contract.FallbackCatalogService;
+import org.jala.edu.core.contract.SampleCatalog;
 
 /**
  * Caso de uso: obtener los productos que se ofrecen al armar un carrito.
@@ -19,8 +19,8 @@ public class ListCatalogProductsUseCase {
 
     /** Ids de los productos de prueba que se van a mostrar (uno disponible y uno agotado). */
     private static final List<UUID> KNOWN_PRODUCTS = List.of(
-            FallbackCatalogService.AVAILABLE_PRODUCT,
-            FallbackCatalogService.SOLD_OUT_PRODUCT);
+            SampleCatalog.PIZZA,
+            SampleCatalog.EMPANADA);
 
     /** Para consultar cada producto por su id. */
     private final CatalogService catalog;

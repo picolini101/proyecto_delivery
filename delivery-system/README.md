@@ -419,8 +419,8 @@ modify `core-module`; a contract change is requested to the practitioner with th
   - **Every team**: use `SampleCatalog` in tests and sample screens, not ids of your own. If a story changes what a
     product or commerce needs (a new field, a new status), update the sample data in the same MR: ask the
     practitioner to change `SampleCatalog` and the fallback, and keep the `catalog-module` loader in step.
-  - `FallbackCatalogService.AVAILABLE_PRODUCT`, `SOLD_OUT_PRODUCT` and `SAMPLE_COMMERCE` still work but are
-    deprecated: switch to `SampleCatalog.PIZZA`, `EMPANADA` and `COMMERCE`.
+  - The old aliases `FallbackCatalogService.AVAILABLE_PRODUCT`, `SOLD_OUT_PRODUCT` and `SAMPLE_COMMERCE` were removed
+    (#145): use `SampleCatalog.PIZZA`, `EMPANADA` and `COMMERCE`.
 
 ### Domain-driven files
 
