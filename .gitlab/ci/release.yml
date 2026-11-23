@@ -1,7 +1,7 @@
 # Lab 9: release of the product with GitHub Flow. Owned by the practitioner.
 # main is the only long-lived branch: each module moves to the release version in a short branch
 # FEAT-<issue>/release/<module>-X.Y.Z merged into main, and the tag vX.Y.Z on the rehearsed main commit
-# publishes the GitLab Release, like the tags that close each sprint.
+# publishes the GitLab Release. Sprint tags (v0.x.y) do not run these jobs.
 
 # Lists every pom.xml that still has another version or a SNAPSHOT dependency.
 # On the release branches and on main it only warns; on the tag it blocks the release.
@@ -11,7 +11,7 @@ check-release-versions:
   variables:
     RELEASE_VERSION: "1.0.0"
   rules:
-    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+    - if: $CI_COMMIT_TAG =~ /^v[1-9]\d*\.\d+\.\d+$/
     - if: $CI_COMMIT_BRANCH =~ /\/release\// || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       allow_failure: true
   script:
@@ -39,7 +39,7 @@ release-system:
     - job: build-payment
       artifacts: true
   rules:
-    - if: $CI_COMMIT_TAG =~ /^v\d+\.\d+\.\d+$/
+    - if: $CI_COMMIT_TAG =~ /^v[1-9]\d*\.\d+\.\d+$/
   script:
     - ls delivery-system/target/delivery-system.jar */target/*-module-*.jar
   artifacts:
