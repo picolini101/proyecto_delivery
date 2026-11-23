@@ -119,6 +119,15 @@ public class CatalogModuleConfiguration {
                 commerceRepositoryPort, productRepositoryPort, userService);
     }
 
+    @Bean
+    public DeleteCommerceUseCase deleteCommerceUseCase(
+            CommerceRepositoryPort commerceRepositoryPort,
+            ProductRepositoryPort productRepositoryPort,
+            UserService userService) {
+        return new DeleteCommerceUseCase(
+                commerceRepositoryPort, productRepositoryPort, userService);
+    }
+
     /// Criterio de búsqueda único para Manage products y el catálogo del cliente
     @Bean
     public TextMatchStrategy textMatchStrategy() {
