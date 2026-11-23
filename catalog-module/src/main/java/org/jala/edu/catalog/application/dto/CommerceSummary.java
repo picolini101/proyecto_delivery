@@ -9,5 +9,6 @@ public record CommerceSummary(
         String name,
         String address,
         String phone,
-        CommerceStatus status) {
+        CommerceStatus status,
+        long productCount) {
 }

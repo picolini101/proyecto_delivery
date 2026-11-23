@@ -104,8 +104,10 @@ public class CatalogModuleConfiguration {
 
     @Bean
     public ListCommercesUseCase listCommercesUseCase(
-            CommerceRepositoryPort commerceRepositoryPort) {
-        return new ListCommercesUseCase(commerceRepositoryPort);
+            CommerceRepositoryPort commerceRepositoryPort,
+            ProductRepositoryPort productRepositoryPort) {
+        return new ListCommercesUseCase(
+                commerceRepositoryPort, productRepositoryPort);
     }
 
     @Bean
