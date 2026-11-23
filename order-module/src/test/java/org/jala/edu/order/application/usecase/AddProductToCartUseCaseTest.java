@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.UUID;
 
+import org.jala.edu.core.contract.SampleCatalog;
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.domain.exception.ConflictException;
 import org.jala.edu.core.domain.exception.DomainException;
@@ -37,23 +38,23 @@ class AddProductToCartUseCaseTest {
     /** Un cliente activo agrega 2 unidades de un producto con stock: el carrito queda con 2. */
     @Test
     void addsAvailableProduct() {
-        Cart cart = useCase.execute(SampleUsers.CUSTOMER, FallbackCatalogService.AVAILABLE_PRODUCT, 2);
-        assertEquals(2, cart.quantityOf(FallbackCatalogService.AVAILABLE_PRODUCT));
+        Cart cart = useCase.execute(SampleUsers.CUSTOMER, SampleCatalog.PIZZA, 2);
+        assertEquals(2, cart.quantityOf(SampleCatalog.PIZZA));
     }
 
     /** Agregar dos veces el mismo producto suma las cantidades (3 + 4 = 7, que todavia cabe en el stock de 10). */
     @Test
     void sumsQuantityOnSecondAdd() {
-        useCase.execute(SampleUsers.CUSTOMER, FallbackCatalogService.AVAILABLE_PRODUCT, 3);
-        Cart cart = useCase.execute(SampleUsers.CUSTOMER, FallbackCatalogService.AVAILABLE_PRODUCT, 4);
-        assertEquals(7, cart.quantityOf(FallbackCatalogService.AVAILABLE_PRODUCT));
+        useCase.execute(SampleUsers.CUSTOMER, SampleCatalog.PIZZA, 3);
+        Cart cart = useCase.execute(SampleUsers.CUSTOMER, SampleCatalog.PIZZA, 4);
+        assertEquals(7, cart.quantityOf(SampleCatalog.PIZZA));
     }
 
     /** Pedir 11 unidades cuando el stock es 10 lanza ConflictException. */
     @Test
     void rejectsQuantityAboveStock() {
         try {
-            useCase.execute(SampleUsers.CUSTOMER, FallbackCatalogService.AVAILABLE_PRODUCT, 11);
+            useCase.execute(SampleUsers.CUSTOMER, SampleCatalog.PIZZA, 11);
             fail("Debia lanzar ConflictException");
         } catch (ConflictException e) {
             // Era lo esperado
@@ -64,7 +65,7 @@ class AddProductToCartUseCaseTest {
     @Test
     void rejectsSoldOutProduct() {
         try {
-            useCase.execute(SampleUsers.CUSTOMER, FallbackCatalogService.SOLD_OUT_PRODUCT, 1);
+            useCase.execute(SampleUsers.CUSTOMER, SampleCatalog.EMPANADA, 1);
             fail("Debia lanzar ConflictException");
         } catch (ConflictException e) {
             // Era lo esperado
@@ -75,7 +76,7 @@ class AddProductToCartUseCaseTest {
     @Test
     void rejectsInactiveCustomer() {
         try {
-            useCase.execute(SampleUsers.INACTIVE_CUSTOMER, FallbackCatalogService.AVAILABLE_PRODUCT, 1);
+            useCase.execute(SampleUsers.INACTIVE_CUSTOMER, SampleCatalog.PIZZA, 1);
             fail("Debia lanzar DomainException");
         } catch (DomainException e) {
             // Era lo esperado
