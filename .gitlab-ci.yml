@@ -4,6 +4,7 @@
 #
 # The jobs live in .gitlab/ci/ (Lab 8): one file per team module, owned by the team's
 # Scrum Master in CODEOWNERS, plus the shared templates and the practitioner's modules.
+# Lab 9: release.yml checks the module versions and publishes the release on the tag vX.Y.Z (GitHub Flow).
 
 image: eclipse-temurin:25-jdk
 
@@ -22,6 +23,7 @@ stages:
   - build-reference
   - build-modules
   - assemble
+  - release
 
 include:
   - local: .gitlab/ci/templates.yml
@@ -30,3 +32,4 @@ include:
   - local: .gitlab/ci/order.yml
   - local: .gitlab/ci/delivery.yml
   - local: .gitlab/ci/payment.yml
+  - local: .gitlab/ci/release.yml
