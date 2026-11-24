@@ -18,6 +18,7 @@
 
     <HBox styleClass="toolbar">
         <Label styleClass="page-title" text="Manage products"/>
+        <ComboBox fx:id="commerceFilter" prefWidth="200"/>
         <TextField fx:id="searchField" promptText="Search by name or category" prefColumnCount="20"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Label fx:id="messageLabel" styleClass="message"/>

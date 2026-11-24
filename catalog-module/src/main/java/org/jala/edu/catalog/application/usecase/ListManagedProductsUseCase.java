@@ -2,6 +2,7 @@ package org.jala.edu.catalog.application.usecase;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.jala.edu.catalog.application.dto.ManagedProduct;
 import org.jala.edu.catalog.application.port.in.ListManagedProductsQuery;
 import org.jala.edu.catalog.application.port.out.CommerceRepositoryPort;
@@ -32,9 +33,15 @@ public class ListManagedProductsUseCase
     @Override
     public List<ManagedProduct> execute(ListManagedProductsQuery query) {
         return productRepository.findAll().stream()
+                .filter(product -> belongsToCommerce(product, query.commerceId()))
                 .filter(product -> product.matches(query.searchText(), matchStrategy))
                 .map(this::toManagedProduct)
                 .toList();
+    }
+
+    /** Sin comercio ({@code null}) no se filtra; con comercio, solo pasan sus productos. */
+    private static boolean belongsToCommerce(Product product, UUID commerceId) {
+        return commerceId == null || commerceId.equals(product.getCommerceId());
     }
 
     private ManagedProduct toManagedProduct(Product product) {
