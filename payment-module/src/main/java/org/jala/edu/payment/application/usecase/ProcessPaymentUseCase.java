@@ -8,6 +8,7 @@ import org.jala.edu.core.contract.UserService;
 import org.jala.edu.payment.application.port.in.ProcessPaymentCommand;
 import org.jala.edu.payment.application.port.out.PaymentMethodValidationPort;
 import org.jala.edu.payment.application.port.out.PaymentTransactionPort;
+import org.jala.edu.payment.domain.validation.AmountValidator;
 
 public class ProcessPaymentUseCase {
 
@@ -42,11 +43,7 @@ public class ProcessPaymentUseCase {
             return reject(command, "El usuario es obligatorio");
         }
 
-        BigDecimal amount = command.amount();
-
-        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            return reject(command, "El monto debe ser mayor a cero");
-        }
+        BigDecimal amount = AmountValidator.validate(command.amount());
 
         if (amount.compareTo(MAX_AMOUNT) > 0) {
             return reject(command, "El monto excede el limite permitido");
