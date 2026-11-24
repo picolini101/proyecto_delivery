@@ -5,7 +5,15 @@ import org.jala.edu.order.application.port.in.MarkOrderCommand;
 import org.jala.edu.order.application.port.out.OrderRepositoryPort;
 import org.jala.edu.order.application.port.out.OrderStatusHistoryPort;
 import org.jala.edu.order.domain.exception.InvalidStateTransitionException;
-import org.jala.edu.order.domain.model.*;
+import org.jala.edu.order.domain.model.Order;
+import org.jala.edu.order.domain.model.OrderStatus;
+import org.jala.edu.order.domain.model.ProductId;
+import org.jala.edu.order.domain.model.Quantity;
+import org.jala.edu.order.domain.model.OrderLine;
+import org.jala.edu.order.domain.model.Money;
+import org.jala.edu.order.domain.model.CustomerId;
+import org.jala.edu.order.domain.model.OrderStatusChange;
+
 import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryOrderRepositoryAdapter;
 import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryOrderStatusHistoryAdapter;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +36,8 @@ public class MarkOrderDeliveredUseCaseTest {
     void setUp() {
         orderRepository = new InMemoryOrderRepositoryAdapter();
         statusHistory = new InMemoryOrderStatusHistoryAdapter();
-        ChangeOrderStatusUseCase changeStatusUseCase = new ChangeOrderStatusUseCase(orderRepository, statusHistory, TransactionRunner.direct());
+        ChangeOrderStatusUseCase changeStatusUseCase = new ChangeOrderStatusUseCase(
+                orderRepository, statusHistory, TransactionRunner.direct());
         useCase = new MarkOrderDeliveredUseCase(changeStatusUseCase);
     }
     @Test
@@ -77,7 +86,9 @@ public class MarkOrderDeliveredUseCaseTest {
                 || status == OrderStatus.ON_THE_WAY) {
             order.transitionTo(OrderStatus.CONFIRMED, null);
         }
-        if (status == OrderStatus.READY_FOR_DELIVERY || status == OrderStatus.ASSIGNED || status == OrderStatus.ON_THE_WAY) {
+        if (status == OrderStatus.READY_FOR_DELIVERY ||
+                status == OrderStatus.ASSIGNED || status
+                == OrderStatus.ON_THE_WAY) {
             order.transitionTo(OrderStatus.READY_FOR_DELIVERY, null);
         }
         if (status == OrderStatus.ASSIGNED || status == OrderStatus.ON_THE_WAY) {

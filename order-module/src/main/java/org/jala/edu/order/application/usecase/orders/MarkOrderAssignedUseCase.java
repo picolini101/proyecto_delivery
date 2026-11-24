@@ -1,7 +1,6 @@
 
 package org.jala.edu.order.application.usecase.orders;
 
-import org.jala.edu.core.application.port.out.TransactionRunner;
 import org.jala.edu.core.application.usecase.UseCase;
 import org.jala.edu.order.application.port.in.AssignedOrderCommand;
 import org.jala.edu.order.application.port.in.ChangeOrderStatusCommand;
