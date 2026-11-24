@@ -106,12 +106,12 @@ public class OrderMainController {
 
         // Btn detalle
         Button btnDetail = new Button("Ver Detalle");
-        btnDetail.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;");
+        btnDetail.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; " + "-fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;");
         btnDetail.setOnAction(e -> showDetailModal(summary.orderId()));
 
         // Btn estado
         Button btnStatus = new Button("Ver Estado");
-        btnStatus.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;");
+        btnStatus.setStyle("-fx-background-color: #10b981; -fx-text-fill: white" + "-fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;");
         btnStatus.setOnAction(e -> showTrackingModal(summary.orderId()));
 
         HBox statusAndButtons = new HBox(10, statusLabel, btnDetail, btnStatus);

@@ -1,7 +1,9 @@
 package org.jala.edu.order.application.usecase.orders;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.util.List;
@@ -14,7 +16,14 @@ import org.jala.edu.core.contract.UserService;
 import org.jala.edu.order.application.port.out.OrderRepositoryPort;
 import org.jala.edu.order.domain.exception.OrderNotFoundException;
 import org.jala.edu.order.domain.exception.UnauthorizedCustomerException;
-import org.jala.edu.order.domain.model.*;
+import org.jala.edu.order.domain.model.CustomerId;
+import org.jala.edu.order.domain.model.Money;
+import org.jala.edu.order.domain.model.Order;
+import org.jala.edu.order.domain.model.OrderId;
+import org.jala.edu.order.domain.model.OrderLine;
+import org.jala.edu.order.domain.model.OrderStatus;
+import org.jala.edu.order.domain.model.ProductId;
+import org.jala.edu.order.domain.model.Quantity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
