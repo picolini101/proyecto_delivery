@@ -34,7 +34,13 @@ import org.jala.edu.order.application.port.out.PaymentAuthorization;
 import org.jala.edu.order.application.usecase.orders.RegisterFailedPaymentUseCase;
 import org.jala.edu.order.application.port.in.InputAddressCommand;
 import org.jala.edu.order.application.port.in.StartCheckoutCommand;
-import org.jala.edu.order.application.usecase.*;
+import org.jala.edu.order.application.usecase.AddProductToCartUseCase;
+import org.jala.edu.order.application.usecase.CartSummary;
+import org.jala.edu.order.application.usecase.DecreaseCartItemQuantityUseCase;
+import org.jala.edu.order.application.usecase.GetCartSummaryUseCase;
+import org.jala.edu.order.application.usecase.IncreaseCartItemQuantityUseCase;
+import org.jala.edu.order.application.usecase.ListCatalogProductsUseCase;
+import org.jala.edu.order.application.usecase.RemoveProductFromCartUseCase;
 import org.jala.edu.order.application.usecase.orders.AuthorizePaymentUseCase;
 import org.jala.edu.order.application.usecase.orders.InputAddressUseCase;
 import org.jala.edu.order.application.usecase.orders.StartCheckoutUseCase;
@@ -180,18 +186,25 @@ public class NewCartController {
 
     @FXML void onShowCart() {
         clearMessage();
-        productsView.setVisible(false); productsView.setManaged(false);
-        cartView.setVisible(true); cartView.setManaged(true);
-        pageTitle.setVisible(false); pageTitle.setManaged(false);
-        showCartButton.setVisible(false); showCartButton.setManaged(false);
+        setVisibleAndManaged(productsView, false);
+        setVisibleAndManaged(cartView, true);
+        setVisibleAndManaged(pageTitle, false);
+        setVisibleAndManaged(showCartButton, false);
         refreshCart();
     }
+
     @FXML void onAddProduct() {
-        cartView.setVisible(false); cartView.setManaged(false);
-        productsView.setVisible(true); productsView.setManaged(true);
-        messageLabel.setVisible(false); messageLabel.setManaged(false);
-        pageTitle.setVisible(true); pageTitle.setManaged(true);
-        showCartButton.setVisible(true); showCartButton.setManaged(true);
+        setVisibleAndManaged(cartView, false);
+        setVisibleAndManaged(productsView, true);
+        setVisibleAndManaged(messageLabel, false);
+        setVisibleAndManaged(pageTitle, true);
+        setVisibleAndManaged(showCartButton, true);
+    }
+
+    /** Muestra u oculta un nodo y libera o reserva su espacio en el layout. */
+    private static void setVisibleAndManaged(javafx.scene.Node node, boolean visible) {
+        node.setVisible(visible);
+        node.setManaged(visible);
     }
 
     @FXML
@@ -233,28 +246,34 @@ public class NewCartController {
 
                     if (confirm) {
                         // Si el usuario acepta, procedemos con la creación de la orden y el pago
-                        BackgroundTasks.run(
-                                () -> startCheckout.execute(command),
-                                orderSummary -> {
-                                    lastOrderId = orderSummary.orderId();
-                                    refreshCart();
-                                    if (deliveryAddress != null) {
-                                        saveAddressForOrder(lastOrderId, deliveryAddress);
-                                    }
-                                    // Llamamos a tu método que muestra el modal verde de "Pago aprobado"
-                                    requestPayment();
-                                },
-                                error -> {
-                                    showError(error, "iniciar la compra");
-                                    checkoutButton.setDisable(false);
-                                }
-                        );
+                        placeOrder(command);
                     } else {
                         checkoutButton.setDisable(false);
                     }
                 },
                 error -> {
                     showError(error, "calcular el resumen");
+                    checkoutButton.setDisable(false);
+                }
+        );
+    }
+
+
+    /** Crea la orden y pasa al pago cuando el usuario confirma el resumen. */
+    private void placeOrder(StartCheckoutCommand command) {
+        BackgroundTasks.run(
+                () -> startCheckout.execute(command),
+                orderSummary -> {
+                    lastOrderId = orderSummary.orderId();
+                    refreshCart();
+                    if (deliveryAddress != null) {
+                        saveAddressForOrder(lastOrderId, deliveryAddress);
+                    }
+                    // Llamamos a tu metodo que muestra el modal verde de "Pago aprobado"
+                    requestPayment();
+                },
+                error -> {
+                    showError(error, "iniciar la compra");
                     checkoutButton.setDisable(false);
                 }
         );
@@ -335,6 +354,14 @@ public class NewCartController {
                 javafx.application.Platform.runLater(this::styleTableHeaders));
         setPrimaryButtonHover(tableAddProductButton);
         setPrimaryButtonHover(emptyAddProductButton);
+        configureRows();
+        configureDataColumns();
+        configureQuantityColumn();
+        configureActionColumn();
+        cartTable.setFixedCellSize(56);
+    }
+
+    private void configureRows() {
         cartTable.setRowFactory(table -> new javafx.scene.control.TableRow<>() {
             @Override protected void updateItem(CartSummary.Line item, boolean empty) {
                 super.updateItem(item, empty);
@@ -343,6 +370,9 @@ public class NewCartController {
                         : "-fx-background-color: #fbfdff; -fx-border-color: transparent transparent #eef2f7 transparent;"));
             }
         });
+    }
+
+    private void configureDataColumns() {
         numberColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(
                 data.getTableView().getItems().indexOf(data.getValue()) + 1));
         numberColumn.setCellFactory(column -> new TableCell<>() {
@@ -359,6 +389,9 @@ public class NewCartController {
         styleTextColumn(productColumn);
         styleTextColumn(unitPriceColumn);
         styleTextColumn(subtotalColumn);
+    }
+
+    private void configureQuantityColumn() {
         quantityColumn.setCellFactory(column -> new TableCell<>() {
             @Override protected void updateItem(Integer ignored, boolean empty) {
                 super.updateItem(ignored, empty);
@@ -369,7 +402,8 @@ public class NewCartController {
                 CartSummary.Line line = getTableView().getItems().get(getIndex());
                 HBox controls = new HBox(10);
                 controls.setAlignment(Pos.CENTER);
-                controls.setStyle("-fx-padding: 3 5; -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 9; -fx-background-radius: 9;");
+                controls.setStyle("-fx-padding: 3 5; -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; "
+                        + "-fx-border-radius: 9; -fx-background-radius: 9;");
                 Button minus = new Button("−");
                 styleStepperButton(minus);
                 minus.setDisable(line.quantity() <= 1);
@@ -383,6 +417,10 @@ public class NewCartController {
                 setGraphic(controls);
             }
         });
+        quantityColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().quantity()));
+    }
+
+    private void configureActionColumn() {
         // Configuracion de la columna de eliminacion (HU-02)
         actionColumn.setCellFactory(column -> new TableCell<>() {
             private final Button deleteButton = new Button("Eliminar");
@@ -434,14 +472,12 @@ public class NewCartController {
                 }
             }
         });
-
-        quantityColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleObjectProperty<>(data.getValue().quantity()));
-        cartTable.setFixedCellSize(56);
     }
 
     private void styleTableHeaders() {
         for (javafx.scene.Node header : cartTable.lookupAll(".column-header")) {
-            header.setStyle("-fx-background-color: #f1f5f9; -fx-size: 42px; -fx-border-color: transparent transparent #e2e8f0 transparent;");
+            header.setStyle("-fx-background-color: #f1f5f9; -fx-size: 42px; "
+                    + "-fx-border-color: transparent transparent #e2e8f0 transparent;");
         }
         for (javafx.scene.Node label : cartTable.lookupAll(".column-header .label")) {
             label.setStyle("-fx-text-fill: #334155; -fx-font-weight: bold; -fx-font-size: 12px;");
@@ -463,15 +499,20 @@ public class NewCartController {
     }
 
     private void setPrimaryButtonHover(Button button) {
-        String normal = "-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 11 24; -fx-background-radius: 9; -fx-cursor: hand;";
-        String hover = "-fx-background-color: #1d4ed8; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; -fx-padding: 11 24; -fx-background-radius: 9; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.25), 9, 0.15, 0, 3);";
+        String normal = "-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; "
+                + "-fx-padding: 11 24; -fx-background-radius: 9; -fx-cursor: hand;";
+        String hover = "-fx-background-color: #1d4ed8; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 14px; "
+                + "-fx-padding: 11 24; -fx-background-radius: 9; -fx-cursor: hand; "
+                + "-fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.25), 9, 0.15, 0, 3);";
         button.setOnMouseEntered(event -> button.setStyle(hover));
         button.setOnMouseExited(event -> button.setStyle(normal));
     }
 
     private void styleStepperButton(Button button) {
-        String normal = "-fx-background-color: #eff6ff; -fx-text-fill: #1d4ed8; -fx-font-weight: bold; -fx-font-size: 15px; -fx-min-width: 30px; -fx-min-height: 30px; -fx-background-radius: 7; -fx-cursor: hand;";
-        String hover = "-fx-background-color: #dbeafe; -fx-text-fill: #1d4ed8; -fx-font-weight: bold; -fx-font-size: 15px; -fx-min-width: 30px; -fx-min-height: 30px; -fx-background-radius: 7; -fx-cursor: hand;";
+        String normal = "-fx-background-color: #eff6ff; -fx-text-fill: #1d4ed8; -fx-font-weight: bold; -fx-font-size: 15px; "
+                + "-fx-min-width: 30px; -fx-min-height: 30px; -fx-background-radius: 7; -fx-cursor: hand;";
+        String hover = "-fx-background-color: #dbeafe; -fx-text-fill: #1d4ed8; -fx-font-weight: bold; -fx-font-size: 15px; "
+                + "-fx-min-width: 30px; -fx-min-height: 30px; -fx-background-radius: 7; -fx-cursor: hand;";
         button.setStyle(normal);
         button.setOnMouseEntered(event -> button.setStyle(hover));
         button.setOnMouseExited(event -> button.setStyle(normal));
@@ -681,7 +722,16 @@ public class NewCartController {
         return row;
     }
     private void changeLine(CartSummary.Line line, HBox controls, boolean increase) {
-        controls.setDisable(true); BackgroundTasks.run(() -> increase ? increaseQuantity.execute(currentUserService.currentUser().id(),line.productId(),1) : decreaseQuantity.execute(currentUserService.currentUser().id(),line.productId(),1), cart -> refreshCart(), error -> { showError(error,"actualizar cantidad"); controls.setDisable(false); });
+        controls.setDisable(true);
+        BackgroundTasks.run(
+                () -> increase
+                        ? increaseQuantity.execute(currentUserService.currentUser().id(), line.productId(), 1)
+                        : decreaseQuantity.execute(currentUserService.currentUser().id(), line.productId(), 1),
+                cart -> refreshCart(),
+                error -> {
+                    showError(error, "actualizar cantidad");
+                    controls.setDisable(false);
+                });
     }
     /**
      * Acorta un id para mostrarlo: devuelve solo los ultimos 4 caracteres.
@@ -714,8 +764,10 @@ public class NewCartController {
         messageLabel.getStyleClass().add(styleClass);
         messageLabel.setText(text);
         messageLabel.setStyle(styleClass.equals("error")
-                ? "-fx-padding: 9 14; -fx-background-color: #fef2f2; -fx-background-radius: 8; -fx-font-size: 13px; -fx-text-fill: #b91c1c;"
-                : "-fx-padding: 9 14; -fx-background-color: #eff6ff; -fx-background-radius: 8; -fx-font-size: 13px; -fx-text-fill: #15803d;");
+                ? "-fx-padding: 9 14; -fx-background-color: #fef2f2; -fx-background-radius: 8; "
+                        + "-fx-font-size: 13px; -fx-text-fill: #b91c1c;"
+                : "-fx-padding: 9 14; -fx-background-color: #eff6ff; -fx-background-radius: 8; "
+                        + "-fx-font-size: 13px; -fx-text-fill: #15803d;");
         messageLabel.setVisible(true);
         messageLabel.setManaged(true);
         PauseTransition timeout = new PauseTransition(Duration.seconds(3));

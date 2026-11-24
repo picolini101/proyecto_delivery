@@ -3,11 +3,9 @@ package org.jala.edu.order.application.usecase.orders;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import java.util.List;
 import java.util.UUID;
 import org.jala.edu.core.contract.SampleCatalog;
 import org.jala.edu.core.contract.SampleUsers;
-import org.jala.edu.core.contract.UserRole;
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.core.infrastructure.contract.FallbackCatalogService;
 import org.jala.edu.core.infrastructure.contract.FallbackUserService;

@@ -1,12 +1,5 @@
 package org.jala.edu.order.application.usecase.orders;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.UUID;
-
 import org.jala.edu.core.contract.UserRole;
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.order.application.dto.CheckoutSummary;
@@ -22,6 +15,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
 class PreviewCheckoutSummaryUseCaseTest {
 
@@ -36,8 +40,8 @@ class PreviewCheckoutSummaryUseCaseTest {
 
     private PreviewCheckoutSummaryUseCase useCase;
 
-    private final UUID CUSTOMER_ID = UUID.randomUUID();
-    private final UUID PRODUCT_ID = UUID.randomUUID();
+    private static final UUID CUSTOMER_ID = UUID.randomUUID();
+    private static final UUID PRODUCT_ID = UUID.randomUUID();
 
     @BeforeEach
     void setUp() {

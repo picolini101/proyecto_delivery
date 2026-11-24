@@ -1,7 +1,5 @@
 package org.jala.edu.order.application.dto;
 
-import org.jala.edu.order.domain.model.*;
-
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;

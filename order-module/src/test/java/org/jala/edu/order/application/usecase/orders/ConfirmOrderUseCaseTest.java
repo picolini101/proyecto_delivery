@@ -13,7 +13,6 @@ import org.jala.edu.order.application.dto.PaymentAttempt;
 import org.jala.edu.order.application.port.in.ConfirmOrderCommand;
 import org.jala.edu.order.application.port.out.PaymentAuthorization;
 import org.jala.edu.order.domain.exception.InvalidStateTransitionException;
-import org.jala.edu.order.domain.exception.UnauthorizedCustomerException;
 import org.jala.edu.order.domain.model.CustomerId;
 import org.jala.edu.order.domain.model.Money;
 import org.jala.edu.order.domain.model.Order;

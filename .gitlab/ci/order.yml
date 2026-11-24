@@ -18,10 +18,9 @@ build-order:
       - order-module/target/site/jacoco/
       - .m2/repository/org/jala/edu/order-module/
 
-# Linter (Lab 8, Activity 1). Uncomment after configuring the chosen tool in order-module/pom.xml.
-# LINT_GOAL is the Maven goal of that tool, for example checkstyle:check, pmd:check or spotbugs:check.
-# lint-order:
-#   extends: .module-lint
-#   variables:
-#     MODULE: order-module
-#     LINT_GOAL: "checkstyle:check"
+# Linter (Lab 8, Activity 1): Checkstyle, same rules as core-module and user-module.
+lint-order:
+  extends: .module-lint
+  variables:
+    MODULE: order-module
+    LINT_GOAL: "checkstyle:check"

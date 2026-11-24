@@ -1,6 +1,8 @@
 package org.jala.edu.order.application.usecase;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -8,7 +10,6 @@ import java.util.UUID;
 import org.jala.edu.core.contract.SampleCatalog;
 import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.infrastructure.contract.FallbackCatalogService;
-import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.order.domain.exception.ProductNotFoundInCartException;
 import org.jala.edu.order.domain.model.Cart;
 import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryCartRepositoryAdapter;

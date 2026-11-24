@@ -2,7 +2,6 @@ package org.jala.edu.order.domain.exception;
 
 import org.jala.edu.core.domain.exception.DomainException;
 
-import java.math.BigDecimal;
 
 public class InvalidQuantityValueException extends DomainException {
 

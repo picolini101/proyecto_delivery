@@ -1,7 +1,12 @@
 package org.jala.edu.order.infrastructure.adapter.out.persistence.jpa;
 
 import org.jala.edu.core.infrastructure.persistence.jpa.PersistenceMapper;
-import org.jala.edu.order.domain.model.*;
+import org.jala.edu.order.domain.model.CustomerId;
+import org.jala.edu.order.domain.model.DeliveryAddress;
+import org.jala.edu.order.domain.model.Money;
+import org.jala.edu.order.domain.model.Order;
+import org.jala.edu.order.domain.model.OrderId;
+import org.jala.edu.order.domain.model.OrderStatus;
 import org.jala.edu.core.infrastructure.config.ConditionalOnJpaPersistence;
 import org.springframework.stereotype.Component;
 
