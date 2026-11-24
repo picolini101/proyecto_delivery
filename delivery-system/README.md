@@ -388,7 +388,7 @@ modify `core-module`; a contract change is requested to the practitioner with th
   | `FallbackUserService` | the `SampleUsers` below |
   | `FallbackCatalogService` | the `SampleCatalog` below |
   | `FallbackPaymentService` | with any payment method, approves amounts above 0 up to 1000.00; rejects a missing method |
-  | `FallbackOrderService` | three orders ready for delivery, shipping cost 10.00 |
+  | `FallbackOrderService` | eight orders ready for delivery, shipping cost 10.00 |
 
 - **Sample users** (`SampleUsers`): `user-module` stores them at startup, so the same ids work with the real service.
 

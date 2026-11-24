@@ -7,11 +7,12 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jala.edu.core.contract.OrderService;
 import org.jala.edu.core.contract.ReadyOrder;
+import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.domain.exception.ConflictException;
 import org.jala.edu.core.domain.exception.NotFoundException;
 
 /**
- * Stand-in {@link OrderService} that starts with three orders ready for delivery and enforces the delivery steps
+ * Stand-in {@link OrderService} that starts with sample orders ready for delivery and enforces the delivery steps
  * in memory. State is lost when the application stops.
  */
 public class FallbackOrderService implements OrderService {
@@ -19,12 +20,18 @@ public class FallbackOrderService implements OrderService {
     private static final BigDecimal SHIPPING_COST = new BigDecimal("10.00");
 
     private final Map<UUID, ReadyOrder> orders = new ConcurrentHashMap<>();
+    private final Map<UUID, UUID> customers = new ConcurrentHashMap<>();
     private final Map<UUID, Step> steps = new ConcurrentHashMap<>();
 
     public FallbackOrderService() {
         addReadyOrder("00000000-0000-0000-0000-000000000201", "Av. Siempre Viva 742");
         addReadyOrder("00000000-0000-0000-0000-000000000202", "Calle Falsa 123");
         addReadyOrder("00000000-0000-0000-0000-000000000203", "Plaza Principal 1");
+        addReadyOrder("00000000-0000-0000-0000-000000000204", "Carrera 7 # 45-10");
+        addReadyOrder("00000000-0000-0000-0000-000000000205", "Calle 80 # 12-34");
+        addReadyOrder("00000000-0000-0000-0000-000000000206", "Av. Las Palmas 50");
+        addReadyOrder("00000000-0000-0000-0000-000000000207", "Diagonal 15 # 90-20");
+        addReadyOrder("00000000-0000-0000-0000-000000000208", "Carrera 15 # 100-21");
     }
 
     @Override
@@ -32,6 +39,14 @@ public class FallbackOrderService implements OrderService {
         return orders.values().stream()
                 .filter(order -> steps.get(order.orderId()) == Step.READY)
                 .toList();
+    }
+
+    @Override
+    public UUID customerOf(UUID orderId) {
+        if (!customers.containsKey(orderId)) {
+            throw new NotFoundException("Order not found: " + orderId);
+        }
+        return customers.get(orderId);
     }
 
     @Override
@@ -49,9 +64,20 @@ public class FallbackOrderService implements OrderService {
         advance(orderId, Step.ON_THE_WAY, Step.DELIVERED);
     }
 
+    @Override
+    public void cancel(UUID orderId) {
+        advance(orderId, Step.ON_THE_WAY, Step.CANCELLED);
+    }
+
+    @Override
+    public void release(UUID orderId) {
+        advance(orderId, Step.ON_THE_WAY, Step.READY);
+    }
+
     private void addReadyOrder(String id, String address) {
         UUID orderId = UUID.fromString(id);
         orders.put(orderId, new ReadyOrder(orderId, address, SHIPPING_COST));
+        customers.put(orderId, SampleUsers.CUSTOMER);
         steps.put(orderId, Step.READY);
     }
 
@@ -68,6 +94,7 @@ public class FallbackOrderService implements OrderService {
         READY,
         ASSIGNED,
         ON_THE_WAY,
-        DELIVERED
+        DELIVERED,
+        CANCELLED
     }
 }

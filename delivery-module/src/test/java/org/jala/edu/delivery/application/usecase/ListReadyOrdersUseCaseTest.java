@@ -31,7 +31,15 @@ class ListReadyOrdersUseCaseTest {
         // Assert
         assertThat(ready).extracting(ReadyOrderSummary::orderId).isSorted();
         assertThat(ready).extracting(ReadyOrderSummary::deliveryAddress)
-                .containsExactlyInAnyOrder("Av. Siempre Viva 742", "Calle Falsa 123", "Plaza Principal 1");
+                .containsExactlyInAnyOrder(
+                        "Av. Siempre Viva 742",
+                        "Calle Falsa 123",
+                        "Plaza Principal 1",
+                        "Carrera 7 # 45-10",
+                        "Calle 80 # 12-34",
+                        "Av. Las Palmas 50",
+                        "Diagonal 15 # 90-20",
+                        "Carrera 15 # 100-21");
         assertThat(ready).allSatisfy(summary -> {
             ReadyOrder source = orders.findReadyForDelivery().stream()
                     .filter(order -> order.orderId().equals(summary.orderId()))

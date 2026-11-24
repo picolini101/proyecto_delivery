@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import java.util.List;
 import java.util.UUID;
 import org.jala.edu.core.contract.ReadyOrder;
+import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.domain.exception.ConflictException;
 import org.jala.edu.core.domain.exception.NotFoundException;
 import org.junit.jupiter.api.Test;
@@ -15,14 +16,22 @@ class FallbackOrderServiceTest {
     private final FallbackOrderService orderService = new FallbackOrderService();
 
     @Test
-    void startsWithThreeReadyOrders() {
+    void startsWithTheSampleReadyOrders() {
         // Arrange (fresh service)
 
         // Act
         List<ReadyOrder> ready = orderService.findReadyForDelivery();
 
         // Assert
-        assertThat(ready).hasSize(3);
+        assertThat(ready).extracting(ReadyOrder::deliveryAddress).containsExactlyInAnyOrder(
+                "Av. Siempre Viva 742",
+                "Calle Falsa 123",
+                "Plaza Principal 1",
+                "Carrera 7 # 45-10",
+                "Calle 80 # 12-34",
+                "Av. Las Palmas 50",
+                "Diagonal 15 # 90-20",
+                "Carrera 15 # 100-21");
     }
 
     @Test
@@ -55,6 +64,44 @@ class FallbackOrderServiceTest {
     }
 
     @Test
+    void cancelsAnOrderThatIsOnTheWay() {
+        // Arrange
+        UUID orderId = orderOnTheWay();
+
+        // Act
+        orderService.cancel(orderId);
+
+        // Assert
+        assertThat(orderService.findReadyForDelivery()).extracting(ReadyOrder::orderId).doesNotContain(orderId);
+        assertThat(catchThrowable(() -> orderService.markDelivered(orderId))).isInstanceOf(ConflictException.class);
+    }
+
+    @Test
+    void releasesAnOrderThatIsOnTheWaySoAnotherCourierCanTakeIt() {
+        // Arrange
+        UUID orderId = orderOnTheWay();
+
+        // Act
+        orderService.release(orderId);
+
+        // Assert
+        assertThat(orderService.findReadyForDelivery()).extracting(ReadyOrder::orderId).contains(orderId);
+        orderService.assign(orderId, UUID.randomUUID());
+    }
+
+    @Test
+    void sampleOrdersBelongToTheSampleCustomer() {
+        // Arrange
+        UUID orderId = firstReadyOrder();
+
+        // Act
+        UUID customerId = orderService.customerOf(orderId);
+
+        // Assert
+        assertThat(customerId).isEqualTo(SampleUsers.CUSTOMER);
+    }
+
+    @Test
     void throwsWhenTheOrderDoesNotExist() {
         // Arrange
         UUID unknown = UUID.randomUUID();
@@ -64,9 +111,17 @@ class FallbackOrderServiceTest {
 
         // Assert
         assertThat(thrown).isInstanceOf(NotFoundException.class);
+        assertThat(catchThrowable(() -> orderService.customerOf(unknown))).isInstanceOf(NotFoundException.class);
     }
 
     private UUID firstReadyOrder() {
         return orderService.findReadyForDelivery().getFirst().orderId();
+    }
+
+    private UUID orderOnTheWay() {
+        UUID orderId = firstReadyOrder();
+        orderService.assign(orderId, UUID.randomUUID());
+        orderService.markOnTheWay(orderId);
+        return orderId;
     }
 }

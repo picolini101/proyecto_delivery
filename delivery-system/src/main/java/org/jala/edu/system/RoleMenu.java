@@ -25,6 +25,7 @@ public class RoleMenu implements NavigationFilter {
             "Orders", EnumSet.of(UserRole.CUSTOMER),
             "My commerce orders", EnumSet.of(UserRole.MERCHANT),
             "Payments", EnumSet.of(UserRole.CUSTOMER),
+            "My shipment", EnumSet.of(UserRole.CUSTOMER),
             "Deliveries", EnumSet.of(UserRole.COURIER));
 
     @Override

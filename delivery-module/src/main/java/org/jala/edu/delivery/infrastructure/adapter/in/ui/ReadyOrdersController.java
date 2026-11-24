@@ -12,6 +12,7 @@ import javafx.scene.control.TableView;
 import lombok.RequiredArgsConstructor;
 import org.jala.edu.core.infrastructure.ui.BackgroundTasks;
 import org.jala.edu.core.infrastructure.ui.ErrorMessages;
+import org.jala.edu.core.infrastructure.ui.Navigator;
 import org.jala.edu.delivery.application.port.in.ListReadyOrdersQuery;
 import org.jala.edu.delivery.application.port.in.ReadyOrderSummary;
 import org.jala.edu.delivery.application.port.in.TomarPedidoCommand;
@@ -32,6 +33,7 @@ public class ReadyOrdersController {
 
     private final ListReadyOrdersUseCase listReadyOrdersUseCase;
     private final TomarPedidoUseCase tomarPedidoUseCase;
+    private final Navigator navigator;
 
     @FXML
     private TableView<ReadyOrderSummary> ordersTable;
@@ -76,7 +78,7 @@ public class ReadyOrdersController {
         refreshButton.setDisable(true);
         BackgroundTasks.run(
                 () -> tomarPedidoUseCase.execute(new TomarPedidoCommand(selected.orderId())),
-                done -> reload("Pedido tomado."),
+                done -> navigator.show(DeliveryViews.SHIPMENT),
                 error -> {
                     showMessage(ErrorMessages.of(error, "take the order"), "error");
                     refreshButton.setDisable(false);

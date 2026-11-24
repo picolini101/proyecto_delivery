@@ -20,4 +20,10 @@ public class DeliveryUiConfiguration {
     public NavigationItem deliveryNavigationItem() {
         return new NavigationItem("Deliveries", MAIN_VIEW);
     }
+
+    @Bean
+    @Order(410)
+    public NavigationItem customerShipmentNavigationItem() {
+        return new NavigationItem("My shipment", DeliveryViews.CUSTOMER_SHIPMENT);
+    }
 }
