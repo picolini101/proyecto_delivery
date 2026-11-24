@@ -9,6 +9,7 @@ import org.jala.edu.payment.application.port.out.PaymentTransactionRepositoryPor
 import org.jala.edu.payment.application.usecase.ManagePaymentHistoryUseCase;
 import org.jala.edu.payment.application.usecase.ManagePaymentMethodUseCase;
 import org.jala.edu.payment.application.usecase.ProcessPaymentUseCase;
+import org.jala.edu.payment.application.usecase.RetryPaymentUseCase;
 import org.jala.edu.payment.infrastructure.adapter.in.service.PaymentServiceAdapter;
 import org.jala.edu.payment.infrastructure.adapter.out.simulation.SimulatedPaymentMethodAdapter;
 import org.jala.edu.payment.infrastructure.adapter.out.simulation.SimulatedPaymentTransactionAdapter;
@@ -48,6 +49,16 @@ public class PaymentModuleConfiguration {
                 userService, methodPort, transactionPort);
     }
 
+    // HU #51: Reintento de pago rechazado
+    @Bean
+    public RetryPaymentUseCase retryPaymentUseCase(
+            PaymentTransactionRepositoryPort transactionRepository,
+            PaymentMethodRepositoryPort paymentMethodRepository,
+            UserService userService) {
+        return new RetryPaymentUseCase(
+                transactionRepository, paymentMethodRepository, userService);
+    }
+
     // Contrato PaymentService
     @Bean
     public PaymentService paymentService(
@@ -56,11 +67,9 @@ public class PaymentModuleConfiguration {
     }
 
     // Validacion de metodos de pago
-
     @Bean
     public PaymentMethodValidationPort paymentMethodValidationPort(
             PaymentMethodRepositoryPort repository) {
-
         return new SimulatedPaymentMethodAdapter(repository);
     }
 
@@ -69,7 +78,6 @@ public class PaymentModuleConfiguration {
     public PaymentTransactionPort paymentTransactionPort(
             ManagePaymentHistoryUseCase historyUseCase,
             PaymentTransactionRepositoryPort transactionRepository) {
-
         return new SimulatedPaymentTransactionAdapter(
                 historyUseCase, transactionRepository);
     }

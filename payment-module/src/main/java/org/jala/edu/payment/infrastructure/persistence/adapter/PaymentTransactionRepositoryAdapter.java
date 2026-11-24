@@ -35,6 +35,12 @@ public class PaymentTransactionRepositoryAdapter implements PaymentTransactionRe
                 .toList();
     }
     @Override
+    public List<PaymentTransaction> findByOrderId(UUID orderId) {
+        return springDataRepository.findByOrderIdOrderByCreatedAtDesc(orderId.toString()).stream()
+                .map(this::toDomain)
+                .toList();
+    }
+    @Override
     public boolean existsApprovedByOrderId(UUID orderId) {
         return springDataRepository.existsByOrderIdAndStatus(
                 orderId.toString(), PaymentStatus.APPROVED.name());

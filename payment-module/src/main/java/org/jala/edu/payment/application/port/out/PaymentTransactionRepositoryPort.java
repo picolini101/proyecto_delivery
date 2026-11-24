@@ -10,5 +10,6 @@ import java.util.UUID;
 public interface PaymentTransactionRepositoryPort {
     PaymentTransaction save(PaymentTransaction transaction);
     List<PaymentTransaction> findByUserId(UUID userId);
+    List<PaymentTransaction> findByOrderId(UUID orderId);
     boolean existsApprovedByOrderId(UUID orderId);
 }

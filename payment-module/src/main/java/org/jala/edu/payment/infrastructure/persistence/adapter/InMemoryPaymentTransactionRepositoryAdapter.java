@@ -30,6 +30,12 @@ public class InMemoryPaymentTransactionRepositoryAdapter implements PaymentTrans
                 .toList();
     }
     @Override
+    public synchronized List<PaymentTransaction> findByOrderId(UUID orderId) {
+        return store.values().stream()
+                .filter(transaction -> transaction.getOrderId().equals(orderId))
+                .toList();
+    }
+    @Override
     public synchronized boolean existsApprovedByOrderId(UUID orderId) {
         return store.values().stream()
                 .anyMatch(transaction -> transaction.getOrderId().equals(orderId) && transaction.isApproved());
