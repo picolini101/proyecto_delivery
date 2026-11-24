@@ -81,9 +81,12 @@ public class OrderMainController {
     private HBox createOrderCard(OrderSummary summary) {
         HBox card = new HBox(15);
         card.setAlignment(Pos.CENTER_LEFT);
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 10; " +
-                "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 5, 0, 0, 2); " +
-                "-fx-padding: 15; -fx-border-color: #e2e8f0; -fx-border-radius: 10;");
+        card.setStyle("-fx-background-color: white; "
+                + "-fx-background-radius: 10; "
+                + "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 5, 0, 0, 2); "
+                + "-fx-padding: 15; "
+                + "-fx-border-color: #e2e8f0; "
+                + "-fx-border-radius: 10;");
 
         VBox infoBox = new VBox(5);
         Label idLabel = new Label("Pedido #" + summary.shortId());
@@ -104,14 +107,14 @@ public class OrderMainController {
         Label statusLabel = new Label(summary.status());
         statusLabel.setStyle(getStatusStyle(summary.status()));
 
-        // Btn detalle
         Button btnDetail = new Button("Ver Detalle");
-        btnDetail.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; " + "-fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;");
+        btnDetail.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; "
+                + "-fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;");
         btnDetail.setOnAction(e -> showDetailModal(summary.orderId()));
 
-        // Btn estado
         Button btnStatus = new Button("Ver Estado");
-        btnStatus.setStyle("-fx-background-color: #10b981; -fx-text-fill: white" + "-fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;");
+        btnStatus.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; "
+                + "-fx-font-weight: bold; -fx-background-radius: 6; -fx-cursor: hand;");
         btnStatus.setOnAction(e -> showTrackingModal(summary.orderId()));
 
         HBox statusAndButtons = new HBox(10, statusLabel, btnDetail, btnStatus);
@@ -142,7 +145,11 @@ public class OrderMainController {
                     String fullId = order.getId().value().toString();
                     sb.append("Código de Entrega: ").append(fullId.substring(fullId.length() - 4).toUpperCase()).append("\n\n");
 
-                    sb.append("Dirección: ").append(order.getDeliveryAddress() != null ? order.getDeliveryAddress().toString() : "No registrada").append("\n\n");
+                    String direccion = order.getDeliveryAddress() != null
+                            ? order.getDeliveryAddress().toString()
+                            : "No registrada";
+                    sb.append("Dirección: ").append(direccion).append("\n\n");
+
                     sb.append("Productos:\n");
                     order.getLines().forEach(line ->
                             sb.append("- ").append(line.getQuantity().value()).append("x ")

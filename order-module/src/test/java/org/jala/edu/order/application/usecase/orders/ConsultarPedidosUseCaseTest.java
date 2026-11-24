@@ -40,7 +40,7 @@ class ConsultarPedidosUseCaseTest {
 
     private ConsultarPedidosUseCase useCase;
 
-    private final UUID CUSTOMER_ID = SampleUsers.CUSTOMER;
+    private final UUID customerId = SampleUsers.CUSTOMER;
 
     @BeforeEach
     void setUp() {
@@ -49,29 +49,29 @@ class ConsultarPedidosUseCaseTest {
 
     @Test
     void shouldRejectsInactiveCustomer() {
-        Mockito.when(userService.isActiveWithRole(CUSTOMER_ID, UserRole.CUSTOMER)).thenReturn(false);
-        Assertions.assertThrows(UnauthorizedCustomerException.class, () -> useCase.execute(CUSTOMER_ID));
+        Mockito.when(userService.isActiveWithRole(customerId, UserRole.CUSTOMER)).thenReturn(false);
+        Assertions.assertThrows(UnauthorizedCustomerException.class, () -> useCase.execute(customerId));
     }
 
     @Test
     void shouldReturnsEmptyListWhenNoOrders() {
-        Mockito.when(userService.isActiveWithRole(CUSTOMER_ID, UserRole.CUSTOMER)).thenReturn(true);
+        Mockito.when(userService.isActiveWithRole(customerId, UserRole.CUSTOMER)).thenReturn(true);
         Mockito.when(orderRepository.findByCustomerId(ArgumentMatchers.any())).thenReturn(new ArrayList<>());
 
-        List<Order> result = useCase.execute(CUSTOMER_ID);
+        List<Order> result = useCase.execute(customerId);
         Assertions.assertTrue(result.isEmpty());
     }
 
     @Test
     void shouldReturnsOrdersSortedByDateDescending() {
-        Mockito.when(userService.isActiveWithRole(CUSTOMER_ID, UserRole.CUSTOMER)).thenReturn(true);
+        Mockito.when(userService.isActiveWithRole(customerId, UserRole.CUSTOMER)).thenReturn(true);
 
         Order orderOld = shouldCreateSampleOrder(Instant.now().minusSeconds(3600));
         Order orderNew = shouldCreateSampleOrder(Instant.now());
 
         Mockito.when(orderRepository.findByCustomerId(ArgumentMatchers.any())).thenReturn(List.of(orderOld, orderNew));
 
-        List<Order> result = useCase.execute(CUSTOMER_ID);
+        List<Order> result = useCase.execute(customerId);
 
         assertEquals(2, result.size());
         assertEquals(orderNew.getId(), result.get(0).getId());
@@ -80,6 +80,6 @@ class ConsultarPedidosUseCaseTest {
     private Order shouldCreateSampleOrder(Instant date) {
         OrderLine line = OrderLine.of(ProductId.of(UUID.randomUUID()), UUID.randomUUID(), "Pizza", Money.of(10.0), Quantity.of(1));
 
-        return Order.restore(OrderId.newId(), CustomerId.of(CUSTOMER_ID), List.of(line), Money.of(10.0), OrderStatus.CONFIRMED, date, date);
+        return Order.restore(OrderId.newId(), CustomerId.of(customerId), List.of(line), Money.of(10.0), OrderStatus.CONFIRMED, date, date);
     }
 }

@@ -67,8 +67,15 @@ public class OrderHistoryController {
             private final Button btnDetail = new Button("Ver Detalle");
             private final Button btnStatus = new Button("Estado");
             {
-                btnDetail.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;");
-                btnStatus.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 6;");
+                btnDetail.setStyle("-fx-background-color: #2563eb; "
+                        + "-fx-text-fill: white; "
+                        + "-fx-font-weight: bold; "
+                        + "-fx-background-radius: 6;");
+
+                btnStatus.setStyle("-fx-background-color: #10b981; "
+                        + "-fx-text-fill: white; "
+                        + "-fx-font-weight: bold; "
+                        + "-fx-background-radius: 6;");
 
                 btnDetail.setOnAction(event -> {
                     OrderSummary summary = getTableView().getItems().get(getIndex());
@@ -138,7 +145,12 @@ public class OrderHistoryController {
                     String deliveryCode = fullId.substring(fullId.length() - 4).toUpperCase();
                     sb.append("Código de Entrega: ").append(deliveryCode).append("\n\n");
 
-                    sb.append("Dirección: ").append(order.getDeliveryAddress() != null ? order.getDeliveryAddress().toString() : "No registrada").append("\n\n");
+                    sb.append("Dirección: ")
+                            .append(order.getDeliveryAddress() != null
+                                    ? order.getDeliveryAddress().toString()
+                                    : "No registrada")
+                            .append("\n\n");
+
                     sb.append("Productos:\n");
 
                     order.getLines().forEach(line ->
@@ -146,7 +158,9 @@ public class OrderHistoryController {
                                     .append(line.getProductName()).append(" ($").append(line.getSubtotal().value()).append(")\n")
                     );
 
-                    java.math.BigDecimal envioReal = order.getShippingCost() != null ? order.getShippingCost().value() : java.math.BigDecimal.ZERO;
+                    java.math.BigDecimal envioReal = order.getShippingCost() != null
+                            ? order.getShippingCost().value()
+                            : java.math.BigDecimal.ZERO;
                     if (envioReal.compareTo(java.math.BigDecimal.ZERO) <= 0) {
                         envioReal = new java.math.BigDecimal("10.00");
                     }

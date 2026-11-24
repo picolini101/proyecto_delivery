@@ -41,8 +41,10 @@ class GetOrderDetailUseCaseTest {
 
     private GetOrderDetailUseCase useCase;
 
-    private final UUID CUSTOMER_ID = SampleUsers.CUSTOMER;
-    private final OrderId ORDER_ID = OrderId.newId();
+    private final UUID customerId = SampleUsers.CUSTOMER;
+    private final OrderId orderId = OrderId.newId();
+
+
 
     @BeforeEach
     void setUp() {
@@ -51,45 +53,45 @@ class GetOrderDetailUseCaseTest {
 
     @Test
     void shouldRejectsInactiveCustomer() {
-        when(userService.isActiveWithRole(CUSTOMER_ID, UserRole.CUSTOMER)).thenReturn(false);
-        assertThrows(UnauthorizedCustomerException.class, () -> useCase.execute(CUSTOMER_ID, ORDER_ID));
+        when(userService.isActiveWithRole(customerId, UserRole.CUSTOMER)).thenReturn(false);
+        assertThrows(UnauthorizedCustomerException.class, () -> useCase.execute(customerId, orderId));
     }
 
     @Test
     void shouldThrowsNotFoundWhenOrderDoesNotExist() {
-        when(userService.isActiveWithRole(CUSTOMER_ID, UserRole.CUSTOMER)).thenReturn(true);
-        when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.empty());
+        when(userService.isActiveWithRole(customerId, UserRole.CUSTOMER)).thenReturn(true);
+        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
 
-        assertThrows(OrderNotFoundException.class, () -> useCase.execute(CUSTOMER_ID, ORDER_ID));
+        assertThrows(OrderNotFoundException.class, () -> useCase.execute(customerId, orderId));
     }
 
     @Test
     void shouldRejectsAccessToAnotherCustomersOrder() {
-        when(userService.isActiveWithRole(CUSTOMER_ID, UserRole.CUSTOMER)).thenReturn(true);
+        when(userService.isActiveWithRole(customerId, UserRole.CUSTOMER)).thenReturn(true);
 
         Order otherOrder = shouldCreateSampleOrder(UUID.randomUUID(), Instant.now());
-        when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(otherOrder));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(otherOrder));
 
-        assertThrows(UnauthorizedCustomerException.class, () -> useCase.execute(CUSTOMER_ID, ORDER_ID));
+        assertThrows(UnauthorizedCustomerException.class, () -> useCase.execute(customerId, orderId));
     }
 
     @Test
     void shouldReturnsOrderDetailsWhenValid() {
-        when(userService.isActiveWithRole(CUSTOMER_ID, UserRole.CUSTOMER)).thenReturn(true);
+        when(userService.isActiveWithRole(customerId, UserRole.CUSTOMER)).thenReturn(true);
 
-        Order myOrder = shouldCreateSampleOrder(CUSTOMER_ID, Instant.now());
+        Order myOrder = shouldCreateSampleOrder(customerId, Instant.now());
 
-        when(orderRepository.findById(ORDER_ID)).thenReturn(Optional.of(myOrder));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(myOrder));
 
-        Order result = useCase.execute(CUSTOMER_ID, ORDER_ID);
+        Order result = useCase.execute(customerId, orderId);
 
         assertNotNull(result);
-        assertEquals(ORDER_ID, result.getId());
-        assertEquals(CustomerId.of(CUSTOMER_ID), result.getCustomerId());
+        assertEquals(orderId, result.getId());
+        assertEquals(CustomerId.of(customerId), result.getCustomerId());
     }
 
     private Order shouldCreateSampleOrder(UUID customerId, Instant date) {
         OrderLine line = OrderLine.of(ProductId.of(UUID.randomUUID()), UUID.randomUUID(), "Pizza", Money.of(10.0), Quantity.of(1));
-        return Order.restore(ORDER_ID, CustomerId.of(customerId), List.of(line), Money.of(10.0), OrderStatus.CONFIRMED, date, date);
+        return Order.restore(orderId, CustomerId.of(customerId), List.of(line), Money.of(10.0), OrderStatus.CONFIRMED, date, date);
     }
 }
