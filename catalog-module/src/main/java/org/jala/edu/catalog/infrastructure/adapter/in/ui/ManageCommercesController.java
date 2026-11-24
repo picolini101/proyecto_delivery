@@ -25,7 +25,6 @@ import org.jala.edu.core.infrastructure.ui.ErrorMessages;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import javafx.scene.control.Alert;
 import org.jala.edu.catalog.application.port.in.ChangeCommerceStatusCommand;
 import org.jala.edu.catalog.application.usecase.ChangeCommerceStatusUseCase;
 import org.jala.edu.catalog.domain.model.CommerceStatus;

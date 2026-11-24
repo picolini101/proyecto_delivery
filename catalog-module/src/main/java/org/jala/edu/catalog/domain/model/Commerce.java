@@ -45,7 +45,11 @@ public class Commerce extends BaseModel<CommerceId> {
                 CommerceId.newId(), name, address, phone, merchantId, CommerceStatus.DISABLED, now, now);
     }
 
-    /** Restaura un comercio existente desde la persistencia. */
+    /**
+     * Restaura un comercio existente desde la persistencia. Recibe todos los campos guardados
+     * (8), por eso se justifica la regla ParameterNumber.
+     */
+    @SuppressWarnings("checkstyle:ParameterNumber")
     public static Commerce restore(
             CommerceId id,
             String name,
