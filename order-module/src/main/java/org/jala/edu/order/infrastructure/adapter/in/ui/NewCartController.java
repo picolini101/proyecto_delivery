@@ -315,7 +315,7 @@ public class NewCartController {
             BackgroundTasks.run(
                     () -> confirmOrder.execute(confirmCommand),
                     ignored -> showPaymentResult(paymentPresenter.present(attempt)),
-                    error -> showPaymentResult(paymentPresenter.presentFailure(error)));
+                    error -> showError(error, "confirmar el pedido"));
         } else {
             showPaymentResult(paymentPresenter.present(attempt));
         }
