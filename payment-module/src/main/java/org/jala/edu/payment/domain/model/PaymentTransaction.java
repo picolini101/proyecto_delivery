@@ -1,3 +1,4 @@
+
 package org.jala.edu.payment.domain.model;
 
 import org.jala.edu.core.domain.exception.DomainException;
@@ -11,6 +12,7 @@ import java.util.UUID;
  * Representa un intento de pago registrado en el historial financiero.
  */
 public class PaymentTransaction extends BaseModel<PaymentTransactionId> {
+
     private final PaymentTransactionId transactionId;
     private final UUID orderId;
     private final UUID userId;
@@ -19,16 +21,31 @@ public class PaymentTransaction extends BaseModel<PaymentTransactionId> {
     private final PaymentStatus status;
     private final String reason;
     private final Instant transactionCreatedAt;
-    private PaymentTransaction(PaymentTransactionId id, UUID orderId, UUID userId, UUID paymentMethodId,
-                               BigDecimal amount, PaymentStatus status, String reason,
-                               Instant createdAt, Instant updatedAt) {
+
+    private PaymentTransaction(
+            PaymentTransactionId id,
+            UUID orderId,
+            UUID userId,
+            UUID paymentMethodId,
+            BigDecimal amount,
+            PaymentStatus status,
+            String reason,
+            Instant createdAt,
+            Instant updatedAt) {
+
         super(id, createdAt, updatedAt);
-        if (orderId == null || userId == null || paymentMethodId == null || status == null) {
-            throw new DomainException("Los datos de la transaccion son obligatorios");
+
+        if (orderId == null || userId == null
+                || paymentMethodId == null || status == null) {
+            throw new DomainException(
+                    "Los datos de la transaccion son obligatorios");
         }
+
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new DomainException("El monto del pago debe ser mayor a cero");
+            throw new DomainException(
+                    "El monto del pago debe ser mayor a cero");
         }
+
         this.transactionId = id;
         this.orderId = orderId;
         this.userId = userId;
@@ -38,55 +55,114 @@ public class PaymentTransaction extends BaseModel<PaymentTransactionId> {
         this.reason = reason;
         this.transactionCreatedAt = createdAt;
     }
+
     /**
      * Crea una nueva transaccion en estado APROBADO.
      */
-    public static PaymentTransaction recordApproved(UUID orderId, UUID userId, UUID paymentMethodId, BigDecimal amount) {
+    public static PaymentTransaction recordApproved(
+            UUID orderId,
+            UUID userId,
+            UUID paymentMethodId,
+            BigDecimal amount) {
+
         Instant now = now();
+
         return new PaymentTransaction(
-                PaymentTransactionId.newId(), orderId, userId, paymentMethodId, amount, PaymentStatus.APPROVED, "", now, now);
+                PaymentTransactionId.newId(),
+                orderId,
+                userId,
+                paymentMethodId,
+                amount,
+                PaymentStatus.APPROVED,
+                "",
+                now,
+                now);
     }
+
     /**
      * Crea una nueva transaccion en estado RECHAZADO indicando el motivo.
      */
-    public static PaymentTransaction recordRejected(UUID orderId, UUID userId, UUID paymentMethodId,
-                                                    BigDecimal amount, String reason) {
+    public static PaymentTransaction recordRejected(
+            UUID orderId,
+            UUID userId,
+            UUID paymentMethodId,
+            BigDecimal amount,
+            String reason) {
+
         Instant now = now();
+
         return new PaymentTransaction(
-                PaymentTransactionId.newId(), orderId, userId, paymentMethodId, amount, PaymentStatus.REJECTED, reason, now, now);
+                PaymentTransactionId.newId(),
+                orderId,
+                userId,
+                paymentMethodId,
+                amount,
+                PaymentStatus.REJECTED,
+                reason,
+                now,
+                now);
     }
+
     /**
      * Reconstruye una transaccion guardada en la base de datos.
      */
-    public static PaymentTransaction restore(PaymentTransactionId id, UUID orderId, UUID userId, UUID paymentMethodId,
-                                             BigDecimal amount, PaymentStatus status, String reason,
-                                             Instant createdAt, Instant updatedAt) {
-        return new PaymentTransaction(id, orderId, userId, paymentMethodId, amount, status, reason, createdAt, updatedAt);
+    // Se conservan todos los campos y las dos fechas de persistencia.
+    @SuppressWarnings("checkstyle:ParameterNumber")
+    public static PaymentTransaction restore(
+            PaymentTransactionId id,
+            UUID orderId,
+            UUID userId,
+            UUID paymentMethodId,
+            BigDecimal amount,
+            PaymentStatus status,
+            String reason,
+            Instant createdAt,
+            Instant updatedAt) {
+
+        return new PaymentTransaction(
+                id,
+                orderId,
+                userId,
+                paymentMethodId,
+                amount,
+                status,
+                reason,
+                createdAt,
+                updatedAt);
     }
+
     public PaymentTransactionId getId() {
         return transactionId;
     }
+
     public Instant getCreatedAt() {
         return transactionCreatedAt;
     }
+
     public UUID getOrderId() {
         return orderId;
     }
+
     public UUID getUserId() {
         return userId;
     }
+
     public UUID getPaymentMethodId() {
         return paymentMethodId;
     }
+
     public BigDecimal getAmount() {
         return amount;
     }
+
     public PaymentStatus getStatus() {
         return status;
     }
+
     public String getReason() {
         return reason;
     }
+
     public boolean isApproved() {
         return status == PaymentStatus.APPROVED;
     }

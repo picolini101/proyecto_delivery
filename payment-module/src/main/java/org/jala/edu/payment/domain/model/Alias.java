@@ -1,3 +1,4 @@
+
 package org.jala.edu.payment.domain.model;
 
 import org.jala.edu.core.domain.exception.DomainException;
@@ -11,10 +12,14 @@ public final class Alias {
         if (value == null || value.trim().isEmpty()) {
             throw new DomainException("El alias no puede estar vacío");
         }
+
         String trimmed = value.trim();
+
         if (trimmed.length() < 3 || trimmed.length() > 30) {
-            throw new DomainException("El alias debe tener entre 3 y 30 caracteres");
+            throw new DomainException(
+                    "El alias debe tener entre 3 y 30 caracteres");
         }
+
         this.value = trimmed;
     }
 
@@ -24,8 +29,14 @@ public final class Alias {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
         Alias alias = (Alias) o;
         return Objects.equals(value, alias.value);
     }

@@ -49,16 +49,14 @@ public class ProcessPaymentController {
             @Override
             protected void updateItem(PaymentMethod method, boolean empty) {
                 super.updateItem(method, empty);
-                setText(empty || method == null
-                        ? null : describe(method));
+                setText(empty || method == null ? null : describe(method));
             }
         });
         paymentMethodCombo.setButtonCell(new ListCell<>() {
             @Override
             protected void updateItem(PaymentMethod method, boolean empty) {
                 super.updateItem(method, empty);
-                setText(empty || method == null
-                        ? null : describe(method));
+                setText(empty || method == null ? null : describe(method));
             }
         });
         loadPaymentMethods();
@@ -73,23 +71,15 @@ public class ProcessPaymentController {
         try {
             UUID userId = currentUserService.currentUser().id();
             paymentMethodCombo.getItems().setAll(
-                    paymentMethodUseCase.listPaymentMethods(userId)
-            );
+                    paymentMethodUseCase.listPaymentMethods(userId));
             paymentMethodCombo.getSelectionModel().clearSelection();
             if (paymentMethodCombo.getItems().isEmpty()) {
-                resultLabel.setText(
-                        "No tienes metodos de pago registrados."
-                );
+                resultLabel.setText("No tienes metodos de pago registrados.");
             } else {
-                resultLabel.setText(
-                        "Selecciona un metodo de pago registrado."
-                );
+                resultLabel.setText("Selecciona un metodo de pago registrado.");
             }
         } catch (RuntimeException exception) {
-            resultLabel.setText(
-                    "Error al cargar metodos: "
-                            + exception.getMessage()
-            );
+            resultLabel.setText("Error al cargar metodos: " + exception.getMessage());
         }
     }
     @FXML
@@ -97,9 +87,7 @@ public class ProcessPaymentController {
         try {
             PaymentMethod selected = paymentMethodCombo.getValue();
             if (selected == null) {
-                resultLabel.setText(
-                        "Selecciona un metodo de pago registrado."
-                );
+                resultLabel.setText("Selecciona un metodo de pago registrado.");
                 return;
             }
             if (orderIdField.getText().isBlank()) {
@@ -111,37 +99,15 @@ public class ProcessPaymentController {
                 return;
             }
             UUID userId = currentUserService.currentUser().id();
-            UUID orderId = UUID.fromString(
-                    orderIdField.getText().trim()
-            );
+            UUID orderId = UUID.fromString(orderIdField.getText().trim());
             UUID paymentMethodId = selected.getId();
-            BigDecimal amount = new BigDecimal(
-                    amountField.getText().trim()
-            );
-            PaymentResult result = paymentService.pay(
-                    orderId,
-                    userId,
-                    paymentMethodId,
-                    amount
-            );
-            if (result.approved()) {
-                resultLabel.setText(
-                        "APROBADO - Referencia: "
-                                + result.paymentReference()
-                );
-            } else {
-                resultLabel.setText(
-                        "RECHAZADO - " + result.reason()
-                );
-            }
+            BigDecimal amount = new BigDecimal(amountField.getText().trim());
+            PaymentResult result = paymentService.pay(orderId, userId, paymentMethodId, amount);
+            displayPaymentResult(result);
         } catch (IllegalArgumentException exception) {
-            resultLabel.setText(
-                    "Error: Verifica el ID del pedido y el monto."
-            );
+            resultLabel.setText("Error: Verifica el ID del pedido y el monto.");
         } catch (RuntimeException exception) {
-            resultLabel.setText(
-                    "Error: " + exception.getMessage()
-            );
+            resultLabel.setText("Error: " + exception.getMessage());
         }
     }
     @FXML
@@ -149,9 +115,7 @@ public class ProcessPaymentController {
         try {
             PaymentMethod selected = paymentMethodCombo.getValue();
             if (selected == null) {
-                resultLabel.setText(
-                        "Selecciona un metodo de pago registrado."
-                );
+                resultLabel.setText("Selecciona un metodo de pago registrado.");
                 return;
             }
             if (orderIdField.getText().isBlank()) {
@@ -167,27 +131,26 @@ public class ProcessPaymentController {
             UUID paymentMethodId = selected.getId();
             BigDecimal amount = new BigDecimal(amountField.getText().trim());
             PaymentTransaction transaction = retryPaymentUseCase.retryPayment(
-                    orderId,
-                    userId,
-                    paymentMethodId,
-                    amount
-            );
-            if (transaction.isApproved()) {
-                resultLabel.setText(
-                        "REINTENTO APROBADO - Referencia: "
-                                + transaction.getId().value()
-                );
-            } else {
-                resultLabel.setText(
-                        "REINTENTO RECHAZADO - " + transaction.getReason()
-                );
-            }
+                    orderId, userId, paymentMethodId, amount);
+            displayRetryResult(transaction);
         } catch (DomainException exception) {
             resultLabel.setText("Error: " + exception.getMessage());
         } catch (IllegalArgumentException exception) {
-            resultLabel.setText(
-                    "Error: Verifica el ID del pedido y el monto."
-            );
+            resultLabel.setText("Error: Verifica el ID del pedido y el monto.");
+        }
+    }
+    private void displayPaymentResult(PaymentResult result) {
+        if (result.approved()) {
+            resultLabel.setText("APROBADO - Referencia: " + result.paymentReference());
+        } else {
+            resultLabel.setText("RECHAZADO - " + result.reason());
+        }
+    }
+    private void displayRetryResult(PaymentTransaction transaction) {
+        if (transaction.isApproved()) {
+            resultLabel.setText("REINTENTO APROBADO - Referencia: " + transaction.getId().value());
+        } else {
+            resultLabel.setText("REINTENTO RECHAZADO - " + transaction.getReason());
         }
     }
 }

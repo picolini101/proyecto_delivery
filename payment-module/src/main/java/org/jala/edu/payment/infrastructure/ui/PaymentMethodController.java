@@ -1,7 +1,10 @@
 package org.jala.edu.payment.infrastructure.ui;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
 import org.jala.edu.core.contract.CurrentUserService;
 import org.jala.edu.core.domain.exception.DomainException;
 import org.jala.edu.payment.application.port.in.RegisterPaymentMethodCommand;

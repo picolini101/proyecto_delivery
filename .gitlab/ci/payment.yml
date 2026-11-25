@@ -18,10 +18,10 @@ build-payment:
       - payment-module/target/site/jacoco/
       - .m2/repository/org/jala/edu/payment-module/
 
-# Linter (Lab 8, Activity 1). Uncomment after configuring the chosen tool in payment-module/pom.xml.
-# LINT_GOAL is the Maven goal of that tool, for example checkstyle:check, pmd:check or spotbugs:check.
-# lint-payment:
-#   extends: .module-lint
-#   variables:
-#     MODULE: payment-module
-#     LINT_GOAL: "checkstyle:check"
+# Linter (Lab 8, Activity 1): Checkstyle obligatorio.
+lint-payment:
+  extends: .module-lint
+  allow_failure: false
+  variables:
+    MODULE: payment-module
+    LINT_GOAL: "checkstyle:check"

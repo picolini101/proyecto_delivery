@@ -1,3 +1,4 @@
+
 package org.jala.edu.payment.application.usecase;
 
 import java.math.BigDecimal;
@@ -51,12 +52,9 @@ public class ProcessPaymentUseCase {
 
         if (!userService.isActiveWithRole(
                 command.userId(), UserRole.CUSTOMER)) {
-            return new PaymentResult(
-                    "",
-                    false,
-                    "User not authorized for this operation"
-            );
+            return unauthorizedResult();
         }
+
         if (command.paymentMethodId() == null) {
             return reject(command, "El metodo de pago es obligatorio");
         }
@@ -66,25 +64,32 @@ public class ProcessPaymentUseCase {
                 command.paymentMethodId())) {
             return reject(command, "Metodo de pago invalido o inactivo");
         }
+
         try {
             String reference = paymentTransactionPort.recordApproved(
                     command.orderId(),
                     command.userId(),
                     command.paymentMethodId(),
-                    amount
-            );
+                    amount);
 
             return new PaymentResult(reference, true, "");
 
         } catch (IllegalStateException exception) {
             return new PaymentResult("", false, exception.getMessage());
+
         } catch (RuntimeException exception) {
             return new PaymentResult(
                     "",
                     false,
-                    "No se pudo procesar el pago"
-            );
+                    "No se pudo procesar el pago");
         }
+    }
+
+    private PaymentResult unauthorizedResult() {
+        return new PaymentResult(
+                "",
+                false,
+                "User not authorized for this operation");
     }
 
     private PaymentResult reject(
@@ -97,8 +102,7 @@ public class ProcessPaymentUseCase {
                     command.userId(),
                     command.paymentMethodId(),
                     command.amount(),
-                    reason
-            );
+                    reason);
         }
 
         return new PaymentResult("", false, reason);
