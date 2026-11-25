@@ -15,7 +15,6 @@ import org.jala.edu.order.domain.model.CustomerId;
 import org.jala.edu.order.domain.model.DeliveryAddress;
 import org.jala.edu.order.domain.model.Money;
 import org.jala.edu.order.domain.model.Order;
-import org.jala.edu.order.domain.model.OrderId;
 import org.jala.edu.order.domain.model.OrderLine;
 import org.jala.edu.order.domain.model.OrderStatus;
 import org.jala.edu.order.domain.model.ProductId;

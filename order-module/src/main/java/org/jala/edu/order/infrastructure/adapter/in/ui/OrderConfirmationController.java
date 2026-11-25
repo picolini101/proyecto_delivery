@@ -79,7 +79,8 @@ public class OrderConfirmationController {
         for (OrderConfirmationReceipt.LineReceipt line : receipt.lines()) {
             HBox row = new HBox(12);
             row.setAlignment(Pos.CENTER_LEFT);
-            row.setStyle("-fx-padding: 10 14; -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 6; -fx-background-radius: 6;");
+            row.setStyle("-fx-padding: 10 14; -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; "
+                    + "-fx-border-radius: 6; -fx-background-radius: 6;");
 
             Label nameQty = new Label(line.quantity() + "x  " + line.productName());
             nameQty.setStyle("-fx-text-fill: #1e293b; -fx-font-size: 13px; -fx-font-weight: bold;");
