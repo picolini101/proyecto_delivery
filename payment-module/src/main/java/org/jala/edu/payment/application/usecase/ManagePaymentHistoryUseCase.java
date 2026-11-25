@@ -3,6 +3,7 @@ package org.jala.edu.payment.application.usecase;
 import org.jala.edu.core.contract.UserRole;
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.core.domain.exception.DomainException;
+import org.jala.edu.payment.application.dto.PaymentStatusResult;
 import org.jala.edu.payment.application.port.out.PaymentTransactionRepositoryPort;
 import org.jala.edu.payment.domain.model.PaymentTransaction;
 
@@ -10,9 +11,8 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Caso de uso CU-03: Consultar historial de transacciones y prevenir cobro doble.
- */
+// Caso de uso CU-03: Consultar historial de transacciones y prevenir cobro doble.
+
 public class ManagePaymentHistoryUseCase {
     private final PaymentTransactionRepositoryPort transactionRepository;
     private final UserService userService;
@@ -21,16 +21,21 @@ public class ManagePaymentHistoryUseCase {
         this.transactionRepository = transactionRepository;
         this.userService = userService;
     }
-    /**
-     * Consulta el historial de transacciones de un usuario activo.
-     */
+    // Consulta el historial de transacciones de un usuario activo.
+
     public List<PaymentTransaction> findByUserId(UUID userId) {
         validateActiveUser(userId);
         return transactionRepository.findByUserId(userId);
     }
-    /**
-     * Registra un intento de pago bloqueando cualquier cobro doble sobre un pedido ya aprobado.
-     */
+
+    // Consulta el estado del pago de un pedido del usuario (HU #31).
+
+    public PaymentStatusResult findPaymentStatus(UUID orderId, UUID userId) {
+        throw new UnsupportedOperationException("Pendiente de implementar (HU #31)");
+    }
+
+    //Registra un intento de pago bloqueando cualquier cobro doble sobre un pedido ya aprobado.
+
     public synchronized PaymentTransaction recordPaymentAttempt(UUID orderId, UUID userId,
                                                                 UUID paymentMethodId, BigDecimal amount) {
         validateActiveUser(userId);
