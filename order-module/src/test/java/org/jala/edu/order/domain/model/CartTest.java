@@ -2,6 +2,8 @@ package org.jala.edu.order.domain.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.UUID;
 
@@ -9,6 +11,7 @@ import java.math.BigDecimal;
 import org.jala.edu.order.domain.exception.ProductNotFoundInCartException;
 import org.jala.edu.core.domain.exception.DomainException;
 import org.junit.jupiter.api.Test;
+
 
 /**
  * Pruebas de la clase {@link Cart}: reglas basicas de agregar productos al carrito.

@@ -18,6 +18,8 @@ import org.junit.jupiter.api.Test;
 import org.jala.edu.order.domain.exception.CatalogUnavailableException;
 import org.jala.edu.order.infrastructure.adapter.out.catalog.CatalogGatewayAdapter;
 import org.jala.edu.order.infrastructure.adapter.out.catalog.UnavailableCatalogPort;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Pruebas de {@link AddProductToCartUseCase}.
@@ -106,7 +108,7 @@ class AddProductToCartUseCaseTest {
                 new AddProductToCartUseCase(carts, new UnavailableCatalogPort(), new FallbackUserService());
 
         assertThrows(CatalogUnavailableException.class,
-                () -> downCatalog.execute(SampleUsers.CUSTOMER, FallbackCatalogService.AVAILABLE_PRODUCT, 2));
+                () -> downCatalog.execute(SampleUsers.CUSTOMER, SampleCatalog.PIZZA, 2));
 
         assertTrue(carts.findOrCreate(SampleUsers.CUSTOMER).getItems().isEmpty());
     }

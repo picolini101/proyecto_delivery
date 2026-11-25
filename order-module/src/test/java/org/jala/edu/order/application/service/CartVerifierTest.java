@@ -13,7 +13,6 @@ import java.util.UUID;
 import org.jala.edu.core.contract.SampleCatalog;
 import org.jala.edu.order.domain.exception.PriceChangedException;
 import org.jala.edu.core.contract.SampleUsers;
-import org.jala.edu.core.contract.SampleUsers;
 import org.jala.edu.core.infrastructure.contract.FallbackCatalogService;
 import org.jala.edu.order.domain.exception.ProductUnavailableException;
 import org.jala.edu.order.domain.model.Cart;
