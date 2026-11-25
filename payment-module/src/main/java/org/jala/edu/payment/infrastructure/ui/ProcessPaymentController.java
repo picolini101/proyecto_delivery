@@ -51,7 +51,6 @@ public class ProcessPaymentController {
 
     @FXML
     public void initialize() {
-
         paymentMethodCombo.setCellFactory(list -> new ListCell<>() {
             @Override
             protected void updateItem(PaymentMethod method, boolean empty) {
@@ -85,26 +84,16 @@ public class ProcessPaymentController {
             UUID userId = currentUserService.currentUser().id();
 
             paymentMethodCombo.getItems().setAll(
-                    paymentMethodUseCase.listPaymentMethods(userId)
-            );
-
+                    paymentMethodUseCase.listPaymentMethods(userId));
             paymentMethodCombo.getSelectionModel().clearSelection();
 
             if (paymentMethodCombo.getItems().isEmpty()) {
-                resultLabel.setText(
-                        "No tienes metodos de pago registrados."
-                );
+                resultLabel.setText("No tienes metodos de pago registrados.");
             } else {
-                resultLabel.setText(
-                        "Selecciona un metodo de pago registrado."
-                );
+                resultLabel.setText("Selecciona un metodo de pago registrado.");
             }
-
         } catch (RuntimeException exception) {
-            resultLabel.setText(
-                    "Error al cargar metodos: "
-                            + exception.getMessage()
-            );
+            resultLabel.setText("Error al cargar metodos: " + exception.getMessage());
         }
     }
 
@@ -114,9 +103,7 @@ public class ProcessPaymentController {
             PaymentMethod selected = paymentMethodCombo.getValue();
 
             if (selected == null) {
-                resultLabel.setText(
-                        "Selecciona un metodo de pago registrado."
-                );
+                resultLabel.setText("Selecciona un metodo de pago registrado.");
                 return;
             }
 
@@ -131,43 +118,25 @@ public class ProcessPaymentController {
             }
 
             UUID userId = currentUserService.currentUser().id();
-
-            UUID orderId = UUID.fromString(
-                    orderIdField.getText().trim()
-            );
-
+            UUID orderId = UUID.fromString(orderIdField.getText().trim());
             UUID paymentMethodId = selected.getId();
-
-            BigDecimal amount = new BigDecimal(
-                    amountField.getText().trim()
-            );
+            BigDecimal amount = new BigDecimal(amountField.getText().trim());
 
             PaymentResult result = paymentService.pay(
-                    orderId,
-                    userId,
-                    paymentMethodId,
-                    amount
-            );
-
-            if (result.approved()) {
-                resultLabel.setText(
-                        "APROBADO - Referencia: "
-                                + result.paymentReference()
-                );
-            } else {
-                resultLabel.setText(
-                        "RECHAZADO - " + result.reason()
-                );
-            }
-
+                    orderId, userId, paymentMethodId, amount);
+            displayPaymentResult(result);
         } catch (IllegalArgumentException exception) {
-            resultLabel.setText(
-                    "Error: Verifica el ID del pedido y el monto."
-            );
+            resultLabel.setText("Error: Verifica el ID del pedido y el monto.");
         } catch (RuntimeException exception) {
-            resultLabel.setText(
-                    "Error: " + exception.getMessage()
-            );
+            resultLabel.setText("Error: " + exception.getMessage());
+        }
+    }
+
+    private void displayPaymentResult(PaymentResult result) {
+        if (result.approved()) {
+            resultLabel.setText("APROBADO - Referencia: " + result.paymentReference());
+        } else {
+            resultLabel.setText("RECHAZADO - " + result.reason());
         }
     }
 }

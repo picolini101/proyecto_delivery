@@ -5,7 +5,8 @@ import java.math.BigDecimal;
 import org.jala.edu.core.domain.exception.DomainException;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class AmountValidatorTest {
 
@@ -21,8 +22,7 @@ class AmountValidatorTest {
     void shouldRejectZeroAmount() {
         DomainException exception = assertThrows(
                 DomainException.class,
-                () -> AmountValidator.validate(
-                        new BigDecimal("0.00")));
+                () -> AmountValidator.validate(new BigDecimal("0.00")));
 
         assertEquals(
                 "El monto del pago debe ser mayor a cero",
@@ -33,8 +33,7 @@ class AmountValidatorTest {
     void shouldRejectNegativeAmount() {
         DomainException exception = assertThrows(
                 DomainException.class,
-                () -> AmountValidator.validate(
-                        new BigDecimal("-15.00")));
+                () -> AmountValidator.validate(new BigDecimal("-15.00")));
 
         assertEquals(
                 "El monto del pago debe ser mayor a cero",
@@ -45,8 +44,7 @@ class AmountValidatorTest {
     void shouldRejectNegativeMinimumAmount() {
         assertThrows(
                 DomainException.class,
-                () -> AmountValidator.validate(
-                        new BigDecimal("-0.01")));
+                () -> AmountValidator.validate(new BigDecimal("-0.01")));
     }
 
     @Test
@@ -85,8 +83,7 @@ class AmountValidatorTest {
     void shouldRejectAmountRoundedToZero() {
         assertThrows(
                 DomainException.class,
-                () -> AmountValidator.validate(
-                        new BigDecimal("0.004")));
+                () -> AmountValidator.validate(new BigDecimal("0.004")));
     }
 
     @Test
