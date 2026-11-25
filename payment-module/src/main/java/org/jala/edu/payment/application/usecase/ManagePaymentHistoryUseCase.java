@@ -29,9 +29,40 @@ public class ManagePaymentHistoryUseCase {
     }
 
     // Consulta el estado del pago de un pedido del usuario (HU #31).
+    // Sin intentos devuelve PENDIENTE; con un intento aprobado devuelve APROBADO.
+    // si solo hay rechazos devuelve el ultimo intento como RECHAZADO.
 
     public PaymentStatusResult findPaymentStatus(UUID orderId, UUID userId) {
-        throw new UnsupportedOperationException("Pendiente de implementar (HU #31)");
+        validateActiveUser(userId);
+        List<PaymentTransaction> attempts = transactionRepository.findByOrderId(orderId);
+        if (attempts.isEmpty()) {
+            return new PaymentStatusResult(orderId, PaymentStatusResult.PENDING, null, null);
+        }
+        validateOwner(attempts, userId);
+        PaymentTransaction shown = selectAttemptToShow(attempts);
+        String status = shown.isApproved() ? PaymentStatusResult.APPROVED : PaymentStatusResult.REJECTED;
+        return new PaymentStatusResult(orderId, status, shown.getAmount(), shown.getCreatedAt());
+    }
+
+    private void validateOwner(List<PaymentTransaction> attempts, UUID userId) {
+        for (PaymentTransaction attempt : attempts) {
+            if (!attempt.getUserId().equals(userId)) {
+                throw new DomainException("No tienes permiso para consultar el pago de este pedido");
+            }
+        }
+    }
+
+    private PaymentTransaction selectAttemptToShow(List<PaymentTransaction> attempts) {
+        PaymentTransaction latest = attempts.get(0);
+        for (PaymentTransaction attempt : attempts) {
+            if (attempt.isApproved()) {
+                return attempt;
+            }
+            if (attempt.getCreatedAt().isAfter(latest.getCreatedAt())) {
+                latest = attempt;
+            }
+        }
+        return latest;
     }
 
     //Registra un intento de pago bloqueando cualquier cobro doble sobre un pedido ya aprobado.
