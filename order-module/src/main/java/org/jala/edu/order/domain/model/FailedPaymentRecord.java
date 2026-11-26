@@ -21,8 +21,9 @@ public class FailedPaymentRecord extends BaseModel<FailedPaymentRecordId> {
     private final String reason;
 
     private FailedPaymentRecord(FailedPaymentRecordId id, OrderId orderId, UUID customerId,
-                                PaymentAttemptResult result, String reason, Instant createdAt) {
-        super(id, createdAt, createdAt);
+                                PaymentAttemptResult result, String reason,
+                                Instant createdAt, Instant updatedAt) {
+        super(id, createdAt, updatedAt);
         this.orderId = Objects.requireNonNull(orderId, "OrderId es obligatorio");
         this.customerId = Objects.requireNonNull(customerId, "CustomerId es obligatorio");
         this.result = Objects.requireNonNull(result, "El resultado es obligatorio");
@@ -32,6 +33,14 @@ public class FailedPaymentRecord extends BaseModel<FailedPaymentRecordId> {
     /** Crea un registro nuevo con la fecha y hora actuales. */
     public static FailedPaymentRecord record(OrderId orderId, UUID customerId,
                                              PaymentAttemptResult result, String reason) {
-        return new FailedPaymentRecord(FailedPaymentRecordId.newId(), orderId, customerId, result, reason, now());
+        Instant now = now();
+        return new FailedPaymentRecord(FailedPaymentRecordId.newId(), orderId, customerId, result, reason, now, now);
+    }
+
+    /** Reconstruye un registro ya guardado (lo usa el adaptador de persistencia). */
+    public static FailedPaymentRecord restore(FailedPaymentRecordId id, OrderId orderId, UUID customerId,
+                                              PaymentAttemptResult result, String reason,
+                                              Instant createdAt, Instant updatedAt) {
+        return new FailedPaymentRecord(id, orderId, customerId, result, reason, createdAt, updatedAt);
     }
 }
