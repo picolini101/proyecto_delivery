@@ -107,9 +107,9 @@ public class OrderModuleConfiguration {
                                     MarkOrderAssignedUseCase markOrderAssigned,
                                     MarkOrderOnTheWayUseCase markOrderOnTheWay,
                                     MarkOrderDeliveredUseCase markOrderDelivered,
-                                    CurrentUserService currentUserService) {
+                                    CurrentUserService currentUserService,GetOrderDetailUseCase getOrderDetailUseCase) {
         return new OrderServiceAdapter(findReadyForDelivery, markOrderAssigned, markOrderOnTheWay,
-                markOrderDelivered, currentUserService);
+                markOrderDelivered, currentUserService, getOrderDetailUseCase);
     }
 
     @Bean

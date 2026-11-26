@@ -10,6 +10,7 @@ import org.jala.edu.order.application.usecase.orders.FindReadyForDeliveryUseCase
 import org.jala.edu.order.application.usecase.orders.MarkOrderAssignedUseCase;
 import org.jala.edu.order.application.usecase.orders.MarkOrderDeliveredUseCase;
 import org.jala.edu.order.application.usecase.orders.MarkOrderOnTheWayUseCase;
+import org.jala.edu.order.application.usecase.orders.GetOrderDetailUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -30,12 +31,13 @@ class OrderServiceAdapterTest {
     private final MarkOrderOnTheWayUseCase onTheWay = mock(MarkOrderOnTheWayUseCase.class);
     private final MarkOrderDeliveredUseCase delivered = mock(MarkOrderDeliveredUseCase.class);
     private final CurrentUserService currentUserService = mock(CurrentUserService.class);
+    private final GetOrderDetailUseCase getOrderDetailUseCase=mock(GetOrderDetailUseCase.class);
 
     private OrderServiceAdapter adapter;
 
     @BeforeEach
     void setUp() {
-        adapter = new OrderServiceAdapter(findReady, assign, onTheWay, delivered, currentUserService);
+        adapter = new OrderServiceAdapter(findReady, assign, onTheWay, delivered, currentUserService, getOrderDetailUseCase);
         doCallRealMethod().when(currentUserService).currentUser();
     }
 
