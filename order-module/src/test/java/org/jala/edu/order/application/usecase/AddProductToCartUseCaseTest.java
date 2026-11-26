@@ -15,6 +15,11 @@ import org.jala.edu.order.domain.model.Cart;
 import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemoryCartRepositoryAdapter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.jala.edu.order.domain.exception.CatalogUnavailableException;
+import org.jala.edu.order.infrastructure.adapter.out.catalog.CatalogGatewayAdapter;
+import org.jala.edu.order.infrastructure.adapter.out.catalog.UnavailableCatalogPort;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Pruebas de {@link AddProductToCartUseCase}.
@@ -33,7 +38,8 @@ class AddProductToCartUseCaseTest {
     @BeforeEach
     void setUp() {
         InMemoryCartRepositoryAdapter carts = new InMemoryCartRepositoryAdapter();
-        useCase = new AddProductToCartUseCase(carts, new FallbackCatalogService(), new FallbackUserService());
+        useCase = new AddProductToCartUseCase(carts, new CatalogGatewayAdapter(new FallbackCatalogService()),
+                new FallbackUserService());
     }
 
     /** Un cliente activo agrega 2 unidades de un producto con stock: el carrito queda con 2. */
@@ -93,5 +99,24 @@ class AddProductToCartUseCaseTest {
         } catch (DomainException e) {
             // Era lo esperado
         }
+    }
+    /** Catalogo caido: no se agrega nada, el carrito queda vacio y se informa el error del catalogo. */
+    @Test
+    void doesNotChangeTheCartWhenTheCatalogIsUnavailable() {
+        InMemoryCartRepositoryAdapter carts = new InMemoryCartRepositoryAdapter();
+        AddProductToCartUseCase downCatalog =
+                new AddProductToCartUseCase(carts, new UnavailableCatalogPort(), new FallbackUserService());
+
+        assertThrows(CatalogUnavailableException.class,
+                () -> downCatalog.execute(SampleUsers.CUSTOMER, SampleCatalog.PIZZA, 2));
+
+        assertTrue(carts.findOrCreate(SampleUsers.CUSTOMER).getItems().isEmpty());
+    }
+
+    /** Al agregar, el carrito guarda el precio que el cliente ve en el catalogo en ese momento. */
+    @Test
+    void savesThePriceTheCustomerSees() {
+        Cart cart = useCase.execute(SampleUsers.CUSTOMER, SampleCatalog.PIZZA, 2);
+        assertEquals(0, SampleCatalog.PIZZA_PRICE.compareTo(cart.findItem(SampleCatalog.PIZZA).getUnitPrice()));
     }
 }

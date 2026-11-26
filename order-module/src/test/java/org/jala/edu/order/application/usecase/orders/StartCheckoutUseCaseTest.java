@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.UUID;
 import org.jala.edu.core.contract.SampleCatalog;
 import org.jala.edu.core.contract.SampleUsers;
+import org.jala.edu.order.domain.exception.PriceChangedException;
 import org.jala.edu.core.contract.UserService;
 import org.jala.edu.core.infrastructure.contract.FallbackCatalogService;
 import org.jala.edu.core.infrastructure.contract.FallbackUserService;
@@ -24,6 +25,9 @@ import org.jala.edu.order.infrastructure.adapter.out.persistence.memory.InMemory
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.jala.edu.order.domain.exception.CatalogUnavailableException;
+import org.jala.edu.order.infrastructure.adapter.out.catalog.CatalogGatewayAdapter;
+import org.jala.edu.order.infrastructure.adapter.out.catalog.UnavailableCatalogPort;
 
 class StartCheckoutUseCaseTest {
 
@@ -44,7 +48,7 @@ class StartCheckoutUseCaseTest {
     void setUp() {
         userService = new FallbackUserService();
         cartRepository = new InMemoryCartRepositoryAdapter();
-        cartVerifier = new CartVerifier(new FallbackCatalogService());
+        cartVerifier = new CartVerifier(new CatalogGatewayAdapter(new FallbackCatalogService()));
         orderRepository = new InMemoryOrderRepositoryAdapter();
 
         useCase = new StartCheckoutUseCase(userService, cartRepository, cartVerifier, orderRepository);
@@ -124,5 +128,49 @@ class StartCheckoutUseCaseTest {
 
         Cart cartAfter = cartRepository.findByCustomerId(customerId).orElseThrow();
         assertThat(cartAfter.getItems()).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Catálogo caído: no crea el pedido, no vacía el carrito y informa que el catálogo no está disponible")
+    void shouldKeepCartAndCreateNoOrderWhenCatalogIsUnavailable() {
+        Cart cart = new Cart(customerId);
+        cart.addProduct(productId, commerceId, 2);
+        cartRepository.save(cart);
+        StartCheckoutUseCase downCatalog = new StartCheckoutUseCase(
+                userService, cartRepository, new CartVerifier(new UnavailableCatalogPort()), orderRepository);
+
+        assertThatThrownBy(() -> downCatalog.execute(new StartCheckoutCommand(customerId)))
+                .isInstanceOf(CatalogUnavailableException.class)
+                .hasMessage(CatalogUnavailableException.MESSAGE);
+
+        assertThat(cartRepository.findByCustomerId(customerId).orElseThrow().getItems()).hasSize(1);
+        assertThat(orderRepository.findByCustomerId(
+                new org.jala.edu.order.domain.model.CustomerId(customerId))).isEmpty();
+    }
+    @Test
+    @DisplayName("Cambio de precio: no crea el pedido hasta que el cliente acepte el precio nuevo")
+    void shouldBlockCheckoutWhileAPriceChangeIsNotConfirmed() {
+        Cart cart = new Cart(customerId);
+        cart.addProduct(productId, commerceId, 2, new java.math.BigDecimal("40.00"));
+        cartRepository.save(cart);
+
+        assertThatThrownBy(() -> useCase.execute(new StartCheckoutCommand(customerId)))
+                .isInstanceOf(PriceChangedException.class);
+
+        assertThat(cartRepository.findByCustomerId(customerId).orElseThrow().getItems()).hasSize(1);
+        assertThat(orderRepository.findByCustomerId(
+                new org.jala.edu.order.domain.model.CustomerId(customerId))).isEmpty();
+    }
+
+    @Test
+    @DisplayName("Sin cambio de precio: el pedido se crea con el precio vigente")
+    void shouldCreateOrderWhenThePriceDidNotChange() {
+        Cart cart = new Cart(customerId);
+        cart.addProduct(productId, commerceId, 2, SampleCatalog.PIZZA_PRICE);
+        cartRepository.save(cart);
+
+        OrderSummary summary = useCase.execute(new StartCheckoutCommand(customerId));
+
+        assertThat(summary.subtotal()).isEqualByComparingTo("100.00");
     }
 }

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.jala.edu.core.contract.CatalogService;
+import org.jala.edu.order.application.port.out.CatalogPort;
 import org.jala.edu.core.contract.ProductInfo;
 import org.jala.edu.core.domain.exception.NotFoundException;
 import org.jala.edu.order.application.port.out.CartRepositoryPort;
@@ -24,13 +24,13 @@ public class GetCartSummaryUseCase {
     private final CartRepositoryPort carts;
 
     /** Para obtener nombre y precio de cada producto. */
-    private final CatalogService catalog;
+    private final CatalogPort catalog;
 
     /**
      * @param carts   repositorio de carritos
      * @param catalog servicio del catalogo
      */
-    public GetCartSummaryUseCase(CartRepositoryPort carts, CatalogService catalog) {
+    public GetCartSummaryUseCase(CartRepositoryPort carts, CatalogPort catalog) {
         this.carts = carts;
         this.catalog = catalog;
     }

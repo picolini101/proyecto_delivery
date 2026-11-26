@@ -82,15 +82,48 @@ public class Cart {
      * @throws DomainException si la cantidad es cero o negativa
      */
     public void addProduct(UUID productId, UUID commerceId, int quantity) {
+        addProduct(productId, commerceId, quantity, null);
+    }
+
+    /**
+     * Igual que {@link #addProduct(UUID, UUID, int)}, pero guarda el precio de una unidad que el cliente vio.
+     * Si el producto ya estaba, la linea CONSERVA el precio anterior: si el catalogo ya lo cambio,
+     * se avisa al finalizar la compra. Si la linea no tenia precio guardado, se guarda este.
+     *
+     * @param productId  id del producto
+     * @param commerceId id del comercio que vende el producto
+     * @param quantity   cantidad a agregar, debe ser mayor que cero
+     * @param unitPrice  precio de una unidad que ve el cliente; puede ser {@code null} si no se conoce
+     * @throws DomainException si la cantidad es cero o negativa
+     */
+    public void addProduct(UUID productId, UUID commerceId, int quantity, BigDecimal unitPrice) {
         if (quantity <= 0) {
             throw new DomainException("Quantity must be greater than zero");
         }
         CartItem item = findItem(productId);
         if (item == null) {
-            items.add(new CartItem(productId, commerceId, quantity));
+            items.add(new CartItem(productId, commerceId, quantity, unitPrice));
         } else {
             item.setQuantity(item.getQuantity() + quantity);
+            if (item.getUnitPrice() == null) {
+                item.setUnitPrice(unitPrice);
+            }
         }
+    }
+
+    /**
+     * Guarda el precio que el cliente acepto para un producto del carrito.
+     *
+     * @param productId id del producto
+     * @param newPrice  precio de una unidad que el cliente acepto
+     * @throws ProductNotFoundInCartException si el producto no esta en el carrito
+     */
+    public void confirmPrice(UUID productId, BigDecimal newPrice) {
+        CartItem item = findItem(productId);
+        if (item == null) {
+            throw ProductNotFoundInCartException.of(productId);
+        }
+        item.setUnitPrice(newPrice);
     }
 
     /**
