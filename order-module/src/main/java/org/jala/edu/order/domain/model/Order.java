@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
+
 
 @Getter
 @ToString(callSuper = true)
@@ -22,6 +24,7 @@ public class Order extends BaseModel<OrderId> {
     private DeliveryAddress deliveryAddress;
     private Money shippingCost;
     private Money total;
+    private UUID courierId;
 
     // Constructor privado para obligar el uso de los Factory Methods
     private Order(OrderId orderId, CustomerId customerId, List<OrderLine> lines, Money subtotal,
@@ -98,6 +101,14 @@ public class Order extends BaseModel<OrderId> {
             }
         }
         this.status = newStatus;
+        touch();
+    }
+    public void assignCourier(UUID courierId) {
+        if (this.courierId != null) {
+            throw new IllegalStateException(
+                    "This order already has courier ");
+        }
+        this.courierId = Objects.requireNonNull(courierId, "CourierId is neccesary");
         touch();
     }
 }

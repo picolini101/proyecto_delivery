@@ -47,4 +47,8 @@ public class GetOrderDetailUseCase {
 
         return order;
     }
+    public UUID toCustomerId(UUID orderId){
+        Order order=orderRepository.findById(OrderId.of(orderId)).orElseThrow();
+        return order.getCustomerId().value();
+    }
 }
