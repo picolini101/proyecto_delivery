@@ -44,7 +44,6 @@ import org.jala.edu.order.application.usecase.IncreaseCartItemQuantityUseCase;
 import org.jala.edu.order.application.usecase.ListCatalogProductsUseCase;
 import org.jala.edu.order.application.usecase.RemoveProductFromCartUseCase;
 import org.jala.edu.order.application.usecase.orders.AuthorizePaymentUseCase;
-import org.jala.edu.order.application.usecase.orders.ConfirmOrderUseCase;
 import org.jala.edu.order.application.usecase.orders.InputAddressUseCase;
 import org.jala.edu.order.application.usecase.orders.StartCheckoutUseCase;
 import org.jala.edu.order.domain.model.DeliveryAddress;
