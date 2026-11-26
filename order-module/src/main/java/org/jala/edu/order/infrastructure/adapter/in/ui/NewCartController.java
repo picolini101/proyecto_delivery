@@ -119,9 +119,12 @@ public class NewCartController {
     /** pide al servicio de pagos que autorice el monto total del pedido. */
     private final AuthorizePaymentUseCase authorizePayment;
 
+    /** Confirma el pedido únicamente después de que el pago fue aprobado. */
+    private final ConfirmOrderUseCase confirmOrder;
+
     /** Cancela el pedido y registra el intento fallido cuando el pago es rechazado. */
     private final RegisterFailedPaymentUseCase registerFailedPayment;
-    private final ConfirmOrderUseCase confirmOrder;
+
     private final OrderConfirmationContext orderConfirmationContext;
 
 

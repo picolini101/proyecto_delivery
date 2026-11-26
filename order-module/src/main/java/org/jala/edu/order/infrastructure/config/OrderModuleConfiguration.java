@@ -27,9 +27,12 @@ import org.jala.edu.order.application.usecase.orders.AuthorizePaymentUseCase;
 import org.jala.edu.order.application.usecase.orders.StartCheckoutUseCase;
 import org.jala.edu.order.application.usecase.orders.InputAddressUseCase;
 import org.jala.edu.order.application.usecase.orders.CancelOrderUseCase;
+import org.jala.edu.order.application.usecase.orders.ConfirmOrderUseCase;
 import org.jala.edu.order.application.usecase.orders.ConsultarPedidosUseCase;
 import org.jala.edu.order.application.usecase.orders.GetOrderDetailUseCase;
 import org.jala.edu.order.application.usecase.orders.FindReadyForDeliveryUseCase;
+import org.jala.edu.order.application.usecase.orders.ListConfirmedOrdersByMerchantUseCase;
+import org.jala.edu.order.application.usecase.orders.MarkOrderReadyForDeliveryUseCase;
 import org.jala.edu.order.application.usecase.orders.MarkOrderAssignedUseCase;
 import org.jala.edu.order.application.usecase.orders.MarkOrderDeliveredUseCase;
 import org.jala.edu.order.application.usecase.orders.MarkOrderOnTheWayUseCase;
@@ -96,10 +99,7 @@ public class OrderModuleConfiguration {
         return new CartVerifier(catalog);
     }
 
-    @Bean
-    public FindReadyForDeliveryUseCase findReadyForDeliveryUseCase(OrderRepositoryPort orders) {
-        return new FindReadyForDeliveryUseCase(orders);
-    }
+
 
     @Bean
     public MarkOrderAssignedUseCase markOrderAssignedUseCase(OrderRepositoryPort orders,
@@ -119,18 +119,14 @@ public class OrderModuleConfiguration {
 
     @Bean
     public OrderService orderService(FindReadyForDeliveryUseCase findReadyForDelivery,
-                                     MarkOrderAssignedUseCase markOrderAssigned,
-                                     MarkOrderOnTheWayUseCase markOrderOnTheWay,
-                                     MarkOrderDeliveredUseCase markOrderDelivered,
-                                     CurrentUserService currentUserService,GetOrderDetailUseCase getOrderDetailUseCase) {
+                                    MarkOrderAssignedUseCase markOrderAssigned,
+                                    MarkOrderOnTheWayUseCase markOrderOnTheWay,
+                                    MarkOrderDeliveredUseCase markOrderDelivered,
+                                    CurrentUserService currentUserService,
+                                     GetOrderDetailUseCase getOrderDetailUseCase,
+                                     ChangeOrderStatusUseCase changeOrderStatusUseCase) {
         return new OrderServiceAdapter(findReadyForDelivery, markOrderAssigned, markOrderOnTheWay,
-                markOrderDelivered, currentUserService, getOrderDetailUseCase);
-    }
-
-    @Bean
-    public ConfirmCartPricesUseCase confirmCartPricesUseCase(UserService users, CartRepositoryPort carts,
-                                                             CartVerifier cartVerifier) {
-        return new ConfirmCartPricesUseCase(users, carts, cartVerifier);
+                markOrderDelivered, currentUserService, getOrderDetailUseCase,changeOrderStatusUseCase);
     }
 
     @Bean
@@ -142,6 +138,7 @@ public class OrderModuleConfiguration {
     ) {
         return new StartCheckoutUseCase(users, carts, cartVerifier, orderRepository);
     }
+
 
     /**
      * Adaptador del puerto de pagos (INT-002): traduce el contrato {@link PaymentService} del core.
@@ -174,6 +171,13 @@ public class OrderModuleConfiguration {
     }
 
     @Bean
+    public ConfirmOrderUseCase confirmOrderUseCase(OrderRepositoryPort orderRepository,
+                                                   OrderStatusHistoryPort statusHistory,
+                                                   org.jala.edu.core.application.port.out.TransactionRunner transactions) {
+        return new ConfirmOrderUseCase(orderRepository, statusHistory, transactions);
+    }
+
+    @Bean
     public ConsultarPedidosUseCase consultarPedidosUseCase(UserService users, OrderRepositoryPort orders) {
         return new ConsultarPedidosUseCase(users, orders);
     }
@@ -181,6 +185,24 @@ public class OrderModuleConfiguration {
     @Bean
     public GetOrderDetailUseCase getOrderDetailUseCase(UserService users, OrderRepositoryPort orders) {
         return new GetOrderDetailUseCase(users, orders);
+    }
+
+    @Bean
+    public ListConfirmedOrdersByMerchantUseCase listConfirmedOrdersByMerchantUseCase(
+            OrderRepositoryPort orders, UserService users, CatalogService catalog) {
+        return new ListConfirmedOrdersByMerchantUseCase(orders, users, catalog);
+    }
+
+    @Bean
+    public MarkOrderReadyForDeliveryUseCase markOrderReadyForDeliveryUseCase(
+            OrderRepositoryPort orders, ChangeOrderStatusUseCase changeOrderStatus,
+            CatalogService catalog, UserService users) {
+        return new MarkOrderReadyForDeliveryUseCase(orders, changeOrderStatus, catalog, users);
+    }
+
+    @Bean
+    public FindReadyForDeliveryUseCase findReadyForDeliveryUseCase(OrderRepositoryPort orders) {
+        return new FindReadyForDeliveryUseCase(orders);
     }
 
     @Bean
@@ -206,6 +228,12 @@ public class OrderModuleConfiguration {
     public PreviewCheckoutSummaryUseCase previewCheckoutSummaryUseCase(
             UserService users, CartRepositoryPort carts, CartVerifier cartVerifier) {
         return new PreviewCheckoutSummaryUseCase(users, carts, cartVerifier);
+    }
+
+    @Bean
+    public ConfirmCartPricesUseCase confirmCartPricesUseCase(
+            UserService users, CartRepositoryPort carts, CartVerifier cartVerifier) {
+        return new ConfirmCartPricesUseCase(users, carts, cartVerifier);
     }
 
     @Bean

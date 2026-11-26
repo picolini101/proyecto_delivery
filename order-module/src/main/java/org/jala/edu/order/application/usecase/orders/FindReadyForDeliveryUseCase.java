@@ -9,11 +9,15 @@ import org.jala.edu.order.application.port.out.OrderRepositoryPort;
 import org.jala.edu.order.domain.model.Order;
 import org.jala.edu.order.domain.model.OrderStatus;
 
+
 public class FindReadyForDeliveryUseCase implements UseCase<Void, List<ReadyOrder>> {
+
     private final OrderRepositoryPort orderRepository;
+
     public FindReadyForDeliveryUseCase(OrderRepositoryPort orderRepository) {
         this.orderRepository = orderRepository;
     }
+
     @Override
     public List<ReadyOrder> execute(Void unused) {
         return orderRepository.findAll().stream()
@@ -21,6 +25,7 @@ public class FindReadyForDeliveryUseCase implements UseCase<Void, List<ReadyOrde
                 .map(this::toReadyOrder)
                 .toList();
     }
+
     private ReadyOrder toReadyOrder(Order order) {
         return new ReadyOrder(
                 order.getId().value(),

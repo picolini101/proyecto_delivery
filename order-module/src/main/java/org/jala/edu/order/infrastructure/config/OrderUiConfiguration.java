@@ -1,5 +1,6 @@
 package org.jala.edu.order.infrastructure.config;
 
+import org.jala.edu.order.infrastructure.adapter.in.ui.OrderViews;
 import org.jala.edu.core.infrastructure.ui.NavigationItem;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,5 +18,11 @@ public class OrderUiConfiguration {
     @Order(300)
     public NavigationItem orderNavigationItem() {
         return new NavigationItem("Orders", MAIN_VIEW);
+    }
+
+    @Bean
+    @Order(310)
+    public NavigationItem merchantOrdersNavigationItem() {
+        return new NavigationItem("My commerce orders", OrderViews.MERCHANT_ORDERS);
     }
 }
