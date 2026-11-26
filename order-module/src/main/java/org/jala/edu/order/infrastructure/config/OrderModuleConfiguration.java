@@ -233,6 +233,12 @@ public class OrderModuleConfiguration {
     }
 
     @Bean
+    public ConfirmCartPricesUseCase confirmCartPricesUseCase(
+            UserService users, CartRepositoryPort carts, CartVerifier cartVerifier) {
+        return new ConfirmCartPricesUseCase(users, carts, cartVerifier);
+    }
+
+    @Bean
     public GetOrderConfirmationUseCase getOrderConfirmationUseCase(OrderRepositoryPort orderRepository) {
         return new GetOrderConfirmationUseCase(orderRepository);
     }
