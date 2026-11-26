@@ -19,6 +19,7 @@ import org.jala.edu.order.application.usecase.GetCartSummaryUseCase;
 import org.jala.edu.order.application.usecase.IncreaseCartItemQuantityUseCase;
 import org.jala.edu.order.application.usecase.ListCatalogProductsUseCase;
 import org.jala.edu.order.application.usecase.RemoveProductFromCartUseCase;
+import org.jala.edu.order.application.usecase.orders.CancelOrderUseCase;
 import org.jala.edu.order.application.usecase.orders.StartCheckoutUseCase;
 import org.jala.edu.order.application.usecase.orders.AuthorizePaymentUseCase;
 import org.jala.edu.order.application.usecase.orders.InputAddressUseCase;
@@ -182,13 +183,17 @@ public class OrderModuleConfiguration {
         return new ListFailedPaymentsUseCase(failedPayments, history);
     }
 
-
     @Bean
     public PreviewCheckoutSummaryUseCase previewCheckoutSummaryUseCase(
             UserService users, CartRepositoryPort carts, CartVerifier cartVerifier) {
         return new PreviewCheckoutSummaryUseCase(users, carts, cartVerifier);
     }
 
-
+    @Bean
+    public CancelOrderUseCase cancelOrderUseCase(OrderRepositoryPort orderRepository,
+                                                 OrderStatusHistoryPort statusHistory,
+                                                 org.jala.edu.core.application.port.out.TransactionRunner transactions) {
+        return new CancelOrderUseCase(orderRepository, statusHistory, transactions);
+    }
 }
 

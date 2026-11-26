@@ -15,7 +15,8 @@
     <HBox styleClass="toolbar" alignment="CENTER_LEFT" spacing="10">
         <Label styleClass="page-title" text="Mis pedidos"/>
         <Region HBox.hgrow="ALWAYS"/>
-        <Button text="Nuevo carrito" onAction="#onNewCart" style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold;"/>
+        <Button text="Nuevo carrito" onAction="#onNewCart"
+                style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold;"/>
     </HBox>
 
     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background: #f4f4f4;">
