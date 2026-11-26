@@ -13,6 +13,8 @@ public final class OrderViews {
     public static final String PAYMENT_RESULT = BASE + "payment-result.fxml";
     public static final String TRACKING = BASE + "order-tracking.fxml";
 
+    public static final String CONFIRMATION = BASE + "order-confirmation.fxml";
+
     public static final String HISTORY = BASE + "order-history.fxml";
     private OrderViews() {
     }

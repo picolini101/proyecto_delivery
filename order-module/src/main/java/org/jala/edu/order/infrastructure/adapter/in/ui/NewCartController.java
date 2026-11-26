@@ -29,7 +29,9 @@ import org.jala.edu.core.infrastructure.ui.SpringFxmlLoader;
 import org.jala.edu.core.infrastructure.ui.Dialogs;
 import org.jala.edu.order.application.dto.PaymentAttempt;
 import org.jala.edu.order.application.port.in.AuthorizePaymentCommand;
+import org.jala.edu.order.application.port.in.ConfirmOrderCommand;
 import org.jala.edu.order.application.port.in.RegisterFailedPaymentCommand;
+import org.jala.edu.order.application.usecase.orders.ConfirmOrderUseCase;
 import org.jala.edu.order.application.port.out.PaymentAuthorization;
 import org.jala.edu.order.application.usecase.orders.RegisterFailedPaymentUseCase;
 import org.jala.edu.order.application.port.in.InputAddressCommand;
@@ -117,6 +119,9 @@ public class NewCartController {
 
     /** Cancela el pedido y registra el intento fallido cuando el pago es rechazado. */
     private final RegisterFailedPaymentUseCase registerFailedPayment;
+    private final ConfirmOrderUseCase confirmOrder;
+    private final OrderConfirmationContext orderConfirmationContext;
+
 
     /** Decide los textos de la ventana de respuesta de pago. Al tener valor inicial, Lombok no lo pide en el constructor. */
     private final PaymentResultPresenter paymentPresenter = new PaymentResultPresenter();
@@ -304,6 +309,13 @@ public class NewCartController {
                             new RegisterFailedPaymentCommand(attempt, currentUserService.currentUser().id())),
                     ignored -> showPaymentResult(paymentPresenter.present(attempt)),
                     error -> showPaymentResult(paymentPresenter.presentFailure(error)));
+        } else if (attempt.authorization() instanceof PaymentAuthorization.Approved) {
+            ConfirmOrderCommand confirmCommand = new ConfirmOrderCommand(
+                    lastOrderId, currentUserService.currentUser().id(), attempt);
+            BackgroundTasks.run(
+                    () -> confirmOrder.execute(confirmCommand),
+                    ignored -> showPaymentResult(paymentPresenter.present(attempt)),
+                    error -> showError(error, "confirmar el pedido"));
         } else {
             showPaymentResult(paymentPresenter.present(attempt));
         }
@@ -315,14 +327,26 @@ public class NewCartController {
      *
      * @param result lo que debe mostrarse
      */
+
     private void showPaymentResult(PaymentResultView result) {
         SpringFxmlLoader.View<PaymentResultController> view = fxmlLoader.loadView(OrderViews.PAYMENT_RESULT);
-        Runnable action = result.kind() == PaymentResultView.Kind.UNAVAILABLE
-                ? this::requestPayment
-                : () -> navigator.show(OrderViews.MAIN);
+        Runnable action;
+        if (result.kind() == PaymentResultView.Kind.UNAVAILABLE) {
+            action = this::requestPayment;
+        } else if (result.isSuccess() && lastOrderId != null) {
+            // Si se aprobó, mostramos el comprobante final con el código de entrega
+            action = () -> {
+                orderConfirmationContext.setLastConfirmedOrderId(lastOrderId);
+                navigator.show(OrderViews.CONFIRMATION);
+            };
+        }
+        else {
+            action = () -> navigator.show(OrderViews.MAIN);
+        }
         view.controller().prepare(result, action);
         Dialogs.showModal(checkoutButton, result.title(), view.root());
     }
+
 
     @FXML
     void onAddAddress() {
