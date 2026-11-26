@@ -16,9 +16,13 @@ import org.jala.edu.payment.domain.model.PaymentTransaction;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-/**
- * Controlador JavaFX para consultar y actualizar el historial de pagos del cliente.
- */
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import javafx.scene.control.TextField;
+import org.jala.edu.payment.application.dto.PaymentStatusResult;
+
+// Controlador JavaFX para consultar y actualizar el historial de pagos del cliente.
+
 @Component
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class PaymentHistoryController {
@@ -26,6 +30,12 @@ public class PaymentHistoryController {
     private Label statusLabel;
     @FXML
     private ListView<String> historyListView;
+    @FXML
+    private TextField statusOrderIdField;
+    @FXML
+    private Label statusResultLabel;
+    private static final DateTimeFormatter DATE_FORMAT =
+            DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm").withZone(ZoneId.systemDefault());
     private final ManagePaymentHistoryUseCase useCase;
     private final CurrentUserService currentUserService;
     public PaymentHistoryController(ManagePaymentHistoryUseCase useCase,
@@ -53,9 +63,8 @@ public class PaymentHistoryController {
             current = current.getParent();
         }
     }
-    /**
-     * Recarga las transacciones del usuario activo en la lista del historial.
-     */
+    // Recarga las transacciones del usuario activo en la lista del historial.
+
     @FXML
     private void loadHistory() {
         historyListView.getItems().clear();
@@ -74,6 +83,35 @@ public class PaymentHistoryController {
             statusLabel.setText("Error: " + e.getMessage());
         }
     }
+
+     // Consulta el estado de pago del pedido escrito por el cliente (HU #31).
+
+    @FXML
+    private void handleCheckStatus() {
+        String text = statusOrderIdField.getText().trim();
+        if (text.isEmpty()) {
+            statusResultLabel.setText("Ingresa el ID del pedido.");
+            return;
+        }
+        try {
+            PaymentStatusResult result = useCase.findPaymentStatus(UUID.fromString(text), resolveCurrentUserId());
+            statusResultLabel.setText(describeStatus(result));
+        } catch (IllegalArgumentException e) {
+            statusResultLabel.setText("Error: el ID del pedido no es valido.");
+        } catch (DomainException e) {
+            statusResultLabel.setText("Error: " + e.getMessage());
+        }
+    }
+
+    private String describeStatus(PaymentStatusResult result) {
+        if (PaymentStatusResult.PENDING.equals(result.status())) {
+            return "Estado: PENDIENTE (el pedido aun no tiene intentos de cobro)";
+        }
+        return "Estado: " + result.status()
+                + " | Monto: $" + result.amount()
+                + " | Fecha: " + DATE_FORMAT.format(result.attemptedAt());
+    }
+
     private UUID resolveCurrentUserId() {
         return currentUserService.findCurrentUser()
                 .map(CurrentUser::id)
