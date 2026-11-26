@@ -17,8 +17,6 @@
         <Region HBox.hgrow="ALWAYS"/>
         <Button text="Nuevo carrito" onAction="#onNewCart"
                 style="-fx-background-color: #2563eb; -fx-text-fill: white; -fx-font-weight: bold;"/>
-        <Button text="Cancelar pedidos" onAction="#onCancelOrders"
-                style="-fx-background-color: white; -fx-border-color: #cbd5e1; -fx-border-radius: 6; -fx-background-radius: 6; -fx-padding: 7 14; -fx-text-fill: #b91c1c; -fx-font-weight: bold; -fx-cursor: hand;"/>
     </HBox>
 
     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent; -fx-background: #f4f4f4;">
