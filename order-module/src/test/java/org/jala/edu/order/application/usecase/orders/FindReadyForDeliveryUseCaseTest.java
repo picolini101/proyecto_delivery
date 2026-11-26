@@ -22,18 +22,10 @@ import org.jala.edu.order.domain.model.OrderStatus;
 import org.jala.edu.order.domain.model.ProductId;
 import org.jala.edu.order.domain.model.Quantity;
 
-import org.jala.edu.core.contract.ReadyOrder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
-import java.util.List;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class FindReadyForDeliveryUseCaseTest {
     private OrderRepositoryPort orderRepository;

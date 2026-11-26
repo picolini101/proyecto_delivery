@@ -27,16 +27,14 @@ import org.jala.edu.order.application.usecase.orders.AuthorizePaymentUseCase;
 import org.jala.edu.order.application.usecase.orders.StartCheckoutUseCase;
 import org.jala.edu.order.application.usecase.orders.InputAddressUseCase;
 import org.jala.edu.order.application.usecase.orders.CancelOrderUseCase;
+import org.jala.edu.order.application.usecase.orders.ChangeOrderStatusUseCase;
+import org.jala.edu.order.application.usecase.orders.ConfirmOrderUseCase;
 import org.jala.edu.order.application.usecase.orders.ConsultarPedidosUseCase;
 import org.jala.edu.order.application.usecase.orders.GetOrderDetailUseCase;
 import org.jala.edu.order.application.usecase.orders.FindReadyForDeliveryUseCase;
 import org.jala.edu.order.application.usecase.orders.GetOrderTrackingUseCase;
-import org.jala.edu.order.application.usecase.orders.InputAddressUseCase;
 import org.jala.edu.order.application.usecase.orders.ListConfirmedOrdersByMerchantUseCase;
 import org.jala.edu.order.application.usecase.orders.MarkOrderReadyForDeliveryUseCase;
-import org.jala.edu.order.application.usecase.orders.StartCheckoutUseCase;
-import org.jala.edu.order.application.usecase.RemoveProductFromCartUseCase;
-import org.jala.edu.order.application.usecase.orders.FindReadyForDeliveryUseCase;
 import org.jala.edu.order.application.usecase.orders.MarkOrderAssignedUseCase;
 import org.jala.edu.order.application.usecase.orders.MarkOrderDeliveredUseCase;
 import org.jala.edu.order.application.usecase.orders.MarkOrderOnTheWayUseCase;
@@ -123,18 +121,14 @@ public class OrderModuleConfiguration {
 
     @Bean
     public OrderService orderService(FindReadyForDeliveryUseCase findReadyForDelivery,
-                                     MarkOrderAssignedUseCase markOrderAssigned,
-                                     MarkOrderOnTheWayUseCase markOrderOnTheWay,
-                                     MarkOrderDeliveredUseCase markOrderDelivered,
-                                     CurrentUserService currentUserService,GetOrderDetailUseCase getOrderDetailUseCase) {
+                                    MarkOrderAssignedUseCase markOrderAssigned,
+                                    MarkOrderOnTheWayUseCase markOrderOnTheWay,
+                                    MarkOrderDeliveredUseCase markOrderDelivered,
+                                    CurrentUserService currentUserService,
+                                     GetOrderDetailUseCase getOrderDetailUseCase,
+                                     ChangeOrderStatusUseCase changeOrderStatusUseCase) {
         return new OrderServiceAdapter(findReadyForDelivery, markOrderAssigned, markOrderOnTheWay,
-                markOrderDelivered, currentUserService, getOrderDetailUseCase);
-    }
-
-    @Bean
-    public ConfirmCartPricesUseCase confirmCartPricesUseCase(UserService users, CartRepositoryPort carts,
-                                                             CartVerifier cartVerifier) {
-        return new ConfirmCartPricesUseCase(users, carts, cartVerifier);
+                markOrderDelivered, currentUserService, getOrderDetailUseCase,changeOrderStatusUseCase);
     }
 
     @Bean
@@ -179,6 +173,13 @@ public class OrderModuleConfiguration {
     }
 
     @Bean
+    public ConfirmOrderUseCase confirmOrderUseCase(OrderRepositoryPort orderRepository,
+                                                   OrderStatusHistoryPort statusHistory,
+                                                   org.jala.edu.core.application.port.out.TransactionRunner transactions) {
+        return new ConfirmOrderUseCase(orderRepository, statusHistory, transactions);
+    }
+
+    @Bean
     public ConsultarPedidosUseCase consultarPedidosUseCase(UserService users, OrderRepositoryPort orders) {
         return new ConsultarPedidosUseCase(users, orders);
     }
@@ -204,13 +205,6 @@ public class OrderModuleConfiguration {
     @Bean
     public FindReadyForDeliveryUseCase findReadyForDeliveryUseCase(OrderRepositoryPort orders) {
         return new FindReadyForDeliveryUseCase(orders);
-    }
-
-    @Bean
-    public OrderService orderService(FindReadyForDeliveryUseCase findReadyForDelivery,
-                                     ChangeOrderStatusUseCase changeOrderStatus,
-                                     CurrentUserService currentUserService) {
-        return new OrderServiceAdapter(findReadyForDelivery, changeOrderStatus, currentUserService);
     }
 
     @Bean

@@ -9,7 +9,6 @@ import org.jala.edu.order.application.port.out.OrderRepositoryPort;
 import org.jala.edu.order.domain.model.Order;
 import org.jala.edu.order.domain.model.OrderStatus;
 
-import java.util.List;
 
 public class FindReadyForDeliveryUseCase implements UseCase<Void, List<ReadyOrder>> {
 

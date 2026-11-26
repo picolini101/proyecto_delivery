@@ -44,6 +44,7 @@ import org.jala.edu.order.application.usecase.IncreaseCartItemQuantityUseCase;
 import org.jala.edu.order.application.usecase.ListCatalogProductsUseCase;
 import org.jala.edu.order.application.usecase.RemoveProductFromCartUseCase;
 import org.jala.edu.order.application.usecase.orders.AuthorizePaymentUseCase;
+import org.jala.edu.order.application.usecase.orders.ConfirmOrderUseCase;
 import org.jala.edu.order.application.usecase.orders.InputAddressUseCase;
 import org.jala.edu.order.application.usecase.orders.StartCheckoutUseCase;
 import org.jala.edu.order.domain.model.DeliveryAddress;
@@ -119,9 +120,12 @@ public class NewCartController {
     /** pide al servicio de pagos que autorice el monto total del pedido. */
     private final AuthorizePaymentUseCase authorizePayment;
 
+    /** Confirma el pedido únicamente después de que el pago fue aprobado. */
+    private final ConfirmOrderUseCase confirmOrder;
+
     /** Cancela el pedido y registra el intento fallido cuando el pago es rechazado. */
     private final RegisterFailedPaymentUseCase registerFailedPayment;
-    private final ConfirmOrderUseCase confirmOrder;
+
     private final OrderConfirmationContext orderConfirmationContext;
 
 
