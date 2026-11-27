@@ -8,6 +8,7 @@ import org.jala.edu.catalog.application.port.out.ProductRepositoryPort;
 import org.jala.edu.catalog.domain.model.Product;
 import org.jala.edu.catalog.domain.model.ProductId;
 import org.jala.edu.core.contract.CatalogService;
+import org.jala.edu.core.contract.CommerceInfo;
 import org.jala.edu.core.contract.ProductInfo;
 import org.jala.edu.core.domain.exception.ConflictException;
 import org.jala.edu.core.domain.exception.NotFoundException;
@@ -34,6 +35,12 @@ public class CatalogServiceAdapter implements CatalogService {
     @Override
     public Optional<ProductInfo> findProduct(UUID productId) {
         return findDomainProduct(productId).map(this::toProductInfo);
+    }
+
+    @Override
+    public Optional<CommerceInfo> findCommerce(UUID commerceId) {
+        return commerceRepository.findById(new CommerceId(commerceId))
+                .map(commerce -> new CommerceInfo(commerce.getId().value(), commerce.getName()));
     }
 
     @Override
