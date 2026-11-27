@@ -12,7 +12,29 @@ class CatalogServiceTest {
     @Test
     void anImplementationWithoutTheListingReturnsNoProducts() {
         // Arrange: an implementation written before findAvailableProducts existed
-        CatalogService service = new CatalogService() {
+        CatalogService service = legacyService();
+
+        // Act
+        List<ProductInfo> available = service.findAvailableProducts();
+
+        // Assert
+        assertThat(available).isEmpty();
+    }
+
+    @Test
+    void anImplementationWithoutTheCommerceLookupFindsNoCommerce() {
+        // Arrange: an implementation written before findCommerce existed
+        CatalogService service = legacyService();
+
+        // Act
+        Optional<CommerceInfo> commerce = service.findCommerce(SampleCatalog.COMMERCE);
+
+        // Assert
+        assertThat(commerce).isEmpty();
+    }
+
+    private static CatalogService legacyService() {
+        return new CatalogService() {
             @Override
             public Optional<ProductInfo> findProduct(UUID productId) {
                 return Optional.empty();
@@ -36,11 +58,5 @@ class CatalogServiceTest {
                 return List.of();
             }
         };
-
-        // Act
-        List<ProductInfo> available = service.findAvailableProducts();
-
-        // Assert
-        assertThat(available).isEmpty();
     }
 }

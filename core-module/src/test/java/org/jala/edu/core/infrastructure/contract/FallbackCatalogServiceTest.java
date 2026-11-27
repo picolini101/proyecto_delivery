@@ -4,7 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import org.jala.edu.core.contract.CommerceInfo;
 import org.jala.edu.core.contract.ProductInfo;
 import org.jala.edu.core.contract.SampleCatalog;
 import org.jala.edu.core.contract.SampleUsers;
@@ -122,5 +124,25 @@ class FallbackCatalogServiceTest {
         assertThat(product.price()).isEqualByComparingTo(SampleCatalog.PIZZA_PRICE);
         assertThat(catalogService.isAvailable(pizza, SampleCatalog.PIZZA_STOCK)).isTrue();
         assertThat(catalogService.isAvailable(pizza, SampleCatalog.PIZZA_STOCK + 1)).isFalse();
+    }
+
+    @Test
+    void findsTheSampleCommerceWithItsName() {
+        // Act
+        Optional<CommerceInfo> commerce = catalogService.findCommerce(SampleCatalog.COMMERCE);
+
+        // Assert
+        assertThat(commerce).contains(new CommerceInfo(SampleCatalog.COMMERCE, SampleCatalog.COMMERCE_NAME));
+    }
+
+    @Test
+    void findsNoCommerceForAnUnknownOrNullId() {
+        // Act
+        Optional<CommerceInfo> unknown = catalogService.findCommerce(UUID.randomUUID());
+        Optional<CommerceInfo> missing = catalogService.findCommerce(null);
+
+        // Assert
+        assertThat(unknown).isEmpty();
+        assertThat(missing).isEmpty();
     }
 }

@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jala.edu.core.contract.CatalogService;
+import org.jala.edu.core.contract.CommerceInfo;
 import org.jala.edu.core.contract.ProductInfo;
 import org.jala.edu.core.contract.SampleCatalog;
 import org.jala.edu.core.contract.SampleUsers;
@@ -60,6 +61,13 @@ public class FallbackCatalogService implements CatalogService {
     public void releaseStock(UUID productId, int quantity) {
         requireProduct(productId);
         stock.merge(productId, quantity, Integer::sum);
+    }
+
+    @Override
+    public Optional<CommerceInfo> findCommerce(UUID commerceId) {
+        return SampleCatalog.COMMERCE.equals(commerceId)
+                ? Optional.of(new CommerceInfo(SampleCatalog.COMMERCE, SampleCatalog.COMMERCE_NAME))
+                : Optional.empty();
     }
 
     @Override
