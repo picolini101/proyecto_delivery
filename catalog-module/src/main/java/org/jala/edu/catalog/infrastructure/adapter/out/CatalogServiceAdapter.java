@@ -39,6 +39,10 @@ public class CatalogServiceAdapter implements CatalogService {
 
     @Override
     public Optional<CommerceInfo> findCommerce(UUID commerceId) {
+        if (commerceId == null) {
+            return Optional.empty();
+        }
+
         return commerceRepository.findById(new CommerceId(commerceId))
                 .map(commerce -> new CommerceInfo(commerce.getId().value(), commerce.getName()));
     }

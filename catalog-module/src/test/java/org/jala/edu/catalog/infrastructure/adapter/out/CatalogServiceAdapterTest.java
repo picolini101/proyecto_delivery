@@ -375,4 +375,13 @@ class CatalogServiceAdapterTest {
         // Assert
         assertThat(result).contains(new CommerceInfo(disabled.getId().value(), "Closed Diner"));
     }
+
+    @Test
+    void findsNoCommerceForANullId() {
+        // Act
+        Optional<CommerceInfo> result = catalogService.findCommerce(null);
+
+        // Assert
+        assertThat(result).isEmpty();
+    }
 }
