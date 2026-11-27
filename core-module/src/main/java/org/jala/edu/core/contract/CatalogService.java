@@ -45,6 +45,18 @@ public interface CatalogService {
     void releaseStock(UUID productId, int quantity);
 
     /**
+     * The commerce's id and name, so {@code order-module} can show the commerce of an order without depending on
+     * {@code catalog-module}. A disabled commerce is still returned: an order keeps showing the commerce it was
+     * bought from. The default returns empty, so an implementation written before this method keeps compiling until
+     * it overrides it.
+     *
+     * @return the commerce, or empty if no commerce has that id or the id is {@code null}
+     */
+    default Optional<CommerceInfo> findCommerce(UUID commerceId) {
+        return Optional.empty();
+    }
+
+    /**
      * @return the commerces owned by that merchant, empty if it owns none
      */
     List<UUID> findCommerceIdsByMerchant(UUID merchantId);
