@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 import org.jala.edu.catalog.CatalogFixtures;
 import org.jala.edu.catalog.application.usecase.ListAvailableProductsUseCase;
@@ -15,6 +16,7 @@ import org.jala.edu.catalog.domain.model.Product;
 import org.jala.edu.catalog.domain.model.ProductStatus;
 import org.jala.edu.catalog.infrastructure.adapter.out.persistence.memory.InMemoryCommerceRepositoryAdapter;
 import org.jala.edu.catalog.infrastructure.adapter.out.persistence.memory.InMemoryProductRepositoryAdapter;
+import org.jala.edu.core.contract.CommerceInfo;
 import org.jala.edu.core.contract.ProductInfo;
 import org.jala.edu.core.contract.SampleCatalog;
 import org.jala.edu.core.contract.SampleUsers;
@@ -341,5 +343,45 @@ class CatalogServiceAdapterTest {
         commerceRepository.deleteById(new CommerceId(product.getCommerceId()));
 
         assertThat(catalogService.findProduct(product.getId().value())).isEmpty();
+    }
+
+    @Test
+    void findsACommerceByIdWithItsIdAndName() {
+        // Act
+        Optional<CommerceInfo> result = catalogService.findCommerce(SampleCatalog.COMMERCE);
+
+        // Assert
+        assertThat(result).contains(new CommerceInfo(SampleCatalog.COMMERCE, "My Commerce"));
+    }
+
+    @Test
+    void findsNoCommerceWhenTheIdDoesNotExist() {
+        // Act
+        Optional<CommerceInfo> result = catalogService.findCommerce(UUID.randomUUID());
+
+        // Assert
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void findsADisabledCommerceToo() {
+        // Arrange: an order keeps showing the name of a commerce that was disabled after the sale
+        Commerce disabled = CatalogFixtures.disabledCommerce("Closed Diner");
+        commerceRepository.save(disabled);
+
+        // Act
+        Optional<CommerceInfo> result = catalogService.findCommerce(disabled.getId().value());
+
+        // Assert
+        assertThat(result).contains(new CommerceInfo(disabled.getId().value(), "Closed Diner"));
+    }
+
+    @Test
+    void findsNoCommerceForANullId() {
+        // Act
+        Optional<CommerceInfo> result = catalogService.findCommerce(null);
+
+        // Assert
+        assertThat(result).isEmpty();
     }
 }
